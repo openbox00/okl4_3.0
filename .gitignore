@@ -7,4 +7,5 @@
 *.sym
 *.d
 *.lst
+*.pyc
 /build
