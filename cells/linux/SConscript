@@ -402,6 +402,4 @@ if rootfs_size is not None:
                             ("/ #", "/usr/bin/check_rootfs_size.sh 8000"),
                             ("True", None)]
 
-print "111111111111111111111"
-
 Return("rootserver_env")

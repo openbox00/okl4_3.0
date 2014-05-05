@@ -72,7 +72,7 @@ kcell = build.Kernel()
 
 # Create a cell for each example, ensure valid multi-cell setup
 
-valid_examples = ["hello", "args", "pds_zones", "pingpong", "echo", "chatterbox", "decrypt", "oklinux", "oklinux2", "empty"]
+valid_examples = ["hello", "args", "pds_zones", "pingpong", "echo", "chatterbox", "decrypt", "oklinux", "empty"]
 
 # Do not add reverse lookups! The names in the valid_multicell lookup
 # are the names of cells which have ownership of the serial driver.
@@ -80,7 +80,7 @@ valid_examples = ["hello", "args", "pds_zones", "pingpong", "echo", "chatterbox"
 # eg. echo has serial, chatterbox does not
 valid_multicell = { 
     "echo" : ["chatterbox", "decrypt"],
-    "oklinux" : ["oklinux2"] }
+    "oklinux" : ["decrypt"] }
 
 serial_lookup = {
     "hello" : True,
@@ -90,7 +90,6 @@ serial_lookup = {
     "echo" : True,
     "chatterbox" : False,
     "oklinux" : True,
-    "oklinux2" : True,
     "decrypt" : False,
     "empty" : False
     }
@@ -132,7 +131,6 @@ else:
                 (example, root_cell)
 
 example_cells = []
-
 for example in example_list:
     if example == root_cell:
         has_serial = True
@@ -141,34 +139,30 @@ for example in example_list:
     if example == "oklinux":
         celldir = "linux"
     else:
-        celldir = "linux2"
+        celldir = "examples"
     cell = build.Cell("cells/%s" % celldir,
                               name="examples",
                               example_name=example,
                               has_serial=has_serial)
-
     if build.kernel == "nano":
         cell.Append(CPPDEFINES = ["NANOKERNEL"])
 
-#    # Assign IPC caps to all partner cells in multicell config
-#    if example != root_cell:
-#        cell.env_append(None,
-#                        key = "ROOT_CELL_CAP",
-#                        cap = "/%s/main" % root_cell)
-#        #if example == "decrypt":
-#        if example == "oklinux2":
-#            cell.env_append(None,
-#                            key = "CAESAR_CIPHER_SHIFT",
-#                            value = 1)
-#    #if example == root_cell and 'decrypt' in example_list:
-#    if example == root_cell and 'oklinux2' in example_list:
-#        cell.env_append(None,
-#                        key = "SHMEM_CAP",
-#                        #cap = "/decrypt/shmem")
-#                        cap = "/oklinux2/shmem")
-#        cell.env_append(None,
-#                        key = "DECRYPT_CELL_CAP",
-#                        cap = "/oklinux2/main")
+    # Assign IPC caps to all partner cells in multicell config
+    if example != root_cell:
+        cell.env_append(None,
+                        key = "ROOT_CELL_CAP",
+                        cap = "/%s/main" % root_cell)
+        if example == "decrypt":
+            cell.env_append(None,
+                            key = "CAESAR_CIPHER_SHIFT",
+                            value = 1)
+    if example == root_cell and 'decrypt' in example_list:
+        cell.env_append(None,
+                        key = "SHMEM_CAP",
+                        cap = "/decrypt/shmem")
+        cell.env_append(None,
+                        key = "DECRYPT_CELL_CAP",
+                        cap = "/decrypt/main")
 
     if build.kernel == "nano":
         num_spaces = 1

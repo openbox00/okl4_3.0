@@ -1436,17 +1436,17 @@ class KengeEnvironment:
         return copies
 
     def Ext2FS(self, size, dev):
-        #genext2fs = SConscript(os.path.join(self.oklinux_dir, "tools", "genext2fs", "SConstruct"),
-        #                       build_dir=os.path.join(self.builddir, "native", "tools", "genext2fs"),
-        #                       duplicate=0)
+        genext2fs = SConscript(os.path.join(self.oklinux_dir, "tools", "genext2fs", "SConstruct"),
+                               build_dir=os.path.join(self.builddir, "native", "tools", "genext2fs"),
+                               duplicate=0)
         ramdisk = self.builddir + os.sep + "ext2ramdisk"
         cmd = self.Command(ramdisk, Dir(os.path.join(self.builddir,
                                                      "install")),
-                           #genext2fs[0].abspath +
-                           "genext2fs -b $EXT2FS_SIZE -d $SOURCE -D $EXT2FS_DEV $TARGET",
+                           genext2fs[0].abspath +
+                           " -b $EXT2FS_SIZE -d $SOURCE -f $EXT2FS_DEV $TARGET",
                            EXT2FS_SIZE=size, EXT2FS_DEV=dev)
 
-        #Depends(cmd, genext2fs)
+        Depends(cmd, genext2fs)
 
         # always regenerate the ramdisk file
         AlwaysBuild(cmd)

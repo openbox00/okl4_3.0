@@ -65,7 +65,6 @@ import os
 
 Import('*')
 
-
 machine = build.machine
 
 # Maximum number of ELF segments supported in an image.
