@@ -1,0 +1,59 @@
+                            AIM Multiuser Benchmark
+
+OVERVIEW
+The AIM Multiuser Benchmark - Suite VII tests and measures the performance of
+Open System multiuser computers. Multiuser computer environments typically have
+the following general characteristics in common: 
+
+- A large number of tasks are run concurrently 
+- Disk storage increases dramatically as the number of users increase. 
+- Complex numerically intense applications are performed infrequently 
+- An important amount of time is spent sorting and searching through large
+  amounts of data. 
+- After data is used it is placed back on disk because it is a shared resource. 
+- A large amount of time is spent in common runtime libraries. 
+
+Multiuser systems are commonly used to support the following types of user
+environments: 
+
+- Multiuser/shared system environment performing office automation, word
+  processing, spreadsheet, email, database, payroll, and data processing. 
+- Compute server environment that uses an extremely large quantity of data,
+  performs large quantities of floating point calculations, and large amounts
+  of Interprocess Communications (IPC) for graphics. 
+- Large database environment with a lot of disk I/O, data in memory, and IPC
+  via shared memory.
+- File server environment with a heavy concentration of integer compute file
+  system operations. 
+
+LICENSE
+This software is distributed under the GNU General Public License - see the
+accompanying COPYING file for more details.
+
+SUPPORTED OPERATING SYSTEMS
+This software was designed to run properly on any POSIX-compliant operating
+system. An ANSI C compiler is required.
+
+DOCUMENTATION
+The original AIM documentation has been restored from a printed copy. The
+original document was scanned, OCR'ed, edited for contents and converted
+manually into HTML format. The base document is "doc/main.html."
+
+INSTALLATION
+Please refer to the INSTALL file.
+
+TRADEMARKS
+"AIM Benchmark" and "Hot Iron Awards" are trademarks of Caldera
+International, Inc. (Caldera) in the USA and other countries. Caldera allows
+use of "AIM" and "AIM Benchmarks" when presenting performance results, but
+places restrictions on this to promote comparability of results and avoid
+confusion. Results presented using the terms "AIM" and "AIM Benchmark" must be
+obtained with an official version of the benchmark, as designated by Caldera,
+using one of the standard distributed workload mixes. No right or license is
+granted hereunder to use the Caldera trademarks for modified benchmark versions
+or for other purposes without the prior written permission of Caldera. Should
+you need to contact Caldera about that topic, please e-mail
+aimbench@users.sourceforge.net.
+
+"UNIX" is a trademark of the The Open Group.
+

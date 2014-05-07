@@ -1,0 +1,48 @@
+Import("*")
+import os
+
+build_dir = Dir(env.builddir + "/busybox").abspath
+inst_dir = Dir(env.builddir + "/install").abspath
+busybox_dir = os.path.join(env.oklinux_dir, 'apps', 'busybox')
+
+def b(file_name):
+    return os.path.join(build_dir, file_name)
+def i(file_name):
+    return os.path.join(inst_dir, file_name)
+
+# Generate .config
+#eabi_toolchain = "/home/adamc/toolchains/gcc-4.2.4-glibc-2.7/arm-unknown-linux-gnueabi/bin/arm-unknown-linux-gnueabi-"
+#eabi_toolchain = "/scratch/glee/result_top/gcc-4.1.1-glibc-2.4/arm-none-linux-gnueabi/bin/arm-none-linux-gnueabi-" 
+
+def busybox_config(target, source, env):
+    out_f = file(target[0].abspath, "w")
+    in_f = file(source[0].abspath)
+    env.Append(LINKFLAGS=["LD_ASSUME_KERNEL=2.4.10"])
+    for line in in_f.readlines():
+        if "USING_CROSS_COMPILER" in line:
+            line = "USING_CROSS_COMPILER=y\n"
+        elif "CROSS_COMPILER_PREFIX" in line:
+            line = 'CROSS_COMPILER_PREFIX="%s"\n' % env["TOOLPREFIX"]
+            #line = 'CROSS_COMPILER_PREFIX="%s"\n' % eabi_toolchain
+        elif "PREFIX" in line:
+            line = 'PREFIX="%s"\n' % inst_dir
+        out_f.write(line)
+
+env.scons_env["MAKE"] = "make"
+
+config = env.Command(b(".config"), "configs/defconfig",
+                     Action(busybox_config, "[CFG ] $TARGET"));
+
+config_h = env.Command(b("include/config.h"), config,
+                       Action("$MAKE -C %s O=%s oldconfig" % (busybox_dir, build_dir),
+                              "[MAKE] $TARGET"))
+
+busybox = env.Command(b("busybox"),
+                     [Dir("."), config_h] ,
+                      "$MAKE -j %d -C %s O=%s" %
+                      (GetOption('num_jobs'), busybox_dir, build_dir))
+
+busybox_install = env.Command(i("bin/busybox"),
+                              busybox,
+                              "$MAKE -C %s O=%s install" % (busybox_dir, build_dir))
+Return("busybox_install")

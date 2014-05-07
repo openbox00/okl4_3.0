@@ -1,0 +1,14 @@
+#DESCRIPTION:Posix Timer Tests
+clock_gettime02 clock_gettime02
+clock_gettime03 clock_gettime03
+clock_settime02 clock_settime02
+clock_settime03 clock_settime03
+#timer_create02 timer_create02
+timer_create02  /bin/echo "timer_create02 : Test disabled, also fails on Bare Metal linux"; /bin/true
+#timer_create03 timer_create03
+timer_create03  /bin/echo "timer_create03 : Test disabled, also fails on Bare Metal linux"; /bin/true
+timer_create04 timer_create04
+timer_delete02 timer_delete02
+timer_delete03 timer_delete03
+timer_settime02 timer_settime02
+timer_settime03 timer_settime03

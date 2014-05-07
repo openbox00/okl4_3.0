@@ -1,0 +1,82 @@
+Import("*")
+import os
+
+inst_dir = Dir(env.builddir + "/install").abspath
+def i(file_name):
+    return os.path.join(inst_dir, file_name)
+
+files = []
+files += Command(Dir(i("tmp")), [], Mkdir('$TARGET'))
+
+if env.machine.__name__ == "ia32_pc99_vga" or env.machine.__name__ == "ia32_pc99_fb":
+    files += InstallAs(i("etc/inittab"), "etc/inittab_vga")
+else:
+    files += Install(i("etc"), "etc/inittab")
+
+files += Install(i("etc"), "etc/passwd")
+files += Install(i("etc"), "etc/group")
+files += Install(i("etc"), "etc/fstab")
+files += Install(i("etc"), "etc/hosts")
+files += Install(i("etc"), "etc/shells")
+files += Install(i("etc/init.d"), "etc/init.d/rcS")
+
+# indicate that benchmarks should be run automatically
+if run_bench == True:
+    files += Install(i("etc/init.d"), "etc/init.d/bench")
+
+# gstreamer tests
+if run_gstreamertest == True:
+    files += Install(i("usr/bin"), "additional_scripts/gstreamertest.sh")
+
+# run linux tests
+if oklinux_tests == True:
+    files += Install(i("etc/init.d"), "etc/init.d/oklinux_tests")
+    files += Install(i("tests/lib"), "tests/lib/testlib")
+    files += Install(i("tests"), "tests/01-modules")
+    if env.machine.__name__ in ["versatile", "versatile_uboot"]:
+        files += Install(i("tests"), "tests/02-network")
+        files += Install(i("tests"), "tests/03-fb")
+        files += Install(i("tmp"), "tests/fbdata.okl")
+
+files += Install(i("usr/bin"), "evtest")
+files += Install(i("usr/bin"), "psplash")
+files += Install(i("usr/bin"), "netioctl")
+files += Install(i("usr/bin"), "additional_scripts/wombat_banner")
+files += Install(i("usr/bin"), "additional_scripts/wombat_test.sh")
+files += Install(i("usr/bin"), "additional_scripts/check_rootfs_size.sh")
+files += Command(Dir(i("dev")), [], Mkdir('$TARGET'))
+files += Command(Dir(i("proc")), [], Mkdir('$TARGET'))
+files += Command(Dir(i("mnt")), [], Mkdir('$TARGET'))
+files += Command(Dir(i("sys")), [], Mkdir('$TARGET'))
+files += Command(Dir(i("root")), [], Mkdir('$TARGET'))
+
+# udhcpc configuration
+files += Install(i("usr/share/udhcpc"), "extras/udhcpc/default.script")
+
+# Install the compiler toolchain libraries
+def get_lib(lib):
+    lib_fn = os.popen(env.scons_env.subst("$CC --print-file-name=%s"  %  (lib))).read().strip()
+    files.append(Install(i("lib"), lib_fn))
+
+get_lib("libc.so.6")
+get_lib("libm.so.6")
+get_lib("libgcc_s.so.1")    # needed for NPTL TLS support
+get_lib("libpthread.so.0")
+get_lib("libthread_db.so.1")
+get_lib("libresolv.so.2")
+get_lib("libnss_dns.so.2")
+get_lib("libnss_files.so.2")
+get_lib("libutil.so.1")
+get_lib("libcrypt.so.1")
+get_lib("librt.so.1")
+get_lib("libdl.so.2")
+
+# Evil!
+if env.machine.arch in ["ia32"]:
+    get_lib("ld-linux.so.2")
+elif env.machine.arch in ["arm"]:
+    get_lib("ld-linux.so.3")
+else:
+    get_lib("ld.so.1")
+
+Return("files")

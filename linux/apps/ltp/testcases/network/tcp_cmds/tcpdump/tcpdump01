@@ -1,0 +1,128 @@
+#!/bin/sh
+
+#******************************************************************************
+#   Copyright (c) International Business Machines  Corp., 2000
+#
+#   This program is free software;  you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation; either version 2 of the License, or
+#   (at your option) any later version.
+#
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY;  without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See
+#   the GNU General Public License for more details.
+#
+#   You should have received a copy of the GNU General Public License
+#   along with this pronram;  if not, write to the Free Software
+#   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+#
+#
+#
+#  FILE   : tcpdump
+#
+#  PURPOSE: To test the basic functionality of `tcpdump`.
+#
+#  SETUP: The "RHOST" setting should be exported to be the hostname of
+#         another machine on the same subnet.  Otherwise, the hostname
+#         of the tested machine will be used.
+#
+#  HISTORY:
+#    04/17/01 Robbie Williamson (robbiew@us.ibm.com)
+#      -Written
+#
+#-----------------------------------------------------------------------
+#Uncomment line below for debug output.
+#trace_logic=${trace_logic:-"set -x"}
+$trace_logic
+
+TC=tcpdump
+TCtmp=${TCtmp:-/tmp/$TC$$}
+RHOST=${RHOST:-`hostname`}
+IFNAME=${IFNAME:-$(netstat -i -n | grep "^[b-z]\{2,4\}[0-9][^*]" | awk '{print $1}' | head -n1)}
+NUMLOOPS=${NUMLOOPS:-20}
+OUTFILE=$TCtmp/tcpdump_out
+LTPROOT=${LTPROOT:-"../../../../"}
+
+
+#-----------------------------------------------------------------------
+#
+# FUNCTION:  exists
+# PURPOSE:   Check if commands used by this testcase exists.
+#
+#-----------------------------------------------------------------------
+
+exists()
+{
+   for cmd in $1
+   do
+       which $cmd 2>&1 1>/dev/null
+	   if [ $? -ne 0 ]
+	   then
+	       tst_resm TBROK "Test broke: command $cmd not found"
+		   exit 1
+       fi
+   done
+}
+
+
+#******************************************************************************
+#
+# FUNCTION:  do_test
+# PURPOSE:   Invoke tcpdump
+# INPUT:     None
+#
+#******************************************************************************
+
+do_test()
+{
+   $trace_logic
+
+   mkdir -p $TCtmp
+   [ $? -eq 0 ] || end_testcase "mkdir -p $TCtmp failed"
+   ping -f $RHOST > /dev/null 2>&1 &
+   /usr/sbin/tcpdump -i $IFNAME -c $NUMLOOPS > $OUTFILE
+   [ $? -eq 0 ] || end_testcase "Problems trying to launch tcpdump"
+   grep "$RHOST\>" $OUTFILE 
+   [ $? -eq 0 ] || end_testcase "$RHOST was not listed in network traffic"
+   PID=`ps -ef | grep "ping -f $RHOST" | grep -v grep | awk '{print $2}'`
+   kill -9 $PID
+   rm -rf $OUTFILE
+}
+
+#=============================================================================
+# FUNCTION NAME:        end_testcase
+#
+# FUNCTION DESCRIPTION: Clean up
+#
+# PARAMETERS:           string, IF AND ONLY IF the testcase fails
+#
+# RETURNS:              None.
+#=============================================================================
+
+end_testcase()
+{
+   $trace_logic
+   tst_resm TINFO "$this_file: doing $0."
+   rm -rf $TCtmp
+   [ $# -eq 0 ] && { tst_resm TPASS "Test Successful"; exit 0; }
+   tst_resm TFAIL "Test Failed: $@"
+   exit 1
+}
+
+#-----------------------------------------------------------------------
+#
+# FUNCTION:  MAIN
+# PURPOSE:   To invoke functions that perform the tasks as described in
+#	     the design in the prolog above.
+# INPUT:     See SETUP in the prolog above.
+# OUTPUT:    Logged run results written to testcase run log
+#
+#-----------------------------------------------------------------------
+export TCID="tcpdump01"
+export TST_TOTAL=1
+export TST_COUNT=1
+
+exists "ping awk tcpdump"
+do_test
+end_testcase

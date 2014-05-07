@@ -1,0 +1,6 @@
+#!/bin/sh
+
+. $TESTS_DIR/lib/testlib
+
+run_oklinux_test "Looking for eth0... " "ifconfig eth0"
+#run_oklinux_test "Testing ping bob2... " "ping -q -c 4 bob2.in.ok-labs.com"

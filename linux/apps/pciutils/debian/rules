@@ -1,0 +1,73 @@
+#!/usr/bin/make -f
+
+PATHS := PREFIX=/usr SBINDIR=/usr/bin IDSDIR=/usr/share/misc
+
+update-ids:
+	# get a new version of pci.ids, this should only be run by the
+	# maintainer, since we don't want different builds of the same
+	# source to end up with different versions
+	./update-pciids.sh
+
+build:
+	dh_testdir
+	$(MAKE) $(PATHS)
+
+clean:
+	dh_testdir
+	dh_testroot
+	-$(MAKE) $(PATHS) clean
+	dh_clean
+
+# Build architecture-independent files here.
+binary-indep:
+
+# Build architecture-dependent files here.
+binary-arch: build 
+	dh_testdir
+	dh_testroot
+	dh_clean -k
+	dh_installdirs -a
+
+	# pciutils
+	$(MAKE) $(PATHS) install DESTDIR=debian/pciutils
+	ln -s /usr/bin/lspci debian/pciutils/bin/
+	ln -s /usr/bin/setpci debian/pciutils/bin/
+	gunzip debian/pciutils/usr/share/misc/pci.ids.gz
+	perl -pi -e 's/PCI_COMPRESSED_IDS=.*$$/PCI_COMPRESSED_IDS=/' \
+		debian/pciutils/usr/bin/update-pciids
+
+	# pciutils-dev
+	install -m 644 lib/libpci.a debian/pciutils-dev/usr/lib/
+	install -m 644 lib/pci.h lib/header.h lib/config.h lib/types.h \
+			debian/pciutils-dev/usr/include/pci/
+
+	# pciutils-udeb
+	install -m 755 lspci debian/pciutils-udeb/usr/bin/
+	# Reduce by removing subsystem ids and comments.
+	perl -ne 'print unless /^(#|\t\t)/' < pci.ids |gzip -9 > debian/pciutils-udeb/usr/share/misc/pci.ids.gz
+	chmod 644 debian/pciutils-udeb/usr/share/misc/pci.ids.gz
+
+	dh_installdocs
+	dh_installexamples lib/example.c
+	dh_installmenu
+	dh_installman -ppciutils
+	dh_installchangelogs -a ChangeLog
+	# Once we get rid of libpci.so, we can sever the -dev's package
+	# dependency on it and switch the following back to non-symlink
+	rm -rf debian/pciutils-dev/usr/share/doc/pciutils-dev
+	ln -sf pciutils debian/pciutils-dev/usr/share/doc/pciutils-dev
+	dh_strip -a
+	dh_compress -a
+	dh_fixperms -a
+	dh_makeshlibs -a
+	dh_installdeb -a
+	dh_shlibdeps -a
+	dh_gencontrol -a
+	dh_md5sums -a
+	dh_builddeb -a
+
+source diff:                                                                  
+	@echo >&2 'source and diff are obsolete - use dpkg-source -b'; false
+
+binary: binary-indep binary-arch
+.PHONY: update-ids build clean binary-indep binary-arch binary source diff

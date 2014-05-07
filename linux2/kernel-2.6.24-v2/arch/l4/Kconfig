@@ -1,0 +1,551 @@
+config L4
+	bool
+	default y
+
+config GENERIC_TIME
+	bool
+	default y
+
+config GENERIC_CLOCKEVENTS
+	bool
+	default y
+
+config GENERIC_HARDIRQS
+	bool
+	default y
+
+config SDK 
+	string "Location of OKL4 SDK"
+	default "sdk"
+
+#config SMP
+#	bool
+#	default y
+
+#config NR_CPUS
+#   int "Maximum number of CPUs (2-64)"
+#   depends on SMP
+#   default "1"
+
+config MMU
+	bool
+	default y
+
+config DIRECT_VM
+	bool
+
+config RWSEM_GENERIC_SPINLOCK
+   bool
+   default y
+
+mainmenu "L4/Linux Kernel Configuration"
+
+menu "L4/Linux-specific options"
+
+choice
+	prompt "OK Linux Environment"
+	default CELL
+
+config CELL
+	bool "OKL4 Cell"
+	help
+	  This option will build OK Linux as a cell manager. This allows for
+	  native drivers as well as virtual driver configurations.
+
+config IGUANA
+	bool "Iguana server"
+	help
+	  This option will build OK Linux as an Iguana application. This allows
+	  for virtual driver configurations.
+
+endchoice
+
+config L4KDB_CONSOLE
+	bool "Use L4 KDB console"
+	default y
+
+config IG_RAMDISK
+	bool "Compile Iguana ramdisk"
+	#depends on IGUANA
+	default y
+
+choice
+	prompt "Serial driver"
+
+config IG_SERIAL
+	bool "Compile Iguana virtual serial driver"
+	depends on IGUANA
+	default y
+
+config KZM_SERIAL
+	bool "KZM serial driver"
+	depends on KZM
+	default n
+
+endchoice
+
+choice
+	prompt "DMA driver"
+
+config MXC_SDMA_API
+	bool "Use SDMA API"
+	depends on KZM
+	default y
+	---help---
+		This selects the Freescale MXC SDMA API.
+		If unsure, say Y.
+endchoice
+
+config IG_INPUT
+	bool "Compile Iguana virtual input driver"
+	depends on IGUANA
+	default y
+
+config IG_MMC
+	bool "Compile Iguana virtual mmc/sd driver"
+	depends on IGUANA
+	default y
+
+config IG_NET
+	bool "Compile Iguana virtual net driver"
+	depends on IGUANA
+	default y
+
+config DECRYPT
+    bool "Compile the driver for the encryption example"
+    depends on CELL
+    default y
+
+config MTD_IGMTD
+	tristate "Iguana virtual MTD device"
+	depends on IGUANA && MTD
+	select MTD_NAND_IDS
+	---help---
+	  This driver provides a virtual MTD device which communicates with
+	  an L4/Iguana MTD server.
+
+	  If you use this device, you may also want to enable the NFTL
+	  'NAND Flash Translation Layer' option below, which is used to
+	  emulate a block device by using a kind of file system on the flash
+	  chips.
+
+config IG_AUDIO
+	bool "Compile Iguana virtual audio driver"
+	depends on IGUANA && SND
+	select SND_PCM
+	default n
+
+config IG_TOUCH
+	bool "Compile Iguana virtual touch screen driver"
+	depends on IGUANA && INPUT && INPUT_TOUCHSCREEN
+	default y
+
+config FB_IGVIRTUAL
+	tristate "Iguana Virtual Frame buffer support (ONLY FOR TESTING!)"
+	depends on IGUANA && FB
+	default n
+
+endmenu
+
+config GENERIC_HWEIGHT
+	bool
+	default y
+
+config GENERIC_IOMAP
+	bool
+	default y if !ARCH_ARM
+
+# Needed for sound/arm/Kconfig
+menu "System selection"
+
+choice
+	prompt "Architecture type"
+	default ARCH_I386
+
+config ARCH_MIPS64
+	bool "Support for MIPS64 architecture"
+
+config ARCH_ARM
+        bool "Support for ARM architecture"
+	select ARM
+
+config ARCH_I386
+        bool "Support for x86 architecture"
+
+endchoice
+
+config X86_32
+       bool
+       depends on ARCH_I386
+       default y
+
+choice
+	prompt "Platform type"
+
+config U4600
+        bool "Support for U4600 platform"
+        depends on ARCH_MIPS64
+	help
+		These are home-made boxes at UNSW.
+
+config OMAP1510
+	bool "Support for OMAP1510 platform"
+	depends on ARCH_ARM
+	help
+		Support for TI OMAP1510 based platforms (eg: innovator)
+
+config SA1100
+	bool "Support for SA1100 platform"
+	depends on ARCH_ARM
+	help
+		Support for StrongARM based platforms (eg: PLEB, TuxScreen).
+
+config PXA
+	bool "Support for PXA XSCALE platforms"
+	depends on ARCH_ARM
+	help
+		Support for PXA XSCALE based platforms (eg: PLEB2, IPAQ).
+
+config VERSATILE
+	bool "Support for Versatile platform"
+	depends on ARCH_ARM
+	select ARM_AMBA if CELL
+	select ARCH_VERSATILE if CELL
+	help
+		Support for Versatile platform.
+
+config KZM
+	bool "Support for KZM platform"
+	depends on ARCH_ARM
+	select ARCH_MX3
+	#select DIRECT_VM if CELL
+	help
+		Support for the KZM platform.
+
+config IXP4XX
+	bool "Support for IXP4XX platforms"
+	depends on ARCH_ARM
+	select ARCH_IXP4XX
+	help
+		Support for BigEndian Intel Xscale IXP4XX based platforms (eg: IXDP425).
+
+config PC99
+	bool "Support for PC99 platform"
+	depends on ARCH_I386
+	help
+		Support for PC99 based platforms.
+
+endchoice
+
+config AEABI
+    bool
+    depends on ARCH_ARM
+    default y
+    help
+        Support for ARM Embedded ABI
+
+config AEABI
+    bool
+    depends on ARCH_ARM
+    default y
+    help
+        Support for ARM Embedded ABI
+
+config BIG_ENDIAN
+	bool "Big endian machine"
+	depends on ARCH_ARM || ARCH_MIPS64
+	default y if ARCH_MIPS64 || IXP4XX
+
+config L4_FASTCLOCK
+	bool "Use fast clocks - l4clksrc"
+	depends on IGUANA
+	default n
+	help
+	  This option makes fewer calls to the vtimer server, however
+	  may reduce the resolution of the clock. 
+
+choice
+	prompt	"Clock source"
+
+config L4_CLOCKSOURCE
+	bool "L4 vtimer pseudo clocksource"
+	depends on IGUANA
+	help
+		L4 vtimer pseudo clocksource
+
+config KZM_CLOCKSOURCE
+	bool "KZM clocksource"
+	depends on KZM && CELL
+	help
+		"KZM clocksource"
+
+config VERSATILE_CLOCKSOURCE
+	bool "Versatile clocksource"
+	depends on VERSATILE && CELL
+	help
+		"Versatile clocksource"
+
+endchoice
+
+# For compatibility with legacy drivers, etc. 
+config ARCH_PXA
+	bool
+
+config ARCH_IXP4XX
+	bool
+
+config PXA27x
+	bool
+
+config PXA25x
+	bool
+
+config ARCH_MX3
+	bool
+
+config ARM_AMBA
+	bool
+
+config ARM
+	bool
+
+config ARCH_VERSATILE
+	bool
+
+choice
+	prompt "XScale board choice"
+
+config GENERIC_PXA25X
+bool "Generic PXA25x platform"
+	depends on PXA
+	select ARCH_PXA
+	select PXA25x
+
+config GENERIC_PXA27X
+bool "Generic PXA27x platform"
+	depends on PXA
+	select ARCH_PXA
+	select PXA27x
+
+config ARCH_GUMSTIX
+bool "Support for Gumstix platform"
+	depends on PXA
+	select ARCH_PXA
+	select PXA25x
+	help
+		Support for Gumstix
+
+config IBOX
+bool "Support for IBOX platform"
+	depends on PXA
+	select ARCH_PXA
+	select PXA27x
+	help
+		Support for IBOX
+
+config PLEB2
+bool "Support for PLEB2 platform"
+	depends on PXA
+	select ARCH_PXA
+	select PXA25x
+	help
+		Support for PLEB 2
+
+endchoice
+
+config NODES_SHIFT
+	int
+	default 4
+#	default "7" if MPENTIUM4 || X86_GENERIC
+
+config L4_ZONE_SIZE
+	int
+	default 22
+#	default "7" if MPENTIUM4 || X86_GENERIC
+
+config MIPS32_COMPAT
+	bool "Kernel support for Linux/MIPS 32-bit binary compatibility"
+	depends on ARCH_MIPS64
+	help
+	  Select this option if you want Linux/MIPS 32-bit binary
+	  compatibility. Since all software available for Linux/MIPS is
+	  currently 32-bit you should say Y here.
+
+config COMPAT
+	bool
+	depends on MIPS32_COMPAT
+	default y
+
+config MIPS32_O32
+	bool "Kernel support for o32 binaries"
+	depends on MIPS32_COMPAT
+	help
+	  Select this option if you want to run o32 binaries.  These are pure
+	  32-bit binaries as used by the 32-bit Linux/MIPS port.  Most of
+	  existing binaries are in this format.
+
+	  If unsure, say Y.
+
+config MIPS32_N32
+	bool "Kernel support for n32 binaries"
+	depends on MIPS32_COMPAT
+	help
+	  Select this option if you want to run n32 binaries.  These are
+	  64-bit binaries using 32-bit quantities for addressing and certain
+	  data that would normally be 64-bit.  They are used in special
+	  cases.
+
+	  If unsure, say N.
+
+config BINFMT_ELF32
+	bool
+	default y if MIPS32_O32 || MIPS32_N32
+
+endmenu
+
+config CPU_HAS_LLSC
+	bool
+	depends on ARCH_MIPS64
+	default y
+
+config CPU_HAS_LLDSCD
+	bool
+	depends on ARCH_MIPS64
+	default y
+
+config GENERIC_CALIBRATE_DELAY
+	bool
+	default y
+
+config ISA
+	bool
+	depends on SA1100
+	default y
+
+config CPU_SA1100
+	bool
+	depends on SA1100
+	default y
+
+config ARCH_SELECT_MEMORY_MODEL
+	def_bool y
+
+config ARCH_DISCONTIGMEM_ENABLE
+	def_bool y
+
+config ARCH_FLATMEM_ENABLE
+	def_bool y
+
+config UID16
+	bool
+	depends on ARCH_I386 || ARCH_ARM
+	default y
+
+source "kernel/time/Kconfig"
+
+source "mm/Kconfig"
+
+source "init/Kconfig"
+
+source "drivers/base/Kconfig"
+
+source "drivers/block/Kconfig"
+
+source "drivers/ide/Kconfig"
+
+source "net/Kconfig"
+
+source "fs/Kconfig"
+config OKL4FS
+    bool
+    default y
+ 
+source "drivers/mmc/Kconfig"
+
+menu "Executable file formats"
+
+source "fs/Kconfig.binfmt"
+
+endmenu
+#from arch/i386/Kconfig
+
+menu "Bus options (PCI)"
+
+config PCI
+	bool "PCI support" if !X86_VISWS
+	depends on !X86_VOYAGER
+	default y if X86_VISWS
+	help
+	  Find out whether you have a PCI motherboard. PCI is the name of a
+	  bus system, i.e. the way the CPU talks to the other stuff inside
+	  your box. Other bus systems are ISA, EISA, MicroChannel (MCA) or
+	  VESA. If you have PCI, say Y, otherwise N.
+
+	  The PCI-HOWTO, available from
+	  <http://www.tldp.org/docs.html#howto>, contains valuable
+	  information about which PCI hardware does work under Linux and which
+	  doesn't.
+
+
+source "drivers/pci/Kconfig"
+
+config MCA
+	bool "MCA support"
+	depends on !(X86_VISWS || X86_VOYAGER)
+	help
+	  MicroChannel Architecture is found in some IBM PS/2 machines and
+	  laptops.  It is a bus system similar to PCI or ISA. See
+	  <file:Documentation/mca.txt> (and especially the web page given
+	  there) before attempting to build an MCA bus kernel.
+
+config MCA
+	depends on X86_VOYAGER
+	default y if X86_VOYAGER
+
+source "drivers/mca/Kconfig"
+
+
+endmenu
+
+source "drivers/scsi/Kconfig"
+
+source "drivers/ata/Kconfig"
+
+#source "security/Kconfig"
+
+#source "crypto/Kconfig"
+
+source "lib/Kconfig"
+
+#source "drivers/md/Kconfig"
+
+source "drivers/mtd/Kconfig"
+
+source "drivers/input/Kconfig"
+
+source "drivers/char/Kconfig"
+
+source "drivers/video/Kconfig"
+
+source "drivers/net/Kconfig"
+
+source "drivers/hid/Kconfig"
+
+source "drivers/usb/Kconfig"
+
+source "sound/Kconfig"
+
+source "drivers/i2c/Kconfig"
+
+menu "Kernel hacking"
+
+source "lib/Kconfig.debug"
+
+config EARLY_PRINTK
+	bool "Early printk" if EMBEDDED
+	depends on L4KDB_CONSOLE
+	default n
+	help
+	  Write kernel log output directly to L4 KDB.
+
+endmenu

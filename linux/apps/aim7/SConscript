@@ -1,0 +1,53 @@
+Import("*")
+import os
+
+build_dir = Dir(env.builddir + "/aim7").abspath
+inst_dir = Dir(env.builddir + "/install").abspath
+root_dir = Dir("#").abspath
+aim7_dir = "aim7"
+
+def b(file_name):
+    return os.path.join(build_dir, file_name)
+def i(file_name):
+    return os.path.join(inst_dir, file_name)
+
+env.scons_env["MAKE"] = "make"
+
+aim7_conf = env.Command(b("aim7.cleanup"),
+				[],
+			"cd %s/linux/apps/aim7 && make clean && touch aim7.cleanup" %
+				root_dir)
+
+aim7 = env.Command(b("aim7.built"),
+				[],
+			"cd %s/linux/apps/aim7 && make && touch aim7.built" %
+				root_dir)
+
+aim7_install = []
+bindir = "%s/aim7" % inst_dir
+
+multitask_files = ['add.c','disk1.c','div.c','funcal.c','mul.c',
+	'ram.c','creat-clo.c','disk_src.c','int_fcns.c','num_fcns.c','pipe_test.c',
+	'fillin.c','rand.c','rtmsec.c','multitask.c']
+rpt_files = ['rpt.c']
+
+aim7_install += Install(bindir, "rpt")
+aim7_install += Install(bindir, "multitask")
+aim7_install += Install(bindir, "RUN")
+aim7_install += Install(bindir, "SAVE")
+aim7_install += Install(bindir, "true")
+aim7_install += Install(bindir, "workfile")
+aim7_install += Install(bindir, "aim_1.sh")
+aim7_install += Install(bindir, "aim_2.sh")
+aim7_install += Install(bindir, "aim_3.sh")
+aim7_install += Install(bindir, "fakeh.tar")
+aim7_install += Install(bindir, "config")
+aim7_install += Install(bindir, "slay")
+aim7_install += Install(bindir, "slay.sysv")
+aim7_install += Install(bindir, "input")
+#aim7_install += Install("%s/etc" % inst_dir, "hosts")
+
+env.Depends(aim7, aim7_conf)
+env.Depends(aim7_install, aim7)
+
+Return("aim7_install")

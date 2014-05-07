@@ -1,0 +1,7 @@
+*.a
+*.o
+*.8
+lspci
+setpci
+update-pciids
+pci.ids.gz

@@ -1,0 +1,35 @@
+#!/bin/sh
+cd /ltp
+mkdir /ltp/results
+touch /ltp/results/ltp.log
+
+echo -e "<ltp>"
+
+echo -e "<execute>"
+echo -e "<syscalls>"
+./runltp -p -q -f syscalls_ia32 -l ltp.log
+echo -e "</syscalls>"
+
+echo -e "<ipc>"
+./runltp -p -q -f ipc -l ltp.log
+echo -e "</ipc>"
+
+echo -e "<timers>"
+./runltp -p -q -f timers -l ltp.log
+echo -e "</timers>"
+
+echo -e "<sched>"
+./runltp -p -q -f sched -l ltp.log
+echo -e "</sched>"
+
+#echo -e "<mm>"
+#./runltp -p -q -f mm -l ltp.log
+#echo -e "</mm>"
+echo -e "</execute>"
+
+echo -e "<results>"
+grep FAIL results/ltp.log
+echo -e "</results>"
+
+echo -e "</ltp>"
+

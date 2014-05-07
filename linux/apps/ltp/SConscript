@@ -1,0 +1,379 @@
+import SCons.Errors
+import os.path
+import glob
+Import("*") #extra_linux_apps & ltp_set from projects/iguana/SConstruct
+
+import os
+
+build_dir = Dir(env.builddir + "/ltp").abspath
+inst_dir = Dir(env.builddir + "/install").abspath
+
+LINKFLAGS = []
+
+files = []
+install_files = []
+ltpdir = "%s/ltp" % inst_dir
+bindir = "%s/testcases/bin" % ltpdir
+pandir = "%s/pan" % ltpdir
+rundir = "%s/runtest" % ltpdir
+
+
+lib = env.scons_env.StaticLibrary("ltp", src_glob("lib/*.c"), CPPPATH="include", CCFLAGS=[], CC_WARNINGS=[])[0]
+lib2 = env.scons_env.StaticLibrary("testsuite", src_glob("testcases/kernel/syscalls/lib/*.c"), CPPPATH="include", CCFLAGS=[], CC_WARNINGS=[])[0]
+libipc = env.scons_env.StaticLibrary("ipc", src_glob("testcases/kernel/syscalls/ipc/lib/*.c"), CPPPATH="include", CCFLAGS=[], CC_WARNINGS=[])[0]
+
+#libmm = env.StaticLibrary("mm", src_glob("testcases/kernel/mem/libmm/*.c"), CPPPATH="include")[0]
+
+
+tests = []
+   
+
+##
+## LTP: kernel/syscalls test suite
+##
+
+paths = src_glob("testcases/kernel/syscalls/*")
+paths += src_glob("testcases/kernel/syscalls/ipc/*")
+paths += src_glob("testcases/kernel/sched/*")
+ 
+excepts = ["Makefile", "lib", "libevent", "ipc", "nftw", "clisrv",  "sched_stress", "hyperthreading",  "nptl"] + [ "epoll"]
+
+if env.machine.arch == "ia32":
+    excepts += ['pthreads', 'semaphore']
+
+
+paths = [path for path in paths if
+         os.path.basename(path) not in excepts]
+
+
+for path in paths:
+    tests += src_glob("%s/*.c" % path)
+
+uniq_tests = []
+bns = []
+if env.machine.arch == "ia32":
+    bns = ['sigaction01.c', 'time-schedule.c', 'trace_sched.c']
+
+for test in tests:
+    if os.path.basename(test) not in bns:
+        uniq_tests.append(test)
+        bns.append(os.path.basename(test))
+
+for test in uniq_tests:
+    CPPDEFINES = []
+    if env.machine.arch != "ia32":
+        libs = ["ltp", "testsuite", "pthread", "ipc"]
+    else:
+        libs = ["ltp", "testsuite",  "ipc"]
+
+    if "fcntl" in test:
+        CPPDEFINES = ["_GNU_SOURCE"]
+    prog = env.scons_env.Program(test,
+                                 CPPPATH=["include", "testcases/kernel/syscalls/ipc/lib", "testcases/kernel/include"],
+                                 LIBS=libs,
+                                 CPPDEFINES = CPPDEFINES,
+                                 CCFLAGS=[],
+                                 CC_WARNINGS=[],
+                                 _LINKADDRESS="",
+                                 _LINK="gcc",
+                                 LINKFLAGS=LINKFLAGS,
+                                 LIBPATH=[os.path.dirname(lib.abspath),
+                                          os.path.dirname(lib2.abspath),
+                                          os.path.dirname(libipc.abspath)])
+    files += prog
+    env.scons_env.AddPostAction(prog, "%s $TARGET" % env.toolchain.dict["STRIP"])
+
+install_files += Install(bindir, 'testcases/kernel/syscalls/mount/setuid_test.mode.sh')
+
+src_nftw = []
+src_nftw.append(("nftw01", ["testcases/kernel/syscalls/nftw/" + fn for fn in ["nftw.c", "tools.c", "test_func.c", "test.c", "lib.c"]]))
+src_nftw.append(("nftw6401", ["testcases/kernel/syscalls/nftw/" + fn for fn in ["nftw64.c", "tools64.c", "test_func64.c", "test64.c", "lib64.c"]]))
+
+for name, src in src_nftw:
+    prog = env.scons_env.Program(name, src,
+                                 CPPPATH=["include"],
+                                 LIBS=["ltp"],
+                                 CCFLAGS = ["-ansi", "-O", "-g", "-Wall"],
+                                 CPPDEFINES = ["LINUX", "_XOPEN_SOURCE_EXTENDED",
+                                               "_XOPEN_SOURCE", "_LARGEFILE_SOURCE",
+                                               "_LARGEFILE64_SOURCE"],
+                                 CC_WARNINGS=[],
+                                 _LINKADDRESS="",
+                                 _LINK="gcc",
+                                 LINKFLAGS=LINKFLAGS,
+                                 LIBPATH=[os.path.dirname(lib.abspath),
+                                          os.path.dirname(lib2.abspath),
+                                          os.path.dirname(libipc.abspath)])
+    files += prog
+    env.scons_env.AddPostAction(prog, "%s $TARGET" % env.toolchain.dict["STRIP"])
+
+
+for file_name in ['testcases/kernel/syscalls/syslog/syslog%02d' % x for x in range(1, 11)]:
+    install_files += Install(bindir, file_name)
+
+##
+## LTP: kernel/mm test suite
+##
+
+tests = []
+excepts = []
+
+if env.machine.arch == 'ia32':
+    excepts = ['hugetlb', 'libmm', \
+    'Makefile', 'mtest05', 'mtest06', 'mtest07']
+else:
+    excepts = ['hugetlb', 'libmm', \
+    'Makefile']
+
+for dir in [x for x in src_glob('testcases/kernel/mem/*') if x[21:] not in excepts]:
+    tests += src_glob(dir +'/*.c')
+
+if env.machine.arch != 'ia32':
+    libs = ['ltp', 'pthread']
+else:
+    libs = ['ltp']
+
+for test in tests:
+    prog = env.scons_env.Program(test, 
+		       CPPPATH=['include'], 
+               LIBS=libs, 
+               CCFLAGS=[],
+               CC_WARNINGS=[],
+               _LINKADDRESS="",
+               _LINK="gcc",
+               LINKFLAGS=LINKFLAGS,
+		       LIBPATH=[os.path.dirname(x.abspath) for x in [lib]])
+    env.scons_env.AddPostAction(prog, "%s $TARGET" % env.toolchain.dict["STRIP"])
+    files += prog
+
+
+##
+## LTP: kernel/ipc test suite
+##
+
+tests = []
+excepts = ['ipc_stress', 'Makefile']
+if env.machine.arch == "ia32":
+    excepts += ['semaphore']
+for dir in [x for x in src_glob('testcases/kernel/ipc/*') if x[21:] not in excepts]:
+    tests += src_glob(dir +'/*.c')
+if env.machine.arch != 'ia32':
+    libs = ['ltp', 'pthread']
+else:
+    libs = ['ltp']
+for test in tests:
+    prog = env.scons_env.Program(test, 
+		       CPPPATH=['include'], 
+               LIBS=libs, 
+               CCFLAGS=[],
+               CC_WARNINGS=[],
+               _LINKADDRESS="",
+               _LINK="gcc",
+               LINKFLAGS=LINKFLAGS,
+		       LIBPATH=[os.path.dirname(x.abspath) for x in [lib]])
+    env.scons_env.AddPostAction(prog, "%s $TARGET" % env.toolchain.dict["STRIP"])
+    files += prog
+
+
+##
+## LTP: kernel/timers test suite
+##
+
+tests = []
+for dir in [x for x in src_glob('testcases/kernel/timers/*') if x[24:] not in ['Makefile']]:
+    tests += src_glob(dir +'/*.c')
+
+if env.machine.arch != 'ia32':
+    libs = ['ltp', 'pthread']
+else:
+    libs = ['ltp']
+
+for test in tests:
+    prog = env.scons_env.Program(test, 
+		       CPPPATH=['include', "testcases/kernel/timers/include", "testcases/kernel/include"], 
+               LIBS=libs, 
+               CCFLAGS=[],
+               CC_WARNINGS=[],
+               _LINKADDRESS="",
+               _LINK="gcc",
+               LINKFLAGS=LINKFLAGS,
+		       LIBPATH=[os.path.dirname(x.abspath) for x in [lib]])
+    env.scons_env.AddPostAction(prog, "%s $TARGET" % env.toolchain.dict["STRIP"])
+    files += prog
+
+
+##
+## LTP: crashme test suite
+##
+
+for name in ['testcases/misc/crash/crash01.c', 'testcases/misc/crash/crash02.c', 'testcases/kernel/fs/proc/proc01.c']:
+    prog = env.scons_env.Program(
+               name,
+		       CPPPATH=['include'], 
+               LIBS=['ltp'], 
+               CCFLAGS=[],
+               CC_WARNINGS=[],
+               _LINKADDRESS="",
+               _LINK="gcc",
+               LINKFLAGS=LINKFLAGS,
+		       LIBPATH=[os.path.dirname(x.abspath) for x in [lib]]
+               )
+    env.scons_env.AddPostAction(prog, "%s $TARGET" % env.toolchain.dict["STRIP"])
+    files += prog
+    
+##
+## Open Posix Testsuite signals tests
+##
+
+op_tests = []
+if ltp_set == "pthreads":
+    for op_path in src_glob("testcases/open_posix_testsuite/conformance/interfaces/pthread*"):
+        if os.path.basename(op_path) not in ["pthread_barrierattr_getpshared", 
+            "pthread_barrierattr_init", 
+            "pthread_barrierattr_setpshared",
+            "pthread_cond_broadcast", 
+            "pthread_cond_destroy",
+            "pthread_cond_init",
+            "pthread_cond_signal",
+            "pthread_cond_timedwait",
+            "pthread_cond_wait",
+            "pthread_condattr_getclock",
+            "pthread_condattr_setclock",
+            "pthread_getschedparam",
+            "pthread_mutex_getprioceiling",
+            "pthread_mutexattr_getprioceiling",
+            "pthread_mutexattr_getprotocol",
+            "pthread_mutexattr_setprioceiling",
+            "pthread_mutexattr_setprotocol",
+            "pthread_setschedprio",
+            ]:
+            op_tests += src_glob("%s/*.c" % op_path)
+
+if ltp_set == "signals":
+    for op_path in src_glob("testcases/open_posix_testsuite/conformance/interfaces/sig*"):
+            op_tests += src_glob("%s/*.c" % op_path)
+
+filtered_op_tests = []
+for op_test  in op_tests:
+    if os.path.basename(op_test) not in ["testfrmw.c", "threads_scenarii.c"]:
+        filtered_op_tests += [op_test]
+
+if env.machine.arch != 'ia32':
+    libs = ['rt', 'pthread','m']
+else:
+    libs = ['rt', 'm']
+for test in filtered_op_tests:
+    CPPDEFINES = ["XOPEN_SOURCE=600", "_GNU_SOURCE"]
+    bname = os.path.basename(os.path.dirname(test))
+    prog = env.scons_env.Program("%s_%s"% (bname,os.path.basename(test)[:-2]),
+                                 source=test,
+                                 CPPPATH = ["testcases/open_posix_testsuite/include", "include" ],
+                                 CPPDEFINES = CPPDEFINES,
+                                 LIBS = libs,
+                                 CCFLAGS=[],
+                                 CC_WARNINGS=[],
+                                 _LINKADDRESS="",
+                                 _LINK="gcc",
+                                 LINKFLAGS=LINKFLAGS,
+                                 LIBPATH=[]
+                                 )
+    files += prog
+    env.scons_env.AddPostAction(prog, "%s $TARGET" % env.toolchain.dict["STRIP"])
+
+
+
+##
+## LTP: API commands
+##
+prog = env.scons_env.Program(
+                            'tools/apicmds/ltpapicmd.c',
+                             CPPPATH=['include'], 
+                             LIBS=['ltp'], 
+                             CCFLAGS=[],
+                             CC_WARNINGS=[],
+                             _LINKADDRESS="",
+                             _LINK="gcc",
+                             LINKFLAGS=LINKFLAGS,
+                             LIBPATH=[os.path.dirname(x.abspath) for x in [lib]]
+                             )
+env.scons_env.AddPostAction(prog, "%s $TARGET" % env.toolchain.dict["STRIP"])
+install_files += Install(bindir, prog)
+for dest in ['tst_brk', 'tst_brkm', 'tst_res', 'tst_resm', 'tst_exit', 'tst_flush', 'tst_brkloop', 'tst_brkloopm']:
+    install_files += InstallAs(os.path.join(bindir, dest), prog)
+
+
+
+def first(each):
+    #print "first %s" %(each)
+    #print "...is %s" %(str(each).split(os.sep)[-1][0])
+    return str(each).split(os.sep)[-1][0]
+
+def name(each):
+    return str(each).split(os.sep)[-1]
+
+all_files = files;
+include_files = ['sig_rev', 'creat_link', 'creat_slink']
+
+if ltp_set == "set1":
+    files = [each for each in files if first(each) < "e"]
+elif ltp_set == "set2":
+    files = [each for each in files if first(each) >= "f" and first(each) < "s"]
+elif ltp_set == "set3":
+    files = [each for each in files if first(each) >= "s"]
+elif ltp_set == "signals":
+    files = [each for each in files if first(each) >= "s" and first(each) < "t"]
+elif ltp_set == "pthreads":
+    files = [each for each in files if first(each) >= "p" and first(each) < "q"]
+
+elif ltp_set != "all":
+    raise SCons.Errors.UserError, "ltp must be one of set1, set2, set3 or all"
+
+for each in all_files:
+    if name(each) in include_files:
+        if each not in files:
+            files += [each]
+
+for file in files: install_files += Install(bindir,file)
+
+src_pan = []
+src_pan.append(("pan2", ["pan/" + fn for fn in ["pan.c", "zoolib.c", "splitstr.c"]]))
+
+for name, src in src_pan:
+    if name == "pan2":
+        install_files += InstallAs(pandir + "/pan",
+                             env.scons_env.Program(
+                                         name, 
+                                         src,
+                                         CPPPATH=["include"],
+                                         CCFLAGS=[],
+                                         CC_WARNINGS=[],
+                                         _LINKADDRESS="",
+                                         _LINK="gcc",
+                                         LINKFLAGS=LINKFLAGS,
+                                         )
+                         )
+    else:
+        install_files += Install(pandir,
+                             env.scons_env.Program(name, src,
+                                     CPPPATH=["include"],
+                                     CCFLAGS=[],
+                                     CC_WARNINGS=[],
+                                     _LINKADDRESS="",
+                                     _LINK="gcc",
+                                     LINKFLAGS=LINKFLAGS,
+                                     )
+                         )
+
+install_files += Install(ltpdir, "runltp")
+install_files += Install(ltpdir, "rr")
+install_files += Install(ltpdir, "rri")
+install_files += Install(ltpdir, "runltplite.sh")
+install_files += Install(ltpdir, "IDcheck.sh")
+install_files += Install(ltpdir, "ver_linux")
+#files += Install(ltpdir, "runltplite.sh")
+#files += Install(bindir, "ltp_syscall_test")
+#files += Install(bindir, "ltp_should_pass")
+
+install_files += Install(rundir, src_glob("runtest/*"))
+
+Return("install_files")

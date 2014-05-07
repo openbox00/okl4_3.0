@@ -1,0 +1,30 @@
+# @(#) workfile.compute:1.3 1/22/96 00:00:00
+# Compute Server Mix
+FILESIZE: 100K
+POOLSIZE: 250M
+50  add_double
+30  add_int
+30  add_long
+10  array_rtns
+10  disk_cp
+30  disk_rd
+10  disk_src
+20  disk_wrt
+40  div_double
+30  div_int
+50  matrix_rtns
+40  mem_rtns_1
+40  mem_rtns_2
+50  mul_double
+30  mul_int
+30  mul_long
+40  new_raph
+40  num_rtns_1
+50  page_test
+40  series_1
+10  shared_memory
+30  sieve
+20  stream_pipe
+30  string_rtns
+40  trig_rtns
+20  udp_test

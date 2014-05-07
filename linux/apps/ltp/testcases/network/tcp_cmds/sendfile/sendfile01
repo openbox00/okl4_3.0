@@ -1,0 +1,174 @@
+#!/bin/sh
+#
+#   Copyright (c) International Business Machines  Corp., 2000
+#
+#   This program is free software;  you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation; either version 2 of the License, or
+#   (at your option) any later version.
+#
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY;  without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See
+#   the GNU General Public License for more details.
+#
+#   You should have received a copy of the GNU General Public License
+#   along with this pronram;  if not, write to the Free Software
+#   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+#
+#
+#
+#  FILE   : sendfile
+#
+#  PURPOSE: Copy files from server to client using the sendfile()
+#           function.
+#           
+#
+#  SETUP: The home directory of root on the machine exported as "RHOST"
+#         MUST have a ".rhosts" file with the hostname of the client 
+#         machine, where the test is executed. 
+#
+#  HISTORY:
+#    06/09/2003 Manoj Iyer manjo@mail.utexas.edu
+#    - Modified to use LTP APIs, and added check to if commands used in test
+#    exists.
+#    03/01 Robbie Williamson (robbiew@us.ibm.com)
+#      -Ported
+#
+#
+#***********************************************************************
+#Uncomment line below for debug output.
+#trace_logic=${trace_logic:-"set -x"}
+$trace_logic
+
+this_file=${0##*/}
+
+TC=sendfile01
+RHOST=${RHOST:-`hostname`}
+TCbin=${TCbin:-`pwd`}
+TCsrc=${TCsrc:-$TCbin}
+TCdat=${TCdat:-$TCsrc/datafiles}
+TCtmp=${TCtmp:-$TCsrc/$TC$$}
+CLEANUP=${CLEANUP:-ON}
+EXECUTABLES="testsf_c"
+REMOTE_EXEC="testsf_s"
+LTPROOT=${LTPROOT:-../../../..}
+FILES=${FILES:-"ascii.sm ascii.med ascii.lg ascii.jmb"}
+
+IPADDR=$($LTPROOT/tools/gethost $RHOST | grep addresses: | awk '{print $2}')
+
+
+#-----------------------------------------------------------------------
+#
+# FUNCTION:  exists
+#
+# DESCRIPTION: Check if required commands exits.
+#
+#-----------------------------------------------------------------------
+
+exists()
+{
+   for cmd in $1
+   do
+       which $cmd 2>&1 1>/dev/null
+	   if [ $? -ne 0 ]
+	   then
+	       tst_resm TBROK "Test broke: command $cmd not found"
+		   exit 1
+       fi
+   done
+}
+
+
+#=============================================================================
+# FUNCTION NAME:        do_test
+#
+# FUNCTION DESCRIPTION: Perform the test
+#
+# PARAMETERS:   	None.
+#
+# RETURNS:      	None.
+#=============================================================================
+do_test()
+{
+   $trace_logic
+   tst_resm TINFO "$this_file: doing $0."
+  
+   mkdir -p $TCtmp
+   PORT=$$ 
+   rsh -n -l root $IPADDR "$TCsrc/SF_Server $IPADDR $PORT $TCsrc"
+   sleep 10
+   PID=$(rsh -n -l root $IPADDR "ps -ef "|grep $REMOTE_EXEC | grep $PORT | grep -v grep|awk '{print $2}')
+   [ "$PID" ] || end_testcase "Could not start server"
+
+   for clnt_fname in $FILES
+      do
+	 serv_fname=$TCdat/$clnt_fname
+	 SIZE=`ls -l $serv_fname|awk '{print $5}'`
+	 tst_resm TINFO "Starting $EXECUTABLES $IPADDR Client_filename Server_filename Size "
+  
+	 $TCsrc/$EXECUTABLES $IPADDR $PORT $TCtmp/$clnt_fname $serv_fname $SIZE 
+	 RetVal=$?
+  
+         [ $RetVal -eq 0 ] || end_testcase "$EXECUTABLES returned error $RetVal"
+
+	 diff $serv_fname $TCtmp/$clnt_fname
+	 DiffVal=$?
+	 [ $DiffVal -gt 1 ] && end_testcase "ERROR: Cannot compare files"
+	 [ $DiffVal -eq 1 ] && end_testcase "The file copied differs from the original"
+      done
+}
+
+#=============================================================================
+# FUNCTION NAME:        do_cleanup
+#
+# FUNCTION DESCRIPTION: Clean up
+#
+# PARAMETERS:   	None.
+#
+# RETURNS:      	None.
+#=============================================================================
+
+do_cleanup()
+{
+   $trace_logic
+   PID=$(rsh -n -l root $RHOST "ps -ef|grep \"$REMOTE_EXEC $IPADDR\""| grep $PORT|
+      grep -v grep|grep -v vi|awk '{print $2}')
+   [ "$PID" ] && rsh -n -l root $RHOST kill -9 $PID
+      
+   rm -rf $TCtmp
+}
+
+#=============================================================================
+# FUNCTION NAME:        end_testcase
+# 
+# FUNCTION DESCRIPTION: Clean up
+# 
+# PARAMETERS:           string, IF AND ONLY IF the testcase fails
+# 
+# RETURNS:              None.
+#=============================================================================
+
+end_testcase()
+{  
+   $trace_logic
+   tst_resm TINFO "$this_file: doing $0."
+
+   
+   # Call other cleanup functions
+   [ $CLEANUP = "ON" ] && do_cleanup
+   
+   [ $# -eq 0 ] && { tst_resm TPASS "Test Successful"; exit 0; }
+   tst_resm TFAIL "Test Failed: $@"
+   exit 1
+}
+
+#=============================================================================
+# MAIN PROCEDURE
+#=============================================================================
+export TCID="sendfile01"
+export TST_TOTAL=1
+export TST_COUNT=1
+exists "rsh diff awk grep"
+do_test
+end_testcase

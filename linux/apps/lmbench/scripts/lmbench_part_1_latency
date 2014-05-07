@@ -1,0 +1,102 @@
+#!/bin/sh
+. /lmbench/scripts/lmbench_part_init
+
+date >> ${OUTPUT}
+echo Latency measurements >> ${OUTPUT}
+msleep 250
+if [ X$BENCHMARK_OS = XYES -o X$BENCHMARK_SYSCALL = XYES ]; then
+	lat_syscall -P $SYNC_MAX null
+	lat_syscall -P $SYNC_MAX read
+	lat_syscall -P $SYNC_MAX write
+	lat_syscall -P $SYNC_MAX stat $STAT
+	lat_syscall -P $SYNC_MAX fstat $STAT
+	lat_syscall -P $SYNC_MAX open $STAT
+fi
+if [ X$BENCHMARK_OS = XYES -o X$BENCHMARK_SELECT = XYES ]; then
+	for i in 10 100 250 500
+	do	lat_select -n $i -P $SYNC_MAX file
+	done
+	for i in 10 100 250 500
+	do	lat_select -n $i -P $SYNC_MAX tcp
+	done
+fi
+if [ X$BENCHMARK_OS = XYES -o X$BENCHMARK_SIG = XYES ]; then
+	lat_sig -P $SYNC_MAX install
+	lat_sig -P $SYNC_MAX catch
+	lat_sig -P $SYNC_MAX prot lat_sig
+fi
+if [ X$BENCHMARK_OS = XYES -o X$BENCHMARK_PIPE = XYES ]; then
+	lat_pipe -P $SYNC_MAX 
+fi
+if [ X$BENCHMARK_OS = XYES -o X$BENCHMARK_UNIX = XYES ]; then
+	lat_unix -P $SYNC_MAX
+fi
+if [ X$BENCHMARK_OS = XYES -o X$BENCHMARK_PROC = XYES ]; then
+	cp hello /tmp/hello
+	for i in fork exec shell
+	do	lat_proc -P $SYNC_MAX $i
+	done
+	rm -f /tmp/hello 
+fi
+if [ X$BENCHMARK_HARDWARE = XYES -o X$BENCHMARK_OPS = XYES ]; then
+	lat_ops 
+	par_ops 
+fi
+
+rm -f $FILE
+
+if [ X$BENCHMARK_OS = XYES -o X$BENCHMARK_FILE = XYES ]; then
+	# choose one sample bandwidth from the middle of the pack
+	sample=`expr $SYNC_MAX / 2`
+	i=0
+	while [ $i -lt $SYNC_MAX ]; do
+		if [ $i -eq $sample ]; then 
+			lmdd label="File $FILE write bandwidth: " \
+				of=$FILE move=${MB}m fsync=1 print=3 &
+		else
+			lmdd label="File $FILE write bandwidth: " \
+				of=$FILE.$i move=${MB}m fsync=1 print=3 \
+				>/dev/null 2>&1 &
+		fi
+		i=`expr $i + 1`
+	done
+	wait
+	rm -f $FILE.*
+fi
+
+if [ X$BENCHMARK_OS = XYES -o X$BENCHMARK_PAGEFAULT = XYES ]; then
+	lat_pagefault -P $SYNC_MAX $FILE
+fi
+if [ X$BENCHMARK_OS = XYES -o X$BENCHMARK_MMAP = XYES ]; then
+	echo "" 1>&2
+	echo \"mappings 1>&2
+	for i in $ALL
+	do	lat_mmap -P $SYNC_MAX $i $FILE
+	done
+	echo "" 1>&2
+fi
+if [ X$BENCHMARK_OS = XYES -o X$BENCHMARK_FILE = XYES ]; then
+	if [ X$SLOWFS != XYES ]
+	then	date >> ${OUTPUT}
+		echo Calculating file system latency >> ${OUTPUT}
+		msleep 250
+		echo '"File system latency' 1>&2
+		lat_fs $FSDIR
+		echo "" 1>&2
+	fi
+fi
+
+if [ X$BENCHMARK_HARDWARE = XYES ]; then
+	if [ X"$DISKS" != X ]
+	then	for i in $DISKS
+		do	if [ -r $i ]
+			then	echo "Calculating disk zone bw & seek times" \
+					>> ${OUTPUT}
+				msleep 250
+				disk $i
+				echo "" 1>&2
+			fi
+		done
+	fi
+fi
+

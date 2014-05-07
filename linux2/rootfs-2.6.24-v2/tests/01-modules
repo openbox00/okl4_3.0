@@ -1,0 +1,9 @@
+#!/bin/sh
+
+. $TESTS_DIR/lib/testlib
+
+run_oklinux_test "Loading module nls_utf8... " '/sbin/modprobe nls_utf8'
+run_oklinux_test "Loading module nls_iso8859_1... " '/sbin/modprobe nls_iso8859-1'
+
+run_oklinux_test_pipe "Checking module nls_utf8... "  "/sbin/lsmod" "grep nls_utf8"
+run_oklinux_test_pipe "Checking module nls_iso8859-1... " "/sbin/lsmod" "grep nls_iso8859_1"

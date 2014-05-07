@@ -1,0 +1,53 @@
+#!/bin/sh
+
+run_oklinux_test_pipe()
+{
+    TEXT=$1
+    COMMAND=$2
+    PIPE=$3
+
+    TESTS_TOTAL=`expr $TESTS_TOTAL + 1`
+    echo -n "$TEXT" 1>&2
+    if $COMMAND | $PIPE > /dev/null
+    then
+        echo "OK" 1>&2
+        TESTS_PASSED=`expr $TESTS_PASSED + 1`
+    else
+        echo "Failed!" 1>&2
+        TESTS_FAILED=`expr $TESTS_FAILED + 1`
+    fi
+}
+
+run_oklinux_test()
+{
+    TEXT=$1
+    COMMAND=$2
+
+    TESTS_TOTAL=`expr $TESTS_TOTAL + 1`
+    echo -n "$TEXT" 1>&2
+    if $COMMAND > /dev/null
+    then
+        echo "OK" 1>&2
+        TESTS_PASSED=`expr $TESTS_PASSED + 1`
+    else
+        echo "Failed!" 1>&2
+        TESTS_FAILED=`expr $TESTS_FAILED + 1`
+    fi
+}
+
+run_oklinux_test_quiet()
+{
+    TEXT=$1
+    COMMAND=$2
+
+    TESTS_TOTAL=`expr $TESTS_TOTAL + 1`
+    echo -n "$TEXT" 1>&2
+    if $COMMAND > /dev/null 2>&1
+    then
+        echo "OK" 1>&2
+        TESTS_PASSED=`expr $TESTS_PASSED + 1`
+    else
+        echo "Failed!" 1>&2
+        TESTS_FAILED=`expr $TESTS_FAILED + 1`
+    fi
+}

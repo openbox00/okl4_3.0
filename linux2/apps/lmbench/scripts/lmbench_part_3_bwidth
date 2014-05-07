@@ -1,0 +1,81 @@
+#!/bin/sh
+. /lmbench/scripts/lmbench_part_init
+
+
+date >> ${OUTPUT}
+echo Bandwidth measurements >> ${OUTPUT}
+msleep 250
+
+if [ X$BENCHMARK_OS = XYES -o X$BENCHMARK_UNIX = XYES ]; then
+	bw_unix -P $SYNC_MAX 
+fi
+
+if [ X$BENCHMARK_OS = XYES -o X$BENCHMARK_PIPE = XYES ]; then
+	bw_pipe -P $SYNC_MAX 
+fi
+
+if [ X$BENCHMARK_OS = XYES -o X$BENCHMARK_FILE = XYES ]; then
+	echo "" 1>&2
+	echo \"read bandwidth 1>&2
+	for i in $ALL
+	do	bw_file_rd -P $SYNC_MAX $i io_only $FILE
+	done
+	echo "" 1>&2
+	
+	echo \"read open2close bandwidth 1>&2
+	for i in $ALL
+	do	bw_file_rd -P $SYNC_MAX $i open2close $FILE
+	done
+	echo "" 1>&2
+fi	
+
+if [ X$BENCHMARK_OS = XYES -o X$BENCHMARK_MMAP = XYES ]; then
+	echo "" 1>&2
+	echo \"Mmap read bandwidth 1>&2
+	for i in $ALL
+	do	bw_mmap_rd -P $SYNC_MAX $i mmap_only $FILE
+	done
+	echo "" 1>&2
+
+	echo \"Mmap read open2close bandwidth 1>&2
+	for i in $ALL
+	do	bw_mmap_rd -P $SYNC_MAX $i open2close $FILE
+	done
+	echo "" 1>&2
+	rm -f $FILE
+fi
+
+if [ X$BENCHMARK_OS = XYES -o X$BENCHMARK_HARDWARE = XYES \
+     -o X$BENCHMARK_BCOPY = XYES ]; then
+	echo "" 1>&2
+	echo \"libc bcopy unaligned 1>&2
+	for i in $HALF; do bw_mem -P $SYNC_MAX $i bcopy; done; echo "" 1>&2
+
+	echo \"libc bcopy aligned 1>&2
+	for i in $HALF; do bw_mem -P $SYNC_MAX $i bcopy conflict; done; echo "" 1>&2
+
+	echo "Memory bzero bandwidth" 1>&2
+	for i in $ALL; do bw_mem -P $SYNC_MAX $i bzero; done; echo "" 1>&2
+
+	echo \"unrolled bcopy unaligned 1>&2
+	for i in $HALF; do bw_mem -P $SYNC_MAX $i fcp; done; echo "" 1>&2
+
+	echo \"unrolled partial bcopy unaligned 1>&2
+	for i in $HALF; do bw_mem -P $SYNC_MAX $i cp; done; echo "" 1>&2
+
+	echo "Memory read bandwidth" 1>&2
+	for i in $ALL; do bw_mem -P $SYNC_MAX $i frd; done; echo "" 1>&2
+
+	echo "Memory partial read bandwidth" 1>&2
+	for i in $ALL; do bw_mem -P $SYNC_MAX $i rd; done; echo "" 1>&2
+
+	echo "Memory write bandwidth" 1>&2
+	for i in $ALL; do bw_mem -P $SYNC_MAX $i fwr; done; echo "" 1>&2
+
+	echo "Memory partial write bandwidth" 1>&2
+	for i in $ALL; do bw_mem -P $SYNC_MAX $i wr; done; echo "" 1>&2
+
+	echo "Memory partial read/write bandwidth" 1>&2
+	for i in $ALL; do bw_mem -P $SYNC_MAX $i rdwr; done; echo "" 1>&2
+fi
+

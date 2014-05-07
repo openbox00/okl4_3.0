@@ -1,0 +1,121 @@
+#!/bin/sh
+#
+#   Copyright (c) International Business Machines  Corp., 2000
+#
+#   This program is free software;  you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation; either version 2 of the License, or
+#   (at your option) any later version.
+#
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY;  without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See
+#   the GNU General Public License for more details.
+#
+#   You should have received a copy of the GNU General Public License
+#   along with this pronram;  if not, write to the Free Software
+#   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+#
+#
+#
+#  FILE   : rsh
+#
+#  PURPOSE: To test the basic functionality of the `rsh` command.
+#
+#  SETUP: The home directory of root on the machine exported as "RHOST"
+#         MUST have a ".rhosts" file with the hostname of the machine
+#         where the test is executed. 
+#
+#  HISTORY:
+#    03/01 Robbie Williamson (robbiew@us.ibm.com)
+#      -Ported
+#
+#
+#
+#----------------------------------------------------------------------
+#Uncomment line below for debug output.
+#trace_logic=${trace_logic:-"set -x"}
+$trace_logic
+
+RHOST=${RHOST:-`hostname`}
+SLEEPTIME=${SLEEPTIME:-0}
+NUMLOOPS=${NUMLOOPS:-25}
+
+
+#-----------------------------------------------------------------------
+#
+# FUNCTION:  exists
+#
+#-----------------------------------------------------------------------
+
+exists()
+{
+   for cmd in $1
+   do
+       which $cmd 2>&1 1>/dev/null
+	   if [ $? -ne 0 ]
+	   then
+	       tst_resm TBROK "Test broke: command $cmd not found"
+		   exit 1
+       fi
+   done
+}
+
+#-----------------------------------------------------------------------
+#
+# FUNCTION:  do_test
+#
+#-----------------------------------------------------------------------
+
+do_test()
+{
+   $trace_logic
+
+   COUNT=1
+   while [ $COUNT -le $NUMLOOPS ]
+   do
+      CHECK=$(rsh -n -l root $RHOST "ls -l /etc/hosts | wc -w")
+
+      if [ "$CHECK" -eq 9 ]; then 
+         tst_resm TINFO "rsh Test successful in loop $COUNT"
+      else
+         tst_resm TBROK "FAILED: rsh failed"
+      fi
+      sleep $SLEEPTIME
+      COUNT=$(( $COUNT + 1 ))
+   done
+}
+
+#=============================================================================
+# FUNCTION NAME:        end_testcase
+#
+# FUNCTION DESCRIPADDRTION: Clean up
+#
+# PARAMETERS:           string, IF AND ONLY IF the testcase fails
+#
+# RETURNS:              None.
+#=============================================================================
+
+end_testcase()
+{
+   $trace_logic
+
+   [ $# -eq 0 ] && { tst_resm TPASS "Test Successful"; exit 0; }
+   tst_resm TFAIL "Test Failed: $@"
+   exit 1
+}
+
+#----------------------------------------------------------------------
+# FUNCTION: MAIN
+# PURPOSE:  To invoke the functions to perform the tasks described in
+#           the prologue.
+# INPUT:    None.
+# OUTPUT:   A testcase run log with the results of the execution of this
+#           test.
+#----------------------------------------------------------------------
+export TCID=rsh01
+export TST_TOTAL=1
+export TST_COUNT=1
+exists "rsh wc"
+do_test
+end_testcase

@@ -1,0 +1,36 @@
+Import("*")
+import os
+build_dir = Dir(env.builddir + "/strace").abspath
+inst_dir = Dir(env.builddir + "/install").abspath
+root_dir = Dir("#").abspath
+strace_dir = "strace"
+
+
+def b(file_name):
+    return os.path.join(build_dir, file_name)
+def i(file_name):
+    return os.path.join(inst_dir, file_name)
+
+env.scons_env["MAKE"] = "make"
+
+
+strace_conf = env.Command(b("Makefile"),
+                          [],
+			  "cd %s && DESTDIR=%s %s/linux/apps/%s/configure --host=arm-linux  --prefix=/usr" % (build_dir, inst_dir, root_dir, strace_dir)
+			  )
+
+strace = env.Command(b("strace.built"),
+                      strace_conf,
+                      "cd %s && $MAKE -j %d && touch strace.built" %
+		     (build_dir, GetOption('num_jobs')))
+		     
+strace_install = env.Command(i("usr/bin/strace"),
+                             strace,
+			     "cd %s && DESTDIR=%s $MAKE install" % (build_dir, inst_dir)
+			     )
+
+env.Depends(strace, strace_conf)
+env.Depends(strace_install, strace)
+
+Return("strace_install")
+

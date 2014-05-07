@@ -1,0 +1,14 @@
+# @LICENCE("Open Kernel Labs, Inc.", "2008")@
+
+import os.path
+import glob
+Import("*")
+
+inst_dir = Dir(env.builddir + "/install").abspath
+def i(file_name):
+    return os.path.join(inst_dir, file_name)
+
+files = []
+files += Install(i("disktest"), "disktest.sh")
+
+Return("files")

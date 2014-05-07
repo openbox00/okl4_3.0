@@ -1,0 +1,37 @@
+Import("*")
+import os
+build_dir = Dir(env.builddir + "/gdb").abspath
+inst_dir = Dir(env.builddir + "/install").abspath
+root_dir = Dir("#/").abspath
+gdb_dir = "gdb"
+
+def b(file_name):
+   return os.path.join(build_dir, file_name)
+def i(file_name):
+   return os.path.join(inst_dir, file_name)
+
+env.scons_env["MAKE"] = "make"
+env.scons_env["LDFLAGS"] = "-L%s/usr/lib" % inst_dir
+
+
+gdb_conf = env.Command(b("Makefile"),
+                         [],
+			  "cd %s && LDFLAGS=\"-L%s/usr/lib\" DESTDIR=%s %s/linux/apps/%s/configure --host=arm-linux --prefix=/usr --disable-tui" % (build_dir, inst_dir, inst_dir, root_dir, gdb_dir) 
+			  )
+
+gdb = env.Command(b("gdb/gdb"),
+                    gdb_conf ,
+                     "cd %s && $MAKE -j %d " %
+                     (build_dir, GetOption('num_jobs')))
+
+env.Depends(gdb, gdb_conf)
+
+gdb_install = Install(i("usr/bin/"), b("gdb/gdb"))
+env.Depends(gdb_install, gdb)
+gdb_install += Install(i("usr/bin/"), b("gdb/gdbserver/gdbserver"))
+
+env.Depends(gdb_install, gdb)
+
+gdb_all = [gdb_install, gdb_conf, gdb]
+
+Return("gdb_all")

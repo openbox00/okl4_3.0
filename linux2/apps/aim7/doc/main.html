@@ -1,0 +1,2288 @@
+<HTML>
+
+<!-- Last modified on Wed Nov 28 17:00:34 EST 2001 -->
+
+<HEAD>
+<TITLE>AIM Multiuser Benchmark - Suite VII</TITLE>
+</HEAD>
+
+<BODY>
+<BR>
+<CENTER><B><FONT size="+2">
+AIM Multiuser Benchmark - Suite VII<BR>
+Version 1.1
+</FONT></B></CENTER>
+
+<BR>
+<BR>
+<HR noshade width="75%">
+
+<P>Copyright (c) 1996 - 2001 Caldera International, Inc. All Rights Reserved.
+
+<P>"AIM Benchmark" and "Hot Iron Awards" are trademarks of Caldera
+International, Inc. (Caldera) in the USA and other countries. Caldera allows
+use of "AIM" and "AIM Benchmarks" when presenting performance results, but
+places restrictions on this to promote comparability of results and avoid
+confusion. Results presented using the terms "AIM" and "AIM Benchmark" must be
+obtained with an official version of the benchmark, as designated by Caldera,
+using one of the standard distributed workload mixes. No right or license is
+granted hereunder to use the Caldera trademarks for modified benchmark versions
+or for other purposes without the prior written permission of Caldera.
+
+<P>"UNIX" is a trademark of the <A href="http://www.opengroup.org/">The Open
+Group</A>.
+
+<P>The documentation, consisting of this user guide, is essentially the
+original documentation developed by AIM Technology, lightly edited to remove
+references to no longer relevant restrictions and services.
+<BR>
+<BR>
+<HR noshade width="75%">
+<BR>
+
+<H1>TABLE OF CONTENTS</H1>
+
+<TABLE align=center border=0>
+<TR align=left valign=top>
+<TD><B>CHAPTER 1</B><TD><B><A href="#chapter1">3</A></B>
+<TR align=left valign=top>
+<TD>INTRODUCTION: THE MULTIUSER ENVIRONMENT<TD><A href="#page3">3</A>
+<TR align=left valign=top>
+<TD>THE BENCHMARK MIXES AND TESTS<TD><A href="#page4">4</A>
+<TR align=left valign=top>
+<TD>HOW THE BENCHMARK WORKS: A SYNOPSIS<TD><A href="#page6">6</A>
+<TR align=left valign=top>
+<TD>GLOSSARY<TD><A href="#page7">7</A>
+<TR align=left valign=top>
+<TD>KEY TO SYMBOLS<TD><A href="#page8">8</A>
+<TR align=left valign=top>
+<TD><TD>
+<TR align=left valign=top>
+<TD><TD>
+<TR align=left valign=top>
+<TD><B>CHAPTER 2</B><TD><B><A href="#chapter2">9</A></B>
+<TR align=left valign=top>
+<TD>GETTING STARTED: INSTALLATION AND SET UP (<B>S7setup</B>)<TD><A href="#page9">9</A>
+<TR align=left valign=top>
+<TD>MINIMUM SYSTEM REQUIREMENTS<TD><A href="#page9">9</A>
+<TR align=left valign=top>
+<TD>INSTALLING THE BENCHMARK<TD><A href="#page10">10</A>
+<TR align=left valign=top>
+<TD>SELECTING THE APPROPRIATE MIX<TD><A href="#page12">12</A>
+<TR align=left valign=top>
+<TD>RUNNING THE <B>S7setup</B> SCRIPT<TD><A href="#page13">13</A>
+<TR align=left valign=top>
+<TD>MAKING THE BENCHMARK: <B>make</B><TD><A href="#page18">18</A>
+<TR align=left valign=top>
+<TD>THE <I>config</I> FILE: NAMING DISK DIRECTORIES<TD><A href="#page19">19</A>
+<TR align=left valign=top>
+<TD>THE BENCHMARK'S WORKFILES<TD><A href="#page20">20</A>
+<TR align=left valign=top>
+<TD>FILESIZE AND POOLSIZE PARAMETERS<TD><A href="#page21">21</A>
+<TR align=left valign=top>
+<TD>CREATING A CUSTOM USER MIX<TD><A href="#page23">23</A>
+<TR align=left valign=top>
+<TD>ADDING CUSTOM TESTS: C LANGUAGE AND SHELL SCRIPTS<TD><A href="#page24">24</A>
+<TR align=left valign=top>
+<TD><TD>
+<TR align=left valign=top>
+<TD><TD>
+<TR align=left valign=top>
+<TD><B>CHAPTER 3</B><TD><B><A href="#chapter3">26</B>
+<TR align=left valign=top>
+<TD>STARTING THE BENCHMARK:<TD>
+<TR align=left valign=top>
+<TD>RUNNING THE <B>multitask</B> PROGRAM<TD><A href="#page26">26</A>
+<TR align=left valign=top>
+<TD>COMMAND LINE OPTION<TD><A href="#page29">29</A>
+<TR align=left valign=top>
+<TD>STOPPING THE BENCHMARK<TD><A href="#page31">31</A>
+<TR align=left valign=top>
+<TD>PREMATURE TERMINATION OF THE BENCHMARK<TD><A href="#page32">32</A>
+<TR align=left valign=top>
+<TD><TD>
+<TR align=left valign=top>
+<TD><TD>
+<TR align=left valign=top>
+<TD><B>CHAPTER 4</B><TD><B><A href="#chapter4">35</A></B>
+<TR align=left valign=top>
+<TD>BENCHMARK RESULTS<TD><A href="#page35">35</A>
+<TR align=left valign=top>
+<TD>THE BENCHMARK'S OUTPUT FILES<TD><A href="#page35">35</A>
+<TR align=left valign=top>
+<TD>SPREADSHEET OUTPUT FILE: <I>suite7.ss</I><TD><A href="#page35">35</A>
+<TR align=left valign=top>
+<TD>DETAILED OUTPUT FILE: <I>logfile.suite7</I><TD><A href="#page36">36</A>
+<TR align=left valign=top>
+<TD>GENERATING REPORTS: <B>rpt</B><TD><A href="#page36">36</A>
+<TR align=left valign=top>
+<TD>EVALUATING BENCHMARK RESULTS<TD><A href="#page39">39</A>
+<TR align=left valign=top>
+<TD><TD>
+<TR align=left valign=top>
+<TD><TD>
+<TR align=left valign=top>
+<TD><B>APPENDIXES</B><TD><B><A href="#appendixes">40</A></B>
+<TR align=left valign=top>
+<TD>THE BENCHMARK'S TESTS<TD><A href="#page40">40</A>
+<TR align=left valign=top>
+<TD>CALCULATING THE MIX<TD><A href="#page43">43</A>
+<TR align=left valign=top>
+<TD>AIM MULTIUSER BENCHMARK FILES<TD><A href="#page45">45</A>
+<TR align=left valign=top>
+<TD>AIM MULTIUSER BENCHMARK MIXES<TD><A href="#page47">47</A>
+<TR align=left valign=top>
+<TD>MULTIUSER/SHARED SYSTEM MIX: workfile.shared<TD><A href="#page47">47</A>
+<TR align=left valign=top>
+<TD>COMPUTE SERVER MIX: workfile.compute<TD><A href="#page49">49</A>
+<TR align=left valign=top>
+<TD>LARGE DATABASE MIX: workfile.dbase<TD><A href="#page50">50</A>
+<TR align=left valign=top>
+<TD>FILE SERVER MIX: workfile.fserver<TD><A href="#page51">51</A>
+</TABLE>
+<BR>
+<BR>
+<HR noshade width="75%">
+
+<A name="page3"></A>
+
+<A name="chapter1"></A>
+
+<H1>CHAPTER 1</H1>
+<H2>INTRODUCTION: THE MULTIUSER ENVIRONMENT</H2>
+
+<P>The AIM Multiuser Benchmark - Suite VII tests and measures the
+performance of Open System multiuser computers. Multiuser computer
+environments typically have the following general characteristics in common:
+<BR><BR>
+<UL>
+<LI>A large number of tasks are run concurrently
+<LI>Disk storage increases dramatically as the number of users increase.
+<LI>Complex numerically intense applications are performed infrequently
+<LI>An important amount of time is spent sorting and searching through large
+  amounts of data.
+<LI>After data is used it is placed back on disk because it is a shared
+  resource.
+<LI>A large amount of time is spent in common runtime libraries.
+</UL>
+
+<P>Multiuser systems are commonly used to support the following types of user
+environments:
+<BR><BR>
+<UL>
+<LI>Multiuser/shared system environment performing office automation, word
+  processing, spreadsheet, email, database, payroll, and data processing.
+<LI>Compute server environment that uses an extremely large quantity of data,
+  performs large quantities of floating point calculations, and large amounts
+  of Interprocess Communications (IPC) for graphics.
+<LI>Large database environment with a lot of disk I/O, data in memory, and IPC
+  via shared memory.
+<LI>File server environment with a heavy concentration of integer compute file 
+  system operations.
+</UL>
+
+<P>Included in the distribution are four preconfigured standard mixtures of
+tests or "mixes" to represent the above mentioned multiuser system environments.
+If none of the standard mixes mirrors your environment, you can create a
+"custom user mix" that more closely models your application mix.
+
+<A name="page4"></A>
+
+<P>AIM Technology previously used the results from the multiuser benchmark
+Suite VII and the AIM Independent Resource Benchmark - Suite IX to generate
+Certified Multiuser Reports (CMR). These reports identified the
+performance results of the benchmarks, including System Throughput, Peak
+Performance, and Sustained Performance. The ability to generate benchmark
+reports remains, but the certification service is no longer available.
+
+<P>The following section introduces you to the benchmark's standard mixes.
+
+<H2>THE BENCHMARK MIXES AND TESTS</H2>
+
+<P>The AIM Multiuser Benchmark - Suite VII includes 55 basic tests that are
+combined in preconfigured standard mixes to model common multiuser Open
+System environments.
+
+<P>The AIM Benchmarks employ a benchmarking technique called "Load/Mix
+Modeling." Load Mix/Modeling is very simple in concept. Each AIM Benchmark
+contains a wide range of subtests. Each subtest generates a specific type of
+"load," such as integer multiply or a specific type of file operation.
+Furthermore, there are facilities to add additional subtests (or actual
+applications) to work the system in any way deemed important for the users'
+evaluation. Taken together, these tests stress the entire range of system
+capabilities. To simulate a given application environment, a "load mix" is
+created which specifies exactly which subtests are to be used and in what
+proportions.
+
+<P>"Load/Mix modeling" is analogous to cooking. Given a fully stocked pantry
+(which corresponds to the selection of subtests) along with the ability to fill
+any additional needs (the ability to add subtests), and a recipe (the load mix),
+a skilled cook can prepare any dish.
+
+<P>The results are accurate system benchmarks that allow users to perform
+"apples to apples" comparisons over a broad range of dissimilar hardware
+platforms.
+
+<P>The preconfigured standard mixes for multiuser Open System environments are:
+<BR><BR>
+<A name="page5"></A>
+
+<UL>
+<LI>Multiuser/Shared System mix
+<LI>Compute Server mix
+<LI>Large Database mix
+<LI>File Server mix
+</UL>
+<P>These standard mixes were developed by AIM as representative workloads
+for multiuser Open Systems in these environments. Each standard mix
+consists of multiple tests that exercise many basic functions of the multiuser
+system under test, including system resources such as CPU, library routines,
+storage subsystems (disk drives), and I/O subsystems, the latest optimizing
+compilers and operating system technologies, and all levels of memory,
+including caches and buffers. The tests are designed to minimize distorted
+results caused by some optimizing compilers which otherwise reduce simple
+tests to machine code not representative of the original test objective.
+
+<P>You can use the benchmark's standard mixes or create your own custom user
+mix by
+<BR><BR>
+<UL>
+<LI>Changing the standard mix to more closely model the applications that will run on the test system
+<LI>Adding custom C language tests
+<LI>Adding custom shell scripts
+</UL>
+
+<P>See CREATING A CUSTOM USER MIX on page <A href="#page23">23</A> for more
+detail.
+
+<P>If a standard mix contains individual tests that do not apply to your
+environment, you can create a custom user mix that excludes those tests. This
+feature gives you the ability to simulate the applications that will be used on
+the test system. For example, if the system under test is primarily used for a
+database application, you would most likely increase the weight of the
+benchmark's disk tests and eliminate the floating point tests. Each of the
+benchmark's standard mixes is described later in this manual.
+
+<P>You can also create a custom user mix by adding custom C language tests and
+shell scripts. This feature allows you to identify additional tests that are
+critical to your operation and include those tests in the benchmark run. When
+this feature is used, the benchmark will report the results for the tests that
+you have added in the same manner as it reports the results for its native
+tests.
+
+<A name="page6"></A>
+
+<P>When systems are tested with the same mix, the benchmark results allow easy
+comparison of the systems, and make the computer selection process fast and
+efficient.
+
+<H2>HOW THE BENCHMARK WORKS: A SYNOPSIS</H2>
+
+<P>Before the benchmark is run, decide which standard mix applies to your
+environment, or create a custom user mix. When you have selected or created
+a mix, run the setup script, <B>S7setup</B>. Accept the script's defaults for
+variables (for example, compiler options), or enter new values. When you have
+responded to all of the script's queries, enter "<TT><B>make</B></TT>" to
+complete the benchmark setup (make creates a binary and a shell script).
+
+<P>Run the <B>multitask</B> program and answer prompts to start the benchmark.
+The benchmark
+<BR><BR>
+<UL>
+<LI>Examines the selected mix.
+
+<LI>Uses the tests listed in the mix to exercise subsystems.
+
+<LI>Displays test results on your workstation screen and stores these results
+in <I>suite7.ss</I>.
+</UL>
+
+<P>The benchmark runs until it reaches the user-specified maximum number of
+operation loads or the system "crossover" (that is, when the number of
+operation loads meets or exceeds the number of jobs processed per minute).
+
+<P>To review the test results, examine <I>suite7.ss</I>; use <B>rpt</B> to
+generate reports. If desired, rerun <B>S7setup</B> and recompile the benchmark
+to use different compiler options or after reconfiguring the system under test.
+</BODY>
+
+<A name="page7"></A>
+
+<H2>GLOSSARY</H2>
+
+<P><B>benchmark</B> - A program that tests how computer systems perform.
+
+<P><B>crossover</B> - When the number of operation loads meets or exceeds the
+number of jobs processed per minute. Indicates the multitasking operation load
+where the system's performance could become unacceptable (that is, less than 1
+job/minute/operation load).
+
+<P><B>job</B> - One complete workfile. For Suite VI and VII, this is 100 tests.
+Composed of multiple tests. Same as task.
+
+<P><B>load</B> - One complete job. At a load of 5, there are 5 concurrent jobs
+running on the system. Dealing with multitasking capability of machine.
+
+<P><B>Makefile</B> - Contains instructions and rules to the compiler and linker
+regarding how to build the benchmark executable program from the source files.
+
+<P><B>mixes</B> - Different combinations of tests for applications, system
+resources, and operation loads that assign weights or values to each test to 
+simulate specific types of environments.
+
+<P><B>multitask program</B> - Executable program for the AIM Multiuser
+Benchmark - Suite VII.
+
+<P><B>operation</B> - One subset of a test. For example, in the add_int test,
+an operation would be one integer addition.
+
+<P><B>operation load</B> - Load that a simulated application places on the
+test system.
+
+<P><B>PostScript</B> - A page-description language which uses text to describe
+graphical images.
+
+<P><B>process</B> - Any program that runs on a UNIX system is a process.
+
+<P><B>rpt</B> - Executable program that generates a PostScript report from the
+benchmark results (<I>suite7.ss</I>).
+
+<P><B>S7setup script</B> - Bourne shell script program that guides users
+through the steps required to gather the target Open System information needed
+to set up the test environment and build the benchmark.
+
+<P><B>shell script</B> - File containing a sequence of UNIX commands to be
+executed when the name of the file is typed on the command line.
+
+<A name="page8"></A>
+
+<P><B>system resources</B> - System resources include: ram, disk storage, I/O
+subsystems, and CPUs.
+
+<P><B>task</B> - Same as job.
+
+<P><B>test</B> - One functional analysis. An example would be add_int. Composed
+of multiple operations. Add_int may have 10<SUP>6</SUP> inter operations.
+
+<P><B>test environment</B> - The functions, applications, and system resources
+that the benchmark exercises on a system to test performance.
+
+<H2>KEY TO SYMBOLS</H2>
+
+<TABLE align=center border=0>
+<TR align=left valign=top>
+<TD>SYMBOL<TD>DEFINITION
+<TR align=left valign=top><TD><TD>
+<TR align=left valign=top>
+<TD>$<TD>system prompt
+<TR align=left valign=top><TD><TD>
+<TR align=left valign=top>
+<TD>#<TD>system prompt when logged on as <TT>root</TT>
+<TR align=left valign=top><TD><TD>
+<TR align=left valign=top>
+<TD>&lt;&gt;<TD>required parameters
+<TR align=left valign=top><TD><TD>
+<TR align=left valign=top>
+<TD>[]<TD>default value or range of legal values
+<TR align=left valign=top><TD><TD>
+<TR align=left valign=top>
+<TD><B>boldface</B><TD>script names or program names
+<TR align=left valign=top><TD><TD>
+<TR align=left valign=top>
+<TD><I>italics</I><TD>system prompts, file names, or directory names
+<TR align=left valign=top><TD><TD>
+<TR align=left valign=top>
+<TD><TT><B>boldface, courier</B></TT><TD>user input
+<TR align=left valign=top><TD><TD>
+<TR align=left valign=top>
+<TD><TT>root</TT><TD>root or superuser
+</TABLE>
+<BR><BR>
+<HR noshade width="75%">
+
+<A name="page9"></A>
+
+<A name="chapter2"></A>
+
+<H1>CHAPTER 2</H1>
+
+<H2>GETTING STARTED: INSTALLATION AND SET UP (S7setup)</H2>
+
+<P>The following steps summarize the installation and set up procedure for the
+benchmark:
+<BR><BR>
+<OL type="1">
+<LI>Unpack the compressed <B>tar</B> archive containing the benchmark.
+<LI>Select the appropriate mix for your environment.
+<LI>Run <B>S7setup</B> as <TT>root</TT> and supply configuration information.
+At the end of the run the script asks you to enter <B>make</B>. This command
+creates a binary and a shell script.
+</OL>
+
+<H2>MINIMUM SYSTEM REQUIREMENTS</H2>
+
+<P>This benchmark will compile and run on most POSIX-compliant UNIX systems.
+All source code is in ANSI C. To assure its portability, the program uses
+standard system calls.
+
+<P>Make sure your swap file is large enough. A small swap file will severely
+affect your system performance, particularly when the system is saturated by
+work load. Most factory default recommendations are too small for a successful
+benchmark run. It is recommended your swap file size be at least double your
+physical memory size.
+
+<P>Semaphores are critical kernel resources needed in our benchmark's IPC tests.
+Depending on the system configuration, you should increase the semaphore
+parameters accordingly. The most optimal semaphore parameters for the
+benchmarks are dependent on the operating system, configuration, and benchmark
+mix, and can best be determined by trial and error.
+
+<P>It is recommended that you run the benchmark with a X-window or shell tool
+and leave the console untouched. The window processes will take up some
+
+<A name="page10"></A>
+
+system resources, but the performance impact is minimal and the window will
+be extremely helpful if you need to stop the benchmark before it finishes.
+
+<P>Each test system must meet the following minimum requirements:
+<BR><BR>
+<UL>
+<LI>POSIX compliant system or any version thereof.
+<LI><B>make</B> utility.
+<LI>ANSI C compiler.
+<LI>Bourne shell, usually <I>/bin/sh</I>.
+<LI>A POSIX-compliant implementation of <B>tar</B>. The <B>zcat</B> or
+  <B>gzip</B> commands are also needed.
+<LI>System V or BSD IPC facilities, including shared memory, semaphores,
+sockets, and pipes.
+<LI>Unloaded system. Users, daemons, cron, and background processes all affect
+system performance.
+<LI>Enough disk space to create necessary temporary files for disk tests. The
+amount of space varies depending on the mix you use, the processor power,
+memory configuration, and other operating system requirements. See pages
+<A href="#page21">21</A> and <A href="#page32">32</A>.
+</UL>
+
+<H2>INSTALLING THE BENCHMARK</H2>
+
+<P>With this distribution, Caldera is making available, under the GPL, formerly
+proprietary technology developed by AIM Technology, Inc. Please refer to the
+beginning of this document for additional restrictions applying when presenting
+results.
+
+<P>Starting with the open source release of this benchmark, AIM Suite VII is
+provided only as a compressed <B>tar</B> archive. To unpack it
+<BR>
+<BLOCKQUOTE>
+$ <TT><B>zcat s7110.tar.Z | tar xf -</B></TT><BR>
+$ <TT><B>cd s7110</B></TT>
+<BR>
+</BLOCKQUOTE>
+
+<P>On GNU based systems, use <TT><B>gzip -cd</B></TT> instead of
+<TT><B>zcat</B></TT>
+
+<A name="page12"></A>
+
+<H2>SELECTING THE APPROPRIATE MIX</H2>
+
+<P>The benchmark includes four standard mixes that model four multiuser
+environments. Each standard mix is a workfile that contains a list of tests and
+the weight attached to each test (that is, the importance or value of the
+test). A test with a higher weight (for example, 1000) will run more frequently
+than a test with a lower weight (for example, 50). See the CALCULATING THE MIX
+appendix on page <A href="#page43">43</A> for more information about this
+feature.
+<BR>
+<BR>
+<TABLE align=center border=1>
+<TR align=center>
+<TH align=center>Type<TH align=center>Functions<TH align=center>Tests
+<TR align=left valign=top>
+<TD>Primary Mix<TD>Multiuser/Shared System<TD>Small memory/user (assume lots
+of concurrent users), heavy tasking, medium
+integer, light fp, medium file I/O, light
+sync file I/O, light/medium IPC, lots of
+shell routines, string routines, misc routines
+<TR align=left valign=top>
+<TD rowspan=3>Secondary Mixes<TD>Compute Server<TD>Small number of large
+compute tasks with I/O, heavy memory, heavy fp, heavy integer,
+heavy file I/O, medium IPC, algorithmic tests
+<TR align=left valign=top>
+<TD>Large Database<TD>Small number heavy I/O jobs, light
+memory, light integer, heavy file I/O,
+heavy sync file I/O, string routines
+<TR align=left valign=top>
+<TD>File Server<TD>Enough tasks to saturate system, heavy
+sync I/O, heavy async I/O, heavy IPC, nothing else
+</TABLE>
+
+<P>Each standard mix is described in detail in the AIM MULTIUSER BENCHMARK
+MIXES appendix on page <A href="#page47">47</A>.
+
+<P>When you run the <B>S7setup</B> script, the script will ask you which mix
+you want to use. If none of the standard mixes match your test environment, you
+can create your own custom user mix by copying a standard mix and deleting
+existing tests and/or adding custom tests (C language or shell scripts). See
+the following sections for instructions: THE BENCHMARK'S WORKFILES on page
+<A href="#page20">20</A>, RUNNING THE S7setup SCRIPT on page
+<A href="#page13">13</A>, and ADDING CUSTOM TESTS: C LANGUAGE AND SHELL SCRIPTS
+on page <A href="#page24">24</A>.
+
+<A name="page13"></A>
+
+<H2>RUNNING THE S7setup SCRIPT</H2>
+
+<P>The <B>S7setup</B> script used to set up the benchmark requires the
+following information:
+<BR>
+<BR>
+<TABLE align=center border=1>
+<TR align=center>
+<TH align=center>Variable<TH align=center>Description
+<TR align=left valign=top>
+<TD>Mix<TD>Select a preconfigured mix or enter the name of the file that
+contains your custom user mix.
+<TR align=left valign=top>
+<TD>Compiler<TD>Name of compiler executable. You must set $PATH to find
+this executable and all associated files.
+<TR align=left valign=top>
+<TD>Compiler options<TD>Enter the compiler options used to optimize code
+generation. Additionally, because the benchmark is written using ANSI
+and POSIX compliant code, you must invoke the appropriate
+compiler options (for example, -ansi -xpg3plus) for a given
+compiler.
+<TR align=left valign=top>
+<TD>Linker options<TD>The benchmark must link the networking libraries for
+the interprocess communication tests. On some machines the
+user must specify -lsocket and possibly -lnsl. If a platform
+requires links to special libraries (for example, -lmalloc) or
+more specific linking options, use this option to name the
+libraries.
+<TR align=left valign=top>
+<TD>Bourne shell<TD>Identify location of Bourne shell executable (usually
+<I>/bin/sh</I>).
+<TR align=left valign=top>
+<TD>Mount point for each configured disk drive
+<TD>If the system is configured with more than one disk drive,
+you can set up the benchmark to use multiple drives. The
+benchmark will create temporary files on each drive that you
+identify. For more information see THE config FILE: NAMING DISK DIRECTORIES
+section on page <A href="#page19">19</A>.
+</TABLE>
+
+<P>To start the script, run <B>S7setup</B> as <TT>root</TT>. Enter
+<B>S7setup</B> at the system prompt and press RETURN:
+<BR>
+<BR>
+<BLOCKQUOTE># <TT><B>S7setup</B></TT></BLOCKQUOTE>
+
+<A name="page14"></A>
+
+<P>The following is a transcript of a S7setup run:
+<BR>
+<BR>
+<CENTER><B>-BEGINNING OF TRANSCRIPT-</B></CENTER>
+<BR>
+<BR>
+<PRE>
+
+             AIM Multiuser Benchmark - Suite VII S7setup
+        Copyright (c) 1996 - 2001 Caldera International, Inc.
+                       All Rights Reserved.
+
+
+------------
+INTRODUCTION
+------------
+
+This script guides you through the steps needed to tailor the AIM Multiuser
+Benchmark - Suite IV to your environment. It will ask you a series of questions
+to identify the components of the System Under Test (SUT). As each question is
+displayed on the screen, you can accept the default value that is enclosed
+in brackets (e.g. [default_value] ), or enter the correct value. At any
+point during the execution of this script, you may type Q to terminate it.
+
+CAUTION: This script will NOT automatically set up the correct environment
+to run the benchmark. It is important that you provide the correct
+information for the computer and operating system that are being benchmarked.
+Verify and edit the Makefile as required before running the benchmark.
+
+
+Press RETURN to continue, press Q to exit ...
+
+
+You will be asked to provide the following information about the system
+to be tested:
+
+        1) Benchmark mix
+
+        2) Your compiler name
+
+        3) The compiler options to be used
+
+        4) The linker options to be used
+
+        5) The location of the Bourne shell executable
+
+        6) The mount point for each configured disk drive, 
+           if the SUT is configured with more than one drive
+
+If you do not know or are unsure about any of the items mentioned above,
+press Q to terminate this installation script.  Check with your System
+Administrator or consult the SUT manuals for the correct information.
+
+
+Press RETURN to continue, press Q to exit ...
+</PRE>
+
+<A name="page15"></A>
+
+<PRE>
+
+
+-------------
+BENCHMARK MIX
+-------------
+
+Which mix do you wish to run?
+
+          1) Multiuser/Shared System
+          2) Compute Server
+          3) Large Database
+          4) File Server
+          5) Custom User Mix
+
+If you do not know, type Q to exit and find the correct answer.
+
+Enter benchmark mix (1, 2, 3, 4, 5 or Q) [] :1
+
+
+----------
+ COMPILER 
+----------
+
+Enter the name of the C compiler you wish to use for this run.
+
+   Please use BOTH upper and lower case, exactly as required by your
+   compiler.
+
+Enter compiler name [cc] :gcc
+
+
+----------------
+COMPILER OPTIONS
+----------------
+
+Enter any compiler options that you want to use for gcc.  Some examples
+of valid entries are listed below:
+
+       "-O" to optimize code produced by "pcc" based compilers
+       "-OP" to do peephole optimization with the Pyramid OSx compiler
+       "-O -f68881" for optimization and floating point for Sun-3's
+
+Please note that this benchmark is written in Ansi C and is POSIX
+compliant.  Some compilers have special flags for these options.
+
+   Please use BOTH upper and lower case, exactly as required by your 
+   compiler.
+
+   You may type Q to exit and look up the correct answer.
+
+Enter compiler options [-O] :-O -m486 -ffloat-store
+</PRE>
+
+<A name="page16"></A>
+
+<PRE>
+
+
+--------------
+LINKER OPTIONS
+--------------
+
+Are there any linker options that you should identify for the benchmark?
+For information on the linker, refer to the Programmer's Reference Manual
+for your system.  You might identify a non-standard location of a library
+or system specific libraries that are needed to build the benchmark.
+For example, enter "-Wl,L/usr/local/lib" to search for libraries in
+a "/usr/local/lib" directory.
+
+Note that the benchmark requires that networking routines such as 'socket()'
+be available.  On some machines, an additional library such as -lsocket
+will need to be specified.  Check with your System Administrator or
+consult your System manuals.
+
+   Again, use BOTH upper and lower case, exactly as required by your
+   compiler.
+
+   You may type Q to exit and look up the correct answer.
+
+Enter linker options [] :
+
+
+------------
+BOURNE SHELL
+------------
+
+You must specify the location of the Bourne shell executable on your
+system. 'sh' is usually found in /bin.  However, this may vary from
+system to system.  Check with your System Administrator or consult
+your System manuals.
+Enter the path to 'sh' [/bin] :
+
+
+----
+DISK
+----
+
+A multiuser system is greatly affected by the performance of its I/O
+subsystems. Your disk subsystem has a big impact on the benchmark results.
+
+Generally, the more drives and controllers you have, the better your I/O
+throughput will be. If you have configured your system with multiple disk
+drives and would like the benchmark to use them to exercise your system, you
+must list them in the "config" file.
+</PRE>
+
+<A name="page17"></A>
+
+<PRE>
+
+For each installed drive that you would like the benchmark to use, enter a line
+giving its mount point like the following example:
+
+        /disk1
+
+Currently the benchmark can directly exercise up to 256 drives. If you are
+ready, you may edit the "config" file now. The "config" file can be updated
+anytime prior to starting the benchmark.
+
+
+Currently, the config file contains:
+------------------------------------
+#Disk directories to exercise:
+------------------------------------
+
+Do you want to edit the "config" file now (y/n) ? [y] : n
+
+Creating "Makefile" ... 
+completed.
+
+
+The file "Makefile" has been created.
+
+Enter "make" to build AIM Multiuser Benchmark - Suite VII.
+
+Type "multitask" to run AIM Multiuser Benchmark - Suite VII.
+
+If there are any problems, you can either run this configuration script
+again or edit the "Makefile" directly.
+</PRE>
+<BR>
+<CENTER><B>-END OF TRANSCRIPT-</B></CENTER>
+
+<A name="page18"></A>
+
+<H2>MAKING THE BENCHMARK: make</H2>
+
+<P>Once <B>S7setup</B> is run, a Makefile exists and the software is ready for
+compilation. To compile the software and generate the <B>multitask</B>
+executable, type the following:
+<BR><BR>
+<BLOCKQUOTE>$ <TT><B>make</B></TT></BLOCKQUOTE>
+
+<P>Once the <B>make</B> completes successfully, you are ready to run the
+benchmark.
+<BR><BR>
+<TABLE align=center border=0>
+<TR align=left valign=top>
+<TD>NOTES:
+<TD>If you have trouble compiling, make sure you are specifying any
+options your compiler may need for POSIX code (for example,
+<B>-xpg3plus</B> with the SCO compiler).
+
+<P>If the compilation of the benchmark is failing because your system
+does not have the <B>ulimit()</B> routine and cannot find <I>ulimit.h</I>,
+supply <B>-DNO_ULIMIT</B> as a compile option during <B>S7setup</B>.
+
+<P>If the compilation of the benchmark is failing because your system
+does not have the <B>socketpair()</B> routine, supply
+<B>-DNO_SOCKETPAIR</B> as a compile option during <B>S7setup</B>.
+</TABLE>
+
+<A name="page19"></A>
+
+<H2>THE <I>config</I> FILE: NAMING DISK DIRECTORIES</H2>
+
+<P>The benchmark exercises a disk by reading from and writing to temporary
+files that it creates on that disk. The <I>config</I> file stores the names of
+the disk directories. <B>S7setup</B> asks you if you want to edit this file.
+<BR><BR>
+<UL>
+<LI>If you enter 'y' at the "Do you want to edit the "config" file now?" prompt,
+<B>S7setup</B> brings up the <I>config</I> file in <B>vi</B> so that you can
+add and delete disk directories, write out the file, and continue with
+<B>S7setup</B>.
+<BR><BR>
+<LI>If you enter `n', the contents of the <I>config</I> file remain unchanged.
+</UL>
+
+<P>The format of the file consists of any number of lines, each containing the
+name of a single directory to be used by the benchmark. Let's look at an
+example:
+<BR><BR>
+<BLOCKQUOTE><TT>
+#Disk directories to exercise:<BR>
+/diskl<BR>
+/disk2</TT>
+</BLOCKQUOTE>
+
+<P>These entries tell the benchmark to create its temporary files in
+<TT>/disk1</TT> and <TT>/disk2</TT> during the disk tests. If you want to
+generate temp files in the current directory, enter <TT>./</TT> in the
+<I>config</I> file.
+
+If <B>S7setup</B> runs to completion and you decide that you want to change the
+contents of the <I>config</I> file, use a text editor to update the
+<I>config</I> file before you start the benchmark.
+
+<P>NOTE: A blank line added to the Suite VII <I>config</I> file can cause the
+benchmark to write its temp files to the root directory, <TT>/</TT>. If the
+intention is to have the benchmark use the default directory, make sure there
+are no blank lines or other characters after the comment line.
+
+<A name="page20"></A>
+
+<H2>THE BENCHMARK'S WORKFILES</H2>
+
+When you run <B>S7setup</B>, you select the standard mix or custom user mix
+that the benchmark will use. There is a "workfile" associated with each
+standard mix:
+<BR><BR>
+<TABLE align=center border=1>
+<TR align=center>
+<TH>Standard Mix<TH>Mix Workfile
+<TR align=left>
+<TD>Multiuser/Shared System Mix<TD>workfile.shared
+<TR align=left>
+<TD>Compute Server Mix<TD>workfile.compute
+<TR align=left>
+<TD>Large Database Mix<TD>workfile.dbase
+<TR align=left>
+<TD>File Server Mix<TD>workfile.fserver
+</TABLE>
+
+<P><B>S7setup</B> uses the contents of the mix workfile that you select, for
+example, <I>workfile.compute</I>, to create the workfile that the
+<B>multitask</B> program uses when it runs the benchmark.
+
+<A name="page21"></A>
+
+<H2>FILESIZE AND POOLSIZE PARAMETERS</H2>
+
+<P>The benchmark creates temporary files for its disk tests. Each mix uses
+temporary files of a specific size to model a specific computing environment.
+The size of these temporary files is controlled by the FILESIZE and
+POOLSIZE parameters in the mix workfile, for example, <I>workfile.shared</I>.
+The temporary files are created in the directories named in the <I>config</I>
+file.
+
+<P>To change the FILESIZE or POOLSIZE parameters, edit the entries in the
+mix Workfile (if you are using a custom user mix, edit the appropriate file).
+The format for these entries is as follows:
+<BR><BR>
+<BLOCKQUOTE>
+FILESIZE: &lt;temporary file size&gt;<BR>
+POOLSIZE: &lt;temporary disk pool size&gt;
+</BLOCKQUOTE>
+
+<P>There must be a space between the FILESIZE: and POOLSIZE: keywords
+and the size value. You must specify an integer value in kbytes or megabytes
+(k or K and m or M), for example:
+<BR><BR>
+<BLOCKQUOTE><TT>
+FILESIZE: 5K<BR>
+POOLSIZE: 100M</TT>
+</BLOCKQUOTE>
+
+<UL>
+<LI>If the mix workfile includes a FILESIZE only, each benchmark process will
+generate temporary files of that size. For example, if the FILESIZE is 2K,
+the benchmark will create 2K temporary files.
+<BR><BR>
+<LI>If the mix workfile includes a POOLSIZE only, the benchmark divides the
+specified POOLSIZE by the number of application loads and uses the
+quotient as the size for the temporary files for each benchmark process. For
+example, if the POOLSIZE is 100K and the benchmark is currently
+simulating 5 application loads, the benchmark divides 100K by 5 and
+creates 20 kilobyte temporary files.
+<BR><BR>
+<LI>If both FILESIZE and POOLSIZE are specified in the mix workfile, the size
+of the temporary files for each process is the sum of the specified FILESIZE
+plus the portion of the POOLSIZE allocated to that process.
+
+<P>FILESIZE + (POOLSIZE/current load level) = size of temporary file
+
+<A name="page22"></A>
+
+<P>Let's look at an example:
+<BR><BR>
+<BLOCKQUOTE><TT>
+FILESIZE: 1K<BR>
+POOLSIZE: 5M</TT>
+</BLOCKQUOTE>
+
+<P>At 1 application load, the benchmark would calculate the temporary files as
+follows:
+
+<P>1K + (5M/1 process) = 1K + 5M = 5121K
+
+<P>At 5 application loads, the benchmark would calculate the temporary files as
+follows:
+
+<P>1 K + (5M/5 processes) = 1K + 1M = 1025K
+
+<P>If you change these parameters in one of the <I>workfile.xxx</I> files,
+rerun <B>S7setup</B> or make the same changes to the file named <I>workfile</I>
+in the benchmark directory.
+</UL>
+
+<A name="page23"></A>
+
+<H2>CREATING A CUSTOM USER MIX</H2>
+
+<P>If a standard mix includes tests that do not apply to your environment, use
+the following steps to create a custom user mix:
+<BR><BR>
+<OL type="1">
+<LI>Copy and rename the mix workfile to a custom user mix workfile (for
+example, <TT><B>cp workfile.bus workfile.bus.custom</B></TT>).
+<BR><BR>
+<LI>Delete unnecessary tests from the new file, if required.
+<BR><BR>
+<LI>Add custom tests to the new file, if required. See the ADDING CUSTOM
+TESTS: C LANGUAGE AND SHELL SCRIPTS section on page <A href="#page24">24</A> for
+more information.
+<BR><BR>
+<LI>Change the FILESIZE and POOLSIZE parameters, if required. See the
+FILESIZE AND POOLSIZE PARAMETERS section on page <A href="#page21">21</A> for
+more information.
+<BR><BR>
+<LI>Change the weight for individual tests in the mix, if required. See the
+CALCULATING THE MIX section on page <A href="#page43">43</A> for more
+information.
+</OL>
+<P>When you run the <B>S7setup</B> script, identify the new custom user mix
+workfile (see the RUNNING THE S7setup SCRIPT section on page
+<A href="#page13">13</A>).
+
+<P>If you change a custom user mix after running <B>S7setup</B>, rerun
+<B>S7setup</B> or make the same changes to the file named <I>workfile</I> that
+you made to the custom user mix workfile.
+
+<A name="page24"></A>
+
+<H2>ADDING CUSTOM TESTS: C LANGUAGE AND SHELL SCRIPTS</H2>
+
+<P>You can add a custom test by supplying C code or by modifying the
+<B>aim_1.sh</B>, <B>aim_2.sh</B> or <B>aim_3.sh</B> shell scripts.
+
+<P>To modify a shell test, modify the <B>aim_1.sh</B>, <B>aim_2.sh</B> or
+<B>aim_3.sh</B> shell scripts. Create a custom user mix to run these tests by
+copying the existing standard mix workfile to a new file (for example,
+<TT><B>cp workfile.gis workfile.gis.custom</B></TT>) and adding
+<B>shell_rtns_1</B>, <B>shell_rtns_2</B>, or <B>shell_rtns_3</B> to the new
+custom user mix along with the desired weight.
+
+<P>To add a C code test, follow the steps below:
+<BR><BR>
+<OL>
+<LI>Write the test, move it to the benchmark directory.
+<BR><BR>
+<LI>Add all new source files to the <I>Makefile</I> to ensure that the code for
+the new test is linked into the <B>multitask</B> program or add to
+<B>S7setup</B>.
+<BR><BR>
+<LI>Add the appropriate <B>register_test()</B> call. <B>register_test()</B>
+adds a test to the internal list of available tests. All tests are registered
+at the beginning of <B>multitask.c</B> in a loop by accessing the contents of
+the array <B>source_files[]</B>. These arrays contain a list of all
+initialization routines that contain <B>register_test()</B> calls. Either add
+your <B>register_test()</B> call to an existing initialization routine or
+create a new initialization routine and add it to the <B>source_files[]</B>
+array in <I>files.h</I>. The syntax for the register_test0 function is:
+<BR><BR>
+<PRE>
+void register_test(char *name,  /* name of the test */
+                  char *args,   /* pointer to the args string */
+                  int (*f)(),   /* pointer to the test */
+                  int factor,   /* # of operations in test */
+                  char *units)  /* units for the factor */
+</PRE>
+
+<P>For example:
+<BR><BR>
+<PRE>
+register_test("ram_copy","64", ram_copy, 25020, "Memory to Memory Copy");
+register_test("add_short","3 -3 2000000", add_short, 2000000, "Short Integer Additions");
+</PRE>
+<P>Add code and tests to files.h.
+<BR><BR>
+<LI>To create a custom user mix to run these tests, copy and rename the mix
+workfile to a new file (for example, cp <TT><B>workfile.shared
+workfile.shared.custom</B></TT>) and add the test name and weight to the
+new file. Add comment lines to identify your changes (the first character in
+
+<A name="page25"></A>
+
+a comment line is a pound sign, #). Specify this custom user mix during
+<B>S7setup</B> (see the RUNNING THE S7setup SCRIPT section on page
+<A href="#page13">13</A>). If you have already run S7setup, you can edit
+workfile and add the name of the test.
+<BR><BR>
+<LI>If you have already run <B>multitask</B>, recompile by entering <B>make</B>
+at the system prompt.
+</OL>
+<BR><BR>
+<HR noshade width="75%">
+
+<A name="page26"></A>
+
+<A name="chapter3"></A>
+
+<H1>CHAPTER 3</H1>
+
+<H2>STARTING THE BENCHMARK: RUNNING THE multitask PROGRAM</H2>
+
+<P>The <B>multitask</B> program used to run the benchmark requires the
+following information:
+<BR><BR>
+<TABLE align=center border=1>
+<TR align=center>
+<TH>Variable<TH>Description
+<TR align=left valign=top>
+<TD>Machine name<TD>Identify name for run
+<TR align=left valign=top>
+<TD>Machine configuration<TD>Additional identifying information (optional).
+<TR align=left valign=top>
+<TD>Number of iterations to run<TD>Number of times to run the benchmark for
+example, 9. Legal values are 1 - 10.
+<TR align=left valign=top>
+<TD>Starting number of operation loads<TD>First operation load to simulate,
+usually one. Default: 1. Range: 1 - 100000.
+<TR align=left valign=top>
+<TD>1) Run to crossover<BR>or<BR>2) Run to specific operation load
+<TD>Controls termination: (1) automatically (at crossover) or (2) manually (at
+specific operation load). Enter 1 or 2. Crossover occurs when the number of
+operation loads meets or exceeds the number of jobs processed per minute. When
+crossover occurs, the benchmark has completed a successful run.
+<TR align=left valign=top>
+<TD>Maximum number of operation<BR>loads to simulate
+<TD>Final operation load to simulate (applicable
+only if option 2 is selected above). No maximum.
+</TABLE>
+<BR><BR>
+<A name="page27"></A>
+
+<TABLE align=center border=1>
+<TR align=center>
+<TH>Variable<TH>Description
+<TR align=left valign=top>
+<TD>Operation load increment
+<TD>Incremental number of operation loads for
+each run. For example, if you enter 2, the
+first run will include two operation loads, the
+second run will include four operation loads,
+and so on. The benchmark uses this value
+until the adaptive timer is activated. The
+adaptive timer, activated after the first 8
+datapoints or when the operation load
+exceeds 20 (whichever occurs first), bases
+the selection of the next operation load on
+the recent rate of change of system throughput.
+This process reduces the benchmark's
+run time. Range is 1 to 100.
+</TABLE>
+
+<P>The benchmark forks off one process for each simulated operation load. For
+example, when the benchmark is simulating 10 operation loads, it forks off 10
+processes. Each of these processes can run up to 100 tests. The mix or
+combination of tests that each process executes is controlled by the entries in
+the mix. See CALCULATING THE MIX on page <A href="#page43">43</A> for more
+information.
+
+<P>To start the benchmark, run <B>multitask</B> as <TT>root</TT>. Enter
+<B>multitask</B> at the system prompt and press RETURN:
+<BR><BR>
+# <TT><B>multitask</B></TT>
+
+<P>The following is a transcript of a multitask run:
+<BR><BR>
+<A name="page28"></A>
+
+<CENTER><B>-BEGINNING OF TRANSCRIPT-</B></CENTER>
+<PRE>
+You have chosen to use the adaptive timer.
+
+You need to provide the initial increment for the operation load
+so that the adaptive timer logic has a starting point to base
+its calculations.
+Use "multitask -t" to run without the adaptive timer.
+
+
+AIM Multiuser Benchmark - Suite VII v1.1, January 22, 1996
+Copyright (c) 1996 - 2001 Caldera International, Inc.
+All Rights Reserved.
+
+Machine's name                                              : tokay
+Machine's configuration                                     : 2.2.19
+Number of iterations to run [1 to 10]                       : 1
+
+Information for iteration #1
+Starting number of operation loads [1 to 10000]             : 1
+1) Run to crossover
+2) Run to specific operation load           Enter [1 or 2]: 1
+Operation load increment [1 to 100]                         : 2
+
+HZ is <100>
+AIM Multiuser Benchmark - Suite VII Run Beginning
+
+Tasks    jobs/min  jti  jobs/min/task      real       cpu
+    1       44.34  100        44.3395    131.26     22.83   Fri Oct 26 18:18:48 2001
+    3      121.77   94        40.5886    143.39     58.17   Fri Oct 26 18:21:13 2001
+    5      141.71   91        28.3419    205.35     93.97   Fri Oct 26 18:24:38 2001
+    7      174.75   90        24.9646    233.13    130.15   Fri Oct 26 18:28:32 2001
+    9      176.07   90        19.5630    297.50    166.35   Fri Oct 26 18:33:30 2001
+   11      195.40   88        17.7634    327.64    202.46   Fri Oct 26 18:38:58 2001
+   13      219.33   88        16.8715    344.96    239.23   Fri Oct 26 18:44:44 2001
+   15      216.98   92        14.4654    402.34    275.09   Fri Oct 26 18:51:26 2001
+   19      223.89   92        11.7838    493.90    347.14   Fri Oct 26 18:59:41 2001
+   23      237.71   86        10.3351    563.13    419.85   Fri Oct 26 19:09:04 2001
+   31      272.25   84         8.7823    662.70    565.92   Fri Oct 26 19:20:08 2001
+   48      280.81   80         5.8503    994.82    875.31   Fri Oct 26 19:36:43 2001
+   54      286.45   83         5.3046   1097.17    985.05   Fri Oct 26 19:55:01 2001
+   66      284.01   85         4.3031   1352.50   1204.49   Fri Oct 26 20:17:34 2001
+   78      284.19   84         3.6435   1597.36   1423.28   Fri Oct 26 20:44:11 2001
+  104      289.34   85         2.7822   2091.90   1915.76   Fri Oct 26 21:19:04 2001
+  115      286.15   86         2.4883   2338.98   2130.22   Fri Oct 26 21:58:03 2001
+  138      289.23   87         2.0959   2776.85   2605.84   Fri Oct 26 22:44:21 2001
+  188      279.61   86         1.4873   3913.10   3790.40   Fri Oct 26 23:49:34 2001
+  208      269.32   84         1.2948   4494.91   4263.59   Sat Oct 27 01:04:30 2001
+  250      257.06   84         1.0282   5660.25   5384.17   Sat Oct 27 02:38:51 2001
+  253      259.03   82         1.0238   5684.62   5458.18   Sat Oct 27 04:13:36 2001
+  256      255.58   82         0.9984   5829.49   5561.15   Sat Oct 27 05:50:46 2001
+Crossover achieved.
+
+AIM Multiuser Benchmark - Suite VII
+   Testing over
+</PRE>
+<CENTER><B>-BEGINNING OF TRANSCRIPT-</B></CENTER>
+
+<A name="page29"></A>
+
+<H2>COMMAND LINE OPTIONS</H2>
+
+<P>When you run the benchmark you can specify the following command line
+options.
+<BR><BR>
+<TABLE align=center border=1>
+<TR>
+<TH align=left>Option<TH align=center>Description
+<TR align=left valign=top>
+<TD><B>-dn</B>
+<TD>Turn on debug level n. The higher the number, the more debug output.
+<TR align=left valign=top>
+<TD><B>-f</B>
+<TD>
+Alternate method for the selection of benchmark datapoints. Invoke
+<B>multitask</B> with the <B>-f</B> flag and the benchmark will prompt the user
+for the name of a file containing the numbers to be used as load values for
+the duration of the run. A sample file would look like this:
+<BR><BR>
+<I>unix_prompt></I> <TT><B>cat my_datapoints</B></TT><BR>
+1<BR>
+5<BR>
+9<BR>
+15<BR>
+21<BR>
+50<BR>
+75
+
+<P>In this example, the benchmark will run up through 75 loads or until it
+reaches crossover, whichever comes first.
+<TR align=left valign=top>
+<TD><B>-nl</B>
+<TD>Do not print out a logfile. [(n)o (1)ogfile] For use with systems short on
+disk space in the benchmark home directory.
+<TR align=left valign=top>
+<TD><B>-t</B>
+<TD>Alternate method for the selection of benchmark datapoints. Invoke
+<B>multitask</B> with the <B>-t</B> flag and the benchmark will increment the
+load by the value supplied by the user at the "Operation load increment"
+prompt. This option disables the adaptive timer.
+</TABLE>
+<BR><BR>
+
+<A name="page30"></A>
+
+<TABLE align=center border=1>
+<TR>
+<TH align=left>Option<TH align=center>Description
+<TR align=left valign=top>
+<TD><B>-N</B>
+<TD>Alternate method for the selection of benchmark datapoints. Invoke
+<B>multitask</B> with the <B>-N</B> flag and the benchmark will act exactly
+as if no flags had been specified (that is, use the increment and then the
+adaptive timer) until it gets close to crossover. When the current load is
+within 10% of the Jobs/Minute value, subsequent load points are selected
+using Newton's Method. A new increment is calculated by dividing the
+difference between the current load and Jobs/Minute in half.
+
+<P>For example, if the current load is 100 and the Jobs/Minute is 108, the
+new increment would be (108 - 100)/2 = 4, making the next load point
+100+4= 104.
+
+<P>In this manner the benchmark more closely converges upon the cross
+over point without overshooting it by the large amount characteristic of
+the adaptive timer. On the average, this method requires the benchmark
+to run one more datapoint than using the adaptive timer alone, but for
+overnight runs this extra hour or two is insignificant. It may in fact
+actually save time on machines where a large jump at the end causes the
+machine to thrash and failure of the benchmark to complete.
+
+<P>It has been observed that bringing the final datapoint in as close to the
+crossover point as possible has an affect on the performance rating for
+some platforms. Changing the slope of the line between the final 2
+datapoints changes the interpolated crossover value. For machines that
+drop off sharply at the crossover point, the performance rating will
+increase if the last datapoint occurs as close to crossover as possible.
+Using <B>-N</B> option will help to insure this.
+</TABLE>
+
+<P>Invoke <B>multitask</B> without flags (<B>-t</B>, <B>-N</B>, or <B>-f</B>)
+and the benchmark will use the increment specified at the "Operation load
+increment" prompt for a while and then switch over to the adaptive timer. The
+adaptive timer kicks in either after the first 8 load points or when the load
+exceeds 20, whichever comes first. From this point on, the selection of the
+next load point depends upon the recent rate of change of system throughput.
+
+<A name="page31"></A>
+
+<H2>STOPPING THE BENCHMARK</H2>
+
+<P>The benchmark includes a shell script, <B>slay</B> which searches for and
+kills all benchmark processes. <B>NOTE:</B> It can take up to 10 minutes to
+kill all of the benchmark's processes. To use this script, <B>su</B> to
+<TT>root</TT>, position yourself in the benchmark directory, and enter one of
+the following commands at the system prompt:
+<BR><BR>
+<TABLE align=center border=1>
+<TR align=center>
+<TH>Type of System<TH>Command
+<TR align=left>
+<TD>System V<TD># <TT><B>slay.sysv -n multitask</B></TT>
+<TR align=left>
+<TD>All other systems<TD># <TT><B>slay -n multitask</B></TT>
+</TABLE>
+
+<P>When <B>slay</B> has killed all of the benchmark's processes, remove all of
+the benchmark's temporary files. Enter the following command in the benchmark 
+directory and in each of the directories that you specified at the disk prompt
+in <B>S7setup</B> (data is stored in <I>config</I> file):
+<BR><BR>
+<BLOCKQUOTE>
+# <TT><B>rm tmp*</B></TT>
+</BLOCKQUOTE>
+
+<P>As an alternative to <B>slay</B>, you can also use the <B>DELETE</B> key,
+<B>CONTROL-C</B>, or <B>CONTROL-\</B> to stop the benchmark (note that some
+systems rename these keys). When you use these commands to stop the benchmark,
+you must stop all of the benchmark processes (see table that follows) and
+remove all of the benchmark's temporary files (see <B>rm</B> command noted
+above). In addition, if you use, <B>CONTROL-\</B> you must remove the
+<I>core</I> file that this command creates.
+
+<P>All benchmark processes include the string "multitask". Use the following
+commands to identify and kill the benchmark processes:
+<BR><BR>
+<TABLE align=center border=1>
+<TR align=center>
+<TH>Type of System<TH>Command
+<TR align=left valign=top>
+<TD>System V
+<TD># <TT><B>ps -ef | grep multitask</B></TT><BR>
+# <TT><B>kill -9 &lt;process ID&gt; &lt;process ID&gt;</B></TT>
+<TR align=left valign=top>
+<TD>All other systems
+<TD># <TT><B>ps -ax | grep multitask</B></TT><BR>
+# <TT><B>kill -9 &lt;process ID&gt; &lt;process ID&gt;</B></TT>
+</TABLE>
+
+<A name="page32"></A>
+
+<P>If these commands are not appropriate for your system, consult your system
+manual.
+
+To remove the benchmark's temporary files, enter the following command in
+the directories that you specified in the <I>config</I> file:
+<BR><BR>
+<BLOCKQUOTE>
+# <TT><B>rm -fr tmpa* tmpb* link* fakeh</B></TT>
+</BLOCKQUOTE>
+
+<H2>PREMATURE TERMINATION OF THE BENCHMARK</H2>
+
+<P>Occasionally the benchmark terminates prematurely because of a resource
+shortage, for example, there are not enough process slots, there is not enough
+disk space or swap space, or there are kernel or file size limitations.
+
+<P><U><B>Not enough. process slots</B></U> - The benchmark cannot fork any more
+test processes. Estimate the total number of processes needed as follows:
+
+<P>Total Processes = benchmark overhead + loads + system overhead
+
+<P>Benchmark overhead takes two processes. Each simulated load needs two
+processes. To identify your system overhead, use one of the following
+commands:
+<BR><BR>
+<TABLE align=center border=1>
+<TR align=center>
+<TH>Type of System<TH>Command
+<TR align=left valign=top>
+<TD>System V
+<TD># <TT><B>ps -e | wc -l</B></TT><BR>
+<TR align=left valign=top>
+<TD>BSD
+<TD># <TT><B>ps -a | wc -l</B></TT><BR>
+</TABLE>
+
+<P><U><B>No more disk space</B></U> - The benchmark cannot open/create a file
+for reading or writing. Add more disk storage. The FILESIZE and
+POOLSIZE parameters in the mix workfile control the amount of disk space
+required by each simulated operation load.
+
+<A name="page33"></A>
+
+<P>Use the following quick rule of thumb to calculate the amount of disk space
+required by the benchmark for <B>each</B> directory in the <I>config</I> file:
+
+<P>&lt;FILESIZE value&gt; * MAX_LOAD + &lt;POOLSIZE value&gt; = required disk
+space
+
+<P>Where MAX_LOAD is the maximum load level expected to be attained
+during the benchmark run. This is an upper limit value for disk space.
+
+<P>The total amount of disk space required at any given time will depend upon
+how many of the benchmark processes are running disk tests at that time. For
+example, if FILESIZE was set to 1MB and POOLSIZE was set to 10MB
+and the current load level was 5, then the temporary file size would be
+calculated as follows:
+<BR><BR>
+<TABLE align=center border=0>
+<TR align=center valign=top>
+<TD>&lt;FILESIZE value&gt;<TD>+<TD>portion of &lt;POOLSIZE value&gt;<TD>=<TD align=left>required disk space
+<BR><BR>
+<TR align=center>
+<TD>1MB<TD>+<TD>10MB / 5<TD>=<TD align=left>3MB
+</TABLE>
+
+<P>A 3MB static temporary file would be created in <B>each</B> directory
+specified in the <I>config</I> file. Additionally, up to 5 dynamic 3MB 
+temporary files would be created, depending on how many of the 5 load processes
+were doing disk tests at any given time. The location of each of these dynamic
+temporary files is random and could be in any of the directories listed in the
+<I>config</I> file. A dynamic temporary file is removed as soon as a disk test
+is done. The static temporary file remains in existence for the duration of the
+benchmark run.
+
+<P>This means, then, that the upper limit on disk space required by the
+benchmark for each directory in the config file is:
+
+<P>TEMPSIZE + MAX_LOAD * TEMPSIZE
+
+<P>Where MAX_LOAD is the maximum load level expected to be attained
+during the benchmark run and TEMPSIZE is the temporary file size at the
+maximum load level. For example, if a machine is expected to run to 100
+loads and FILESIZE is 1MB and POOLSIZE is 500MB, TEMPSIZE is
+calculated in the following manner:
+
+<P>TEMPSIZE = 1MB + 500MB / 100 = 6MB
+
+<P>The upper limit on disk space for <B>each</B> directory in the <I>config</I>
+file is as follows:
+<BR><BR>
+
+<A name="page34"></A>
+
+<TABLE align=center border=0>
+<TR align=center valign=top>
+<TD>TEMPSIZE<TD>+<TD>MAX_LOAD<TD>*<TD>TEMPSIZE<TD>=<TD align=left>Recommended
+disk space
+<BR><BR>
+<TR align=center>
+<TD>6MB<TD>+<TD>100<TD>*<TD>6MB<TD>=<TD align=left>606MB
+</TABLE>
+
+<P>If some benchmark processes are running non-disk tests while others are
+running disk tests, as is likely, then the system will not require all this space.
+
+<P>The <I>fakeh</I> directory placed in each <I>config</I> file directory only
+requires 100k of disk space and can usually be ignored in these calculations.
+
+<P>If you plan to rerun <B>S7setup</B>, change these values in the mix workfile.
+If you are not going to rerun <B>S7setup</B>, change these values in both the 
+mix workfile and <I>workfile</I>.
+
+<P><U><B>No more swap space</B></U> - The benchmark cannot allocate the memory
+needed to complete testing. Use <B>swap</B> or <B>swapon</B>. It is recommended
+that your swap space be at least 2 times your physical memory size.
+
+<P><U><B>Kernel limitations</B></U> - The benchmark may terminate if
+<BR><BR>
+<UL>
+<LI>The system runs out of semaphores
+<LI>The system runs out of shared memory
+<LI>The file table overflows
+</UL>
+<P>If this happens, you may need to reconfigure the kernel. Check with your
+System Administrator or consult your system manuals.
+
+<P><U><B>File size limitation</B></U> - UNIX limits the size of any file that a
+user creates. To find out the maximum file size, enter the following command
+inside the Bourne shell:
+<BR><BR>
+<BLOCKQUOTE>
+% <TT><B>ulimit</B></TT>
+</BLOCKQUOTE>
+
+<P>A system may be unable to create the benchmark's temporary file,
+<I>tmpa.common</I>, if the FILESIZE and POOLSIZE values for the
+mix are too large. If this problem occurs, calculate your temporary file size
+(the FILESIZE plus the POOLSIZE values) and use the <B>ulimit</B>
+command to increase the maximum file size:
+<BR><BR>
+<BLOCKQUOTE>
+% <TT><B>ulimit &lt;new value&gt;</B></TT>
+</BLOCKQUOTE>
+
+<P>The new value is usually specified in units of 512-byte blocks.
+<BR><BR>
+<HR noshade width="75%">
+
+<A name="page35"></A>
+
+<A name="chapter4"></A>
+
+<H1>CHAPTER 4</H1>
+
+<H2>BENCHMARKS RESULTS</H2>
+
+<H2>THE BENCHMARK'S OUTPUT FILES</H2>
+
+<H3>SPREADSHEET OUTPUT FILE: <I>suite7.ss</I></H3>
+
+<P>The <B>multitask</B> program generates a tab delimited spreadsheet output
+file, <I>suite7.ss</I>, that contains the benchmark results. The contents
+include the name of the benchmark, version, machine name, the date of the run,
+and a tab separated line for the results of each simulated operation load. Each
+entry in the file records the current operation load (Loads), jobs per minute
+(Jobs/Min), job timing index (JTI), elapsed wall clock time (Real), elapsed
+CPU time (CPU), and jobs per second per load (Job/sec/load). To preserve
+multiple copies of <I>suite7.ss</I> rename the file each time you run the
+benchmark. If you do not rename the file, new results are appended to the end
+of the existing file.
+<BR><BR>
+<PRE>
+-----------------------------------------------------------------------
+
+Benchmark                             Version Machine         Run Date
+AIM Multiuser Benchmark - Suite VII     "1.1"   tokay   Oct 12 17:04:30 2001
+
+Tasks   Jobs/Min        JTI     Real    CPU     Jobs/sec/task
+1       46.2            100     125.8   17.5    0.7708
+3       122.5           94      142.5   42.3    0.6806
+5       151.8           95      191.7   67.6    0.5060
+7       179.2           89      227.4   93.1    0.4266
+9       191.6           92      273.4   118.9   0.3549
+11      207.0           90      309.2   144.2   0.3137
+13      236.1           90      320.4   170.1   0.3028
+15      241.4           88      361.6   195.6   0.2682
+19      254.5           90      434.4   247.2   0.2233
+23      273.4           87      489.7   298.4   0.1981
+31      286.8           93      629.0   401.9   0.1542
+39      325.3           84      697.8   505.7   0.1390
+55      329.2           88      972.2   711.7   0.0998
+61      338.0           85      1050.3  789.8   0.0924
+73      341.5           88      1244.1  944.9   0.0780
+99      341.4           87      1687.8  1292.9  0.0575
+110     331.5           90      1931.2  1454.5  0.0502
+133     330.2           89      2344.2  1822.3  0.0414
+156     333.2           88      2724.5  2228.2  0.0356
+205     301.6           88      3955.7  3195.4  0.0245
+224     297.7           87      4379.4  3598.7  0.0221
+264     288.5           86      5326.3  4561.4  0.0182
+276     277.3           86      5793.1  4964.4  0.0167
+277     273.4           87      5895.8  4963.6  0.0165
+-----------------------------------------------------------------------
+</PRE>
+
+<A name="page36"></A>
+
+<H3>DETAILED OUTPUT FILE: <I>logfile.suite7</I></H3>
+
+<P><B>multitask</B> also generates a file called <I>logfile.suite7</I>. This
+file contains benchmark results as well, but in a different format, and with
+some additional information. The timing value for each test run is recorded
+line by line. Each line lists the current load level, test name, elapsed time
+in milliseconds, user time, and system time.
+
+<H2>GENERATING REPORTS: rpt</H2>
+
+<P>The benchmark's report generation program, <B>rpt</B>, uses the data in
+<I>suite7.ss</I> to produce a PostScript graphical output file. The output file
+contains graphs for the following parameters:
+<BR>
+<UL>
+<LI>Jobs/minute - Number of jobs completed per minute for each simulated
+operation load.
+<LI>Job Timing Index - Tells you how predictable the system is when it runs a
+test. Changes in a system's scheduler are reflected in this index. As the
+operation load increases, the index declines, gradually, from 100%. If the
+scheduler does not run jobs immediately, the index will decline more
+rapidly.
+<LI>Real Time - Elapsed wall clock time.
+<LI>CPU Time - The amount of CPU time used during each operation load.
+<LI>Jobs/Second/Task - The number of jobs processed per second for each
+operation load.
+</UL>
+<P>All values are plotted against simulated operation loads. To create a
+PostScript output file, enter the following command at the system prompt:
+
+<P>$ <TT><B>rpt suite7.ss &lt;name of output file&gt;</B></TT>
+
+<P>(If you have renamed <I>suite7.ss</I>, enter the new file name in the
+previous command, for example, <TT><B>rpt run8 run8.ps</B></TT>). This command
+creates a PostScript file in the current directory that can be printed via any
+standard PostScript printer.
+
+<P>The peak jobs/minute, minimum JTI, crossover point, and sustained values
+are printed to the screen when <B>rpt</B> is run.
+
+<P>The peak performance is the highest jobs/minute the system achieved.
+
+<A name="page37"></A>
+
+<P>The sustained performance is the square root of the total area under your
+performance curve up to the point of crossover. The point of crossover is that
+point at which the Jobs per Minute/User Load = 1.0. This point is derived
+through interpolation of the last two data points.
+
+<P>The JTI rating is the worst case JTI, with the exception of the very last
+JTI data.
+<BR><BR>
+
+<A name="page38"></A>
+
+<TABLE align=center border=1>
+<CAPTION align=bottom><FONT size="+1"><B>Figure 1: AIM Multiuser Benchmark - Suite VII Report</B></FONT></CAPTION>
+<TR><TD><IMG src="suite7-ss.gif">
+</TABLE>
+
+<A name="page39"></A>
+
+<H2>EVALUATING BENCHMARK RESULTS</H2>
+
+<P>How do you use benchmark results?
+
+<P>Manufacturers and suppliers of UNIX systems use the AIM benchmarks
+for a variety of reasons. The following are some of the more common:
+<BR><BR>
+<UL>
+<LI>Compare with results from other machines, both internal and those of your
+competitors.
+<LI>Supply sales and marketing with independent validation of performance to
+show potential buyers.
+<LI>Establish the value of performance enhancement products or special
+configurations. Nothing tells the story as clearly as a "before" and "after"
+comparison.
+<LI>Establish the scalability range of product family. The ability to upgrade
+purchased systems and purchase larger compatible computers is becoming
+more and more important to larger users.
+<LI>Determine if new products are robust enough for commercial use. AIM
+benchmarks extensively exercise not only the hardware, but also the
+operating system and compilers. Over the years, they have revealed numerous
+operating system bugs and are likely to continue to do so in the future.
+<LI>Know where your performance bottlenecks are located. AIM's benchmarks
+can show you what actually happened during a test. Find out where the system
+spent most of its time at each load level.
+</UL>
+<BR><BR>
+<HR noshade width="75%">
+
+<A name="page40"></A>
+
+<A name="appendixes"></A>
+
+<H1>APPENDIXES</H1>
+
+<H2>THE BENCHMARK'S TESTS</H2>
+
+<P>The AIM Multiuser Benchmark - Suite VII, includes 55 tests. Tests are listed
+in a file that the benchmark reads each time the benchmark is run. Each test
+repeats an operation, system call, or I/O transfer for a specified number of
+times. Each test routine repeats its operation with as little overhead
+as possible.
+
+<P>The following table identifies and describes the benchmark's tests:
+<BR><BR>
+<TABLE align=center border=1>
+<TR align=center>
+<TH>Test<TH>Description
+<TR align=left valign=top>
+<TD>add_double<TD>Double precision additions.
+<TR align=left valign=top>
+<TD>add_float<TD>Single precision additions.
+<TR align=left valign=top>
+<TD>add_int<TD>Integer additions.
+<TR align=left valign=top>
+<TD>add_long<TD>Long integer additions.
+<TR align=left valign=top>
+<TD>add_short<TD>Short integer additions.
+<TR align=left valign=top>
+<TD>array_rtns
+<TD>Solves large systems of simultaneous equations using Gausian Elimination.<BR>
+Representative of a large class of numerically intensive<BR>
+applications involving large datasets.
+<TR align=left valign=top>
+<TD>brk_test
+<TD>System memory allocations. Iteratively allocates and deallocates<BR>
+memory from the kernel. Doesn't use the memory that it allocates.
+<TR align=left valign=top>
+<TD>creat-clo<TD>Repeatedly creates and deletes files.
+<TR align=left valign=top>
+<TD>dgram_pipe<TD>IPC using UNIX domain datagram pipes. Not supported on all platforms<BR>
+(when not supported, UDP is used).
+<TR align=left valign=top>
+<TD>dir_rtns_1<TD>Repetitive directory searches.
+<TR align=left valign=top>
+<TD>disk_cp<TD>copy of a file's contents.
+<TR align=left valign=top>
+<TD>disk_rd<TD>Sequential read of a file's contents.
+<TR align=left valign=top>
+<TD>disk_rr<TD>Random read of a file's contents.
+</TABLE>
+<BR><BR>
+
+<A name="page41"></A>
+
+<TABLE align=center border=1>
+<TR align=center>
+<TH>Test<TH>Description
+<TR align=left valign=top>
+<TD>disk_rw<TD>Random write of a file's contents.
+<TR align=left valign=top>
+<TD>disk_src<TD>Directory searches.
+<TR align=left valign=top>
+<TD>disk_wrt<TD>Sequential write of a file's contents.
+<TR align=left valign=top>
+<TD>div_double<TD>Perform double precision divisions in a tight loop.
+<TR align=left valign=top>
+<TD>div_float<TD>Perform single precision divisions in a tight loop.
+<TR align=left valign=top>
+<TD>div_int<TD>Perform integer divisions in a tight loop.
+<TR align=left valign=top>
+<TD>div_long<TD>Perform long integer divisions in a tight loop.
+<TR align=left valign=top>
+<TD>div_short<TD>Perform short integer divisions in a tight loop.
+<TR align=left valign=top>
+<TD>exec_test<TD>Repeatedly executes.
+<TR align=left valign=top>
+<TD>fork_test<TD>Task creation test.
+<TR align=left valign=top>
+<TD>jmp_test<TD>Tests non-local transfers of control.
+<TR align=left valign=top>
+<TD>link_test<TD>Tests filesystem performance while adding links to files.
+<TR align=left valign=top>
+<TD>matrix_rtns<TD>Tests 3D projection operations.
+<TR align=left valign=top>
+<TD>mem_rtns_1
+<TD>Tests varying sized block memory operations including block
+comparison, block initialization and block copy.
+<TR align=left valign=top>
+<TD>mem_rtns_2
+<TD>Tests memory allocation and deallocation of varying sized
+blocks of memory.
+<TR align=left valign=top>
+<TD>misc_rtns_1
+<TD>Tests system-related functions involving identifiers and
+process state.
+<TR align=left valign=top>
+<TD>mul_double<TD>Perform double precision multiplications in a tight loop.
+<TR align=left valign=top>
+<TD>mul_float<TD>Perform single precision multiplications in a tight loop.
+<TR align=left valign=top>
+<TD>mul_int<TD>Perform integer multiplications in a tight loop.
+<TR align=left valign=top>
+<TD>mul_long<TD>Perform long integer multiplications in a tight loop.
+<TR align=left valign=top>
+<TD>mul_short<TD>Perform short integer multiplications in a tight loop.
+<TR align=left valign=top>
+<TD>new_raph
+<TD>Uses Newton's method to find the zero of a polynomial.
+Similar to other common numeric search algorithms.
+<TR align=left valign=top>
+<TD>num_rtns_1
+<TD>Exercises numeric related library functions (exp(), log(),
+pow(), etc.) (non-trigonometric).
+</TABLE>
+<BR><BR>
+
+<A name="page42"></A>
+
+<TABLE align=center border=1>
+<TR align=center>
+<TH>Test<TH>Description
+<TR align=left valign=top>
+<TD>page_test
+<TD>Similar to brk_test except that this test causes the pages to be modified,
+generating large numbers of page faults on memory-short machines.
+<TR align=left valign=top>
+<TD>pipe_cpy<TD>Uses UNIX Pipes as an IPC mechanism.
+<TR align=left valign=top>
+<TD>ram_copy
+<TD>C language code to copy memory from one location to another. Useful
+as an example of coded data movement with processing.
+<TR align=left valign=top>
+<TD>series_1
+<TD>Taylor's Series expansion of a function evaluated for maximal precision.
+Similar to a class of numeric approximation problems. Evaluates the infinite
+series for sin(x) around 0. Tests how well the system handles
+small numbers.
+<TR align=left valign=top>
+<TD>shared_memory<TD>IPC using UNIX shared memory and semaphores.
+<TR align=left valign=top>
+<TD>shell_rtns_1
+<TD>An empty shell script. Use this file to add new tests. For example, to
+benchmark a compiler, add a number of compiler commands to the shell script.
+<B>multitask</B> will then run the contents of the shell script to
+exercise the compiler.
+<TR align=left valign=top>
+<TD>shell rtns_2<TD>See description for shell_rtns_1.
+<TR align=left valign=top>
+<TD>shell_rtns_3 <TD>See description for shell_rtns_1.
+<TR align=left valign=top>
+<TD>sieve
+<TD>Integer only, large memory, highly unpredictable code flow algorithm to
+find prime numbers. Similar load to programs which perform complex
+code flows involving integer data in fairly large quantities.
+<TR align=left valign=top>
+<TD>signal_test<TD>Exercises POSIX signals.
+<TR align=left valign=top>
+<TD>sort_rtns_1<TD>Sorts and searches a table of values using library routines.
+<TR align=left valign=top>
+<TD>stream_pipe
+<TD>IPC using UNIX domain streams. Not supported on all platforms.
+When not supported, TCP is used.
+<TR align=left valign=top>
+<TD>string_rtns<TD>Character and string manipulation using library routines.
+<TR align=left valign=top>
+<TD>sync_disk_cp<TD>Disk file copy using synchronous writes.
+<TR align=left valign=top>
+<TD>sync_disk_rw<TD>Disk file random writes using synchronous writes.
+<TR align=left valign=top>
+<TD>sync_disk_wrt<TD>Disk file sequential writes using synchronous writes.
+<TR align=left valign=top>
+<TD>tcp_test<TD>IPC using TCP in a loopback mode via sockets.
+<TR align=left valign=top>
+<TD>trig_rtns<TD>Exercises the trig-related (sin(), cos(), etc.) library
+routines.
+<TR align=left valign=top>
+<TD>udp_test<TD>IPC using TCP in a loopback mode via sockets.
+</TABLE>
+
+<A name="page43"></A>
+
+<H2>CALCULATING THE MIX</H2>
+
+<P>Each mix contains a list of tests that each process executes and the weight
+attached to each test (that is, the importance or value of the test). A test
+with a higher weight (for example, 1000) will run more frequently than a test
+with a lower weight (for example, 50).
+
+<P>The mix is calculated at the beginning of the benchmark run. The benchmark
+uses the following steps to calculate how many times to run a test:
+<BR><BR>
+<OL>
+<LI>Divide the test's weight by the sum of all the weights in the mix to yield
+a relative weight.
+<LI>Multiply the relative weight by 100 (the target number of tests to run) to
+yield the number of test runs devoted to that particular test.
+</OL>
+
+<P>Let's look at an example:
+<BR><BR>
+<TABLE border=0>
+<TR><TD>100<TD>div_long
+<TR><TD>200<TD>div_short
+<TR><TD>300<TD>div_float
+<TR><TD>400<TD>div_int
+<TR><TD>500<TD>div_double
+</TABLE>
+
+<P>The cumulative weight is 1500 (100 + 200 + 300 + 400 + 500). Here is how
+the benchmark would calculate how many times to run div_float:
+<BR><BR>
+<OL>
+<LI>Divide 300 by 1500 to yield the relative weight, 1/5.
+<LI>Multiply the relative weight, 1/5, by 100 (maximum test runs) to yield the
+number of times the test is run, 20. Decimal results are rounded to the
+nearest whole number. The following lines show how the benchmark would
+calculate the mix for the mix referenced above.
+</OL>
+
+<P><TABLE border=0>
+<TR align=left>
+<TD align=center>div_long<TD>100/1500 * 100 =<TD>6.67 =<TD>7 Test Runs
+<TR align=left>
+<TD align=center>div_short<TD>200/1500 * 100 =<TD>13.3 =<TD>13 Test Runs
+<TR align=left>
+<TD align=center>div_float<TD>300/1500 * 100 =<TD>20 =<TD>20 Test Runs
+<TR align=left>
+<TD align=center>div_int<TD>400/1500 * 100 =<TD>26.67 =<TD>27 Test Runs
+<TR align=left>
+<TD align=center>div_double<TD>500/1500 * 100 =<TD>33.33 =<TD>33 Test Runs
+<TR align=left>
+<TD><TD>----<TD><TD>----
+<TR align=left>
+<TD align=center>Cumulative weight<TD>1500<TD>Total<TD>100
+</TABLE>
+
+<A name="page44"></A>
+
+<P>Every test in the mix is run at least once. Because of this, and because of
+the rounding of run values, a benchmark process may run more than 100 tests.
+Let's look at another sample mix.
+<BR><BR>
+<TABLE border=0>
+<TR><TD>300<TD>div_long
+<TR><TD>300<TD>div_short
+<TR><TD>300<TD>div_float
+<TR><TD>300<TD>div_int
+<TR><TD>500<TD>div_double
+</TABLE>
+
+<P>The cumulative weight would be 300 + 300 + 300 + 300 + 500 = 1700. The
+calculated mix:
+<BR><BR>
+<TABLE border=0>
+<TR align=left>
+<TD align=center>div_long<TD>300/1500 * 100 =<TD>17.6 =<TD>18 Test Runs
+<TR align=left>
+<TD align=center>div_short<TD>300/1500 * 100 =<TD>17.6 =<TD>18 Test Runs
+<TR align=left>
+<TD align=center>div_float<TD>300/1500 * 100 =<TD>17.6 =<TD>18 Test Runs
+<TR align=left>
+<TD align=center>div_int<TD>300/1500 * 100 =<TD>17.6 =<TD>18 Test Runs
+<TR align=left>
+<TD align=center>div_double<TD>500/1500 * 100 =<TD>29.4 =<TD>29 Test Runs
+<TR align=left>
+<TD><TD>----<TD><TD>----
+<TR align=left>
+<TD align=center>Cumulative weight<TD>1700<TD>Total<TD>101
+</TABLE>
+
+<P>In this case, each benchmark process would end up running 101 tests instead
+of 100.
+
+<A name="page45"></A>
+
+<H2>AIM MULTIUSER BENCHMARK FILES</H2>
+
+<P>The following is a list of files shipped with the benchmark:
+<BR><BR>
+<TABLE align=center border=1>
+<TR align=center>
+<TH>Test<TH>Description
+<TR align=left><TD>RUN<TD>script to run multitask using input file
+<TR align=left><TD>S7setup<TD>configuration script
+<TR align=left><TD>add.c<TD>benchmark code
+<TR align=left><TD>aim_1.sh<TD>shell script that can be customized
+<TR align=left><TD>aim_2.sh<TD>shell script that can be customized
+<TR align=left><TD>aim_3.sh<TD>shell script that can be customized
+<TR align=left><TD>config<TD>list of directories for temporary file creation
+<TR align=left><TD>creat-clo.c<TD>benchmark code
+<TR align=left><TD>disk1.c<TD>benchmark code
+<TR align=left><TD>disk_src.c<TD>benchmark code
+<TR align=left><TD>div.c<TD>benchmark code
+<TR align=left><TD>fakeh.tar<TD>exercise directory in tar format
+<TR align=left><TD>files.h<TD>benchmark code
+<TR align=left><TD>fillin.c<TD>benchmark code
+<TR align=left><TD>funcal.c<TD>benchmark code
+<TR align=left><TD>funcal.h<TD>benchmark code
+<TR align=left><TD>int_fcns.c<TD>benchmark code
+<TR align=left><TD>mul.c<TD>benchmark code
+<TR align=left><TD>num_fcns.c<TD>benchmark code
+<TR align=left><TD>pipe_test.c<TD>benchmark code
+<TR align=left><TD>ram.c<TD>benchmark code
+<TR align=left><TD>rand.c<TD>benchmark code
+</TABLE>
+<BR><BR>
+
+<A name="page46"></A>
+<TABLE align=center border=1>
+<TR align=center>
+<TH>Test<TH>Description
+<TR align=left><TD>rtmsec.c<TD>benchmark code
+<TR align=left><TD>slay<TD>script to kill processes by name
+<TR align=left><TD>slay.sysv<TD>script to kill processes by name (System V)
+<TR align=left><TD>suite.h<TD>benchmark code
+<TR align=left><TD>testerr.h<TD>benchmark code
+<TR align=left><TD>workfile.shared<TD>workfile for Multiuser/Shared System mix
+<TR align=left><TD>workfile.compute<TD>workfile for Compute Server mix
+<TR align=left><TD>workfile.dbase<TD>workfile for Large Database mix
+<TR align=left><TD>workfile.fserver<TD>workfile for File Server mix
+</TABLE>
+
+<A name="page47"></A>
+
+<H2>AIM MULTIUSER BENCHMARK MIXES</H2>
+
+<H3>MULTIUSER/SHARED SYSTEM MIX: workfile.shared</H3>
+
+<P>This mix has many relatively small jobs but includes almost every type of
+test. Lots of calculations, filesystem interaction, shell operations, execs,
+and so on. Some IPC.
+<BR><BR>
+<TABLE align=center border=2>
+<TR align=center>
+<TH>Weight<TH>Test<TH>Weight<TH>Test
+<TR align=left><TD>30<TD>add_double<TD>10<TD>mem rtes 2
+<TR align=left><TD>30<TD>add_float<TD>10<TD>misc_rtns_1
+<TR align=left><TD>30<TD>add_int<TD>20<TD>mul_double
+<TR align=left><TD>30<TD>add_long<TD>20<TD>mul_float
+<TR align=left><TD>30<TD>add_short<TD>20<TD>mul int
+<TR align=left><TD>10<TD>array_rtns<TD>20<TD>mul_long
+<TR align=left><TD>10<TD>brk_test<TD>20<TD>mul_short
+<TR align=left><TD>10<TD>creat-clo<TD>10<TD>new_raph
+<TR align=left><TD>10<TD>dgram_pipe<TD>10<TD>num_rtns_1
+<TR align=left><TD>10<TD>dir_rtns_1<TD>10<TD>page_test
+<TR align=left><TD>20<TD>disk_cp<TD>10<TD>pipe_cpy
+<TR align=left><TD>20<TD>disk_rd<TD>10<TD>ramcopy
+<TR align=left><TD>20<TD>disk_rr<TD>10<TD>series_1
+<TR align=left><TD>20<TD>disk_rw<TD>10<TD>shared_memory
+<TR align=left><TD>20<TD>disk_src<TD>20<TD>shell_rtns_1
+<TR align=left><TD>20<TD>disk_wrt<TD>10<TD>sieve
+<TR align=left><TD>10<TD>div_double<TD>10<TD>signal_test
+<TR align=left><TD>10<TD>div_float<TD>10<TD>sort_rtns_1
+</TABLE>
+<BR><BR>
+
+<A name="page48"></A>
+
+<TABLE align=center border=2>
+<TR align=center>
+<TH>Weight<TH>Test<TH>Weight<TH>Test
+<TR align=left><TD>10<TD>div_int<TD>10<TD>stream_pipe
+<TR align=left><TD>10<TD>div_long<TD>30<TD>string_rtns
+<TR align=left><TD>10<TD>div_short<TD>10<TD>sync_disk_cp
+<TR align=left><TD>20<TD>exec_test<TD>10<TD>sync_disk_rw
+<TR align=left><TD>10<TD>fork_test<TD>10<TD>sync_disk_wrt
+<TR align=left><TD>10<TD>jmp_test<TD>10<TD>tcp_test
+<TR align=left><TD>10<TD>link_test<TD>10<TD>trig_rtns
+<TR align=left><TD>10<TD>matrix_rtns<TD>10<TD>udp_test
+<TR align=left><TD>10<TD>mem_rtns_1<TD>&nbsp;<TD>&nbsp;
+</TABLE>
+
+<P>The FILESIZE parameter is 1M.<BR>
+The POOLSIZE parameter is 10M.
+
+<A name="page49"></A>
+
+<H3>COMPUTE SERVER MIX: workfile.compute</H3>
+
+<P>This mix loads in large quantities of data (page_test), performs huge amounts
+of floating point calculations on large data structures (all forms of floating
+point calculations, using all types of algorithms), spreads data around in
+memory, with a large amount of IPC for graphics. Very heavy file I/O.
+<BR><BR>
+<TABLE align=center border=2>
+<TR align=center>
+<TH>Weight<TH>Test<TH>Weight<TH>Test
+<TR align=left><TD>50<TD>add_double<TD>50<TD>mul_double
+<TR align=left><TD>30<TD>add_int<TD>30<TD>mul_int
+<TR align=left><TD>30<TD>add_long<TD>30<TD>mul_long
+<TR align=left><TD>10<TD>array_rtns<TD>40<TD>new_raph
+<TR align=left><TD>10<TD>disk_cp<TD>40<TD>num_rtns_1
+<TR align=left><TD>30<TD>disk_rd<TD>50<TD>page_test
+<TR align=left><TD>10<TD>disk_src<TD>40<TD>series_1
+<TR align=left><TD>20<TD>disk_wrt<TD>10<TD>shared_memory
+<TR align=left><TD>40<TD>div double<TD>30<TD>sieve
+<TR align=left><TD>30<TD>div_int<TD>20<TD>stream_pipe
+<TR align=left><TD>50<TD>matrix_rtns<TD>30<TD>string_rtns
+<TR align=left><TD>40<TD>mem_rtns_1<TD>40<TD>trig_rtns
+<TR align=left><TD>40<TD>mem_rtns_2<TD>20<TD>udp_test
+</TABLE>
+
+<P>The FILESIZE parameter is 100K.<BR>
+The POOLSIZE parameter is 250M.
+
+<A name="page50"></A>
+
+<H3>LARGE DATABASE MIX: workfile.dbase</H3>
+
+<P>This mix assumes a large multithreaded application that does a lot of disk
+I/O (async reads, sync writes), keeps lots of data in memory which is
+constantly searched, and does a lot of IPC via shared memory.
+<BR><BR>
+<TABLE align=center border=2>
+<TR align=center>
+<TH>Weight<TH>Test<TH>Weight<TH>Test
+<TR align=left><TD>20<TD>add_int<TD>10<TD>mul_long
+<TR align=left><TD>20<TD>add_long<TD>10<TD>mul_short
+<TR align=left><TD>20<TD>add_short<TD>40<TD>page_test
+<TR align=left><TD>40<TD>disk_rd<TD>20<TD>ram_copy
+<TR align=left><TD>40<TD>disk_rr<TD>40<TD>shared_memory
+<TR align=left><TD>10<TD>div_int<TD>30<TD>sieve
+<TR align=left><TD>10<TD>div_long<TD>30<TD>sort_rtns_1
+<TR align=left><TD>10<TD>div_short<TD>10<TD>stream_pipe
+<TR align=left><TD>10<TD>jmp_test<TD>30<TD>string_rtns
+<TR align=left><TD>40<TD>mem_rtns_1<TD>30<TD>sync_disk_rw
+<TR align=left><TD>40<TD>mem_rtns_2<TD>30<TD>sync_disk_update
+<TR align=left><TD>10<TD>mul_int<TD>&nbsp;<TD>&nbsp;
+</TABLE>
+
+<P>The FILESIZE parameter is 1M.<BR>
+The POOLSIZE parameter is 25M.
+
+<A name="page51"></A>
+
+<H3>FILE SERVER MIX: workfile.fserver</H3>
+
+This models a standard NFS fileserver. Lots of UDP, sync disk writes, async
+reads, and block copies. Medium integer calculations. Includes signals and
+longjmps (context switches). Search routines include sorts.
+<BR><BR>
+<TABLE align=center border=2>
+<TR align=center>
+<TH>Weight<TH>Test<TH>Weight<TH>Test
+<TR align=left><TD>20<TD>add_int<TD>40<TD>mem_rtns_1
+<TR align=left><TD>20<TD>add_long<TD>10<TD>mem_rtns_2
+<TR align=left><TD>20<TD>add_short<TD>20<TD>misc_rtns_1
+<TR align=left><TD>20<TD>creat-clo<TD>10<TD>mul_int
+<TR align=left><TD>20<TD>dir_rtns_1<TD>10<TD>mul_long
+<TR align=left><TD>30<TD>disk_cp<TD>10<TD>mul_short
+<TR align=left><TD>30<TD>disk_rd<TD>20<TD>ram_copy
+<TR align=left><TD>30<TD>disk_rr<TD>10<TD>signal_test
+<TR align=left><TD>30<TD>disk_rw<TD>30<TD>sort_rtns_1
+<TR align=left><TD>30<TD>disk_src<TD>30<TD>string_rtns
+<TR align=left><TD>30<TD>disk_wrt<TD>5<TD>sync_disk_cp
+<TR align=left><TD>10<TD>div_int<TD>5<TD>sync_disk_rw
+<TR align=left><TD>10<TD>div_long<TD>5<TD>sync_disk_wrt
+<TR align=left><TD>10<TD>div_short<TD>10<TD>tcp_test
+<TR align=left><TD>10<TD>jmp_test<TD>40<TD>udp_test
+<TR align=left><TD>20<TD>link_test<TD>&nbsp;<TD>&nbsp;
+</TABLE>
+
+<P>The FILESIZE parameter is lOM.<BR>
+The POOLSIZE parameter is 20M.
+<BR><BR>
+<HR noshade width="75%">
+
+<A name="index1"></A>
+
+<H1>INDEX</H1>
+
+<TABLE align=center border=0>
+<TR align=left><TD><B>A</B>&nbsp;&nbsp;<TD><TD>
+<TR align=left><TD>&nbsp;<TD>adding custom tests<TD align=right><A href="#page24">24</A>
+<TR align=left><TD>&nbsp;<TD>aim_1.sh, aim_2.sh, and aim_3.sh shell scripts<TD align=right><A href="#page24">24</A>
+<TR><TD>&nbsp;<TD>&nbsp;<TD>&nbsp;
+
+<TR align=left><TD><B>B</B>&nbsp;&nbsp;<TD><TD>
+<TR align=left><TD>&nbsp;<TD>benchmark processes<TD align=right><A href="#page27">27</A>
+<TR align=left><TD>&nbsp;<TD>benchmark, definition<TD align=right><A href="#page7">7</A>
+<TR align=left><TD>&nbsp;<TD>Bourne shell<TD align=right><A href="#page13">13</A>
+<TR><TD>&nbsp;<TD>&nbsp;<TD>&nbsp;
+
+<TR align=left><TD><B>C</B>&nbsp;&nbsp;<TD><TD>
+<TR align=left><TD>&nbsp;<TD>C language custom tests<TD align=right><A href="#page5">5</A>, <A href="#page24">24</A>
+<TR align=left><TD>&nbsp;<TD>calculating the mix<TD align=right><A href="#page43">43</A>
+<TR align=left><TD>&nbsp;<TD>cd command<TD align=right><A href="#page10">10</A>
+<TR align=left><TD>&nbsp;<TD>Certified Multiuser Reports<TD align=right><A href="#page4">4</A>
+<TR align=left><TD>&nbsp;<TD>command line options<TD align=right><A href="#page29">29</A>
+<TR align=left><TD>&nbsp;<TD>compiler options, S7setup<TD align=right><A href="#page13">13</A>
+<TR align=left><TD>&nbsp;<TD>compiler variable, S7setup<TD align=right><A href="#page13">13</A>
+<TR align=left><TD>&nbsp;<TD>compiling the software<TD align=right><A href="#page18">18</A>
+<TR align=left><TD>&nbsp;<TD>Compute Server mix<TD align=right><A href="#page5">5</A>, <A href="#page12">12</A>, <A href="#page49">49</A>
+<TR align=left><TD>&nbsp;<TD>config file<TD align=right><A href="#page19">19</A>
+<TR align=left><TD>&nbsp;<TD>CPU Time (rpt)<TD align=right><A href="#page36">36</A>
+<TR align=left><TD>&nbsp;<TD>crossover (multitask program)<TD align=right><A href="#page26">26</A>
+<TR align=left><TD>&nbsp;<TD>&nbsp;&nbsp;&nbsp;&nbsp;definition<TD align=right><A href="#page7">7</A>
+<TR align=left><TD>&nbsp;<TD>custom tests, C language and shell scripts<TD align=right><A href="#page5">5</A>, <A href="#page24">24</A>
+<TR align=left><TD>&nbsp;<TD>custom user mixes<TD align=right><A href="#page5">5</A>
+<TR><TD>&nbsp;<TD>&nbsp;<TD>&nbsp;
+
+<TR align=left><TD><B>D</B>&nbsp;&nbsp;<TD><TD>
+<TR align=left><TD>&nbsp;<TD>dd command<TD align=right><A href="#page11">11</A>
+<TR align=left><TD>&nbsp;<TD>disk directories<TD align=right><A href="#page19">19</A>
+<TR align=left><TD>&nbsp;<TD>disk space<TD align=right><A href="#page21">21</A>, <A href="#page32">32</A>
+<TR align=left><TD>&nbsp;<TD>&nbsp;&nbsp;&nbsp;&nbsp;FILESIZE parameter<TD align=right><A href="#page21">21</A>
+<TR align=left><TD>&nbsp;<TD>&nbsp;&nbsp;&nbsp;&nbsp;POOLSIZE parameter<TD align=right><A href="#page21">21</A>
+<TR align=left><TD>&nbsp;<TD>-dn<TD align=right><A href="#page29">29</A>
+
+<A name="index2"></A>
+
+<TR align=left><TD>&nbsp;<TD>-DNO_SOCKETPAIR<TD align=right><A href="#page18">18</A>
+<TR align=left><TD>&nbsp;<TD>-DNO_ULIMIT<TD align=right><A href="#page18">18</A>
+<TR><TD>&nbsp;<TD>&nbsp;<TD>&nbsp;
+
+<TR align=left><TD><B>E</B>&nbsp;&nbsp;<TD><TD>
+<TR align=left><TD>&nbsp;<TD>error messages
+<TR align=left><TD>&nbsp;<TD>&nbsp;&nbsp;&nbsp;&nbsp;disk space<TD align=right><A href="#page32">32</A>
+<TR align=left><TD>&nbsp;<TD>&nbsp;&nbsp;&nbsp;&nbsp;file size limitation<TD align=right><A href="#page34">34</A>
+<TR align=left><TD>&nbsp;<TD>&nbsp;&nbsp;&nbsp;&nbsp;kernel limitations<TD align=right><A href="#page34">34</A>
+<TR align=left><TD>&nbsp;<TD>&nbsp;&nbsp;&nbsp;&nbsp;process slots<TD align=right><A href="#page32">32</A>
+<TR align=left><TD>&nbsp;<TD>&nbsp;&nbsp;&nbsp;&nbsp;swap space<TD align=right><A href="#page34">34</A>
+<TR align=left><TD>&nbsp;<TD>evaluating results<TD align=right><A href="#page39">39</A>
+<TR><TD>&nbsp;<TD>&nbsp;<TD>&nbsp;
+
+<TR align=left><TD><B>F</B>&nbsp;&nbsp;<TD><TD>
+<TR align=left><TD>&nbsp;<TD>-f<TD align=right><A href="#page29">29</A>
+<TR align=left><TD>&nbsp;<TD>File Server mix<TD align=right><A href="#page5">5</A>, <A href="#page12">12</A>, <A href="#page51">51</A>
+<TR align=left><TD>&nbsp;<TD>File size limitation<TD align=right><A href="#page34">34</A>
+<TR align=left><TD>&nbsp;<TD>files, source<TD align=right><A href="#page45">45</A>
+<TR align=left><TD>&nbsp;<TD>files.h<TD align=right><A href="#page24">24</A>
+<TR align=left><TD>&nbsp;<TD>FILESIZE parameter<TD align=right><A href="#page21">21</A>
+<TR><TD>&nbsp;<TD>&nbsp;<TD>&nbsp;
+
+<TR align=left><TD><B>G</B>&nbsp;&nbsp;<TD><TD>
+<TR align=left><TD>&nbsp;<TD>generating reports<TD align=right><A href="#page36">36</A>
+<TR><TD>&nbsp;<TD>&nbsp;<TD>&nbsp;
+
+<TR align=left><TD><B>I</B>&nbsp;&nbsp;<TD><TD>
+<TR align=left><TD>&nbsp;<TD>initialization routine<TD align=right><A href="#page24">24</A>
+<TR align=left><TD>&nbsp;<TD>installation<TD align=right><A href="#page9">9</A>, <A href="#page10">10</A>
+<TR><TD>&nbsp;<TD>&nbsp;<TD>&nbsp;
+
+<TR align=left><TD><B>J</B>&nbsp;&nbsp;<TD><TD>
+<TR align=left><TD>&nbsp;<TD>Job Timing Index (rpt)<TD align=right><A href="#page36">36</A>
+<TR align=left><TD>&nbsp;<TD>job, definition<TD align=right><A href="#page7">7</A>
+<TR align=left><TD>&nbsp;<TD>jobs/second (rpt)<TD align=right><A href="#page36">36</A>
+<TR align=left><TD>&nbsp;<TD>jobs/second/load (rpt)<TD align=right><A href="#page36">36</A>
+<TR><TD>&nbsp;<TD>&nbsp;<TD>&nbsp;
+
+<TR align=left><TD><B>K</B>&nbsp;&nbsp;<TD><TD>
+<TR align=left><TD>&nbsp;<TD>kernel limitations<TD align=right><A href="#page34">34</A>
+<TR align=left><TD>&nbsp;<TD>killing benchmark processes<TD align=right><A href="#page31">31</A>
+<TR><TD>&nbsp;<TD>&nbsp;<TD>&nbsp;
+
+<A name="index3"></A>
+
+<TR align=left><TD><B>L</B>&nbsp;&nbsp;<TD><TD>
+<TR align=left><TD>&nbsp;<TD>Large Database mix<TD align=right><A href="#page5">5</A>, <A href="#page12">12</A>, <A href="#page50">50</A>
+<TR align=left><TD>&nbsp;<TD>linker options<TD align=right><A href="#page13">13</A>
+<TR align=left><TD>&nbsp;<TD>load, definition<TD align=right><A href="#page7">7</A>
+<TR align=left><TD>&nbsp;<TD>logfile<TD align=right><A href="#page36">36</A>
+<TR><TD>&nbsp;<TD>&nbsp;<TD>&nbsp;
+<TR align=left><TD><B>M</B>&nbsp;&nbsp;<TD><TD>
+<TR align=left><TD>&nbsp;<TD>machine configuration<TD align=right><A href="#page26">26</A>
+<TR align=left><TD>&nbsp;<TD>machine name (multitask program)<TD align=right><A href="#page26">26</A>
+<TR align=left><TD>&nbsp;<TD>make<TD align=right><A href="#page18">18</A>
+<TR align=left><TD>&nbsp;<TD>Makefile<TD align=right><A href="#page24">24</A>
+<TR align=left><TD>&nbsp;<TD>&nbsp;&nbsp;&nbsp;&nbsp;definition<TD align=right><A href="#page7">7</A>
+<TR align=left><TD>&nbsp;<TD>minimum system requirements<TD align=right><A href="#page9">9</A>
+<TR align=left><TD>&nbsp;<TD>mix variable, S7setup<TD align=right><A href="#page13">13</A>
+<TR align=left><TD>&nbsp;<TD>mix, calculating the<TD align=right><A href="#page43">43</A>
+<TR align=left><TD>&nbsp;<TD>mixes<TD align=right><A href="#page3">3</A>, <A href="#page4">4</A>, <A href="#page12">12</A>
+<TR align=left><TD>&nbsp;<TD>&nbsp;&nbsp;&nbsp;&nbsp;CASE/EDA/Tech Pubs<TD align=right><A href="#page5">5</A>
+<TR align=left><TD>&nbsp;<TD>&nbsp;&nbsp;&nbsp;&nbsp;definition<TD align=right><A href="#page7">7</A>
+<TR align=left><TD>&nbsp;<TD>mkdir command<TD align=right><A href="#page10">10</A>
+<TR align=left><TD>&nbsp;<TD>mount point for all configured disk drives<TD align=right><A href="#page13">13</A>
+<TR align=left><TD>&nbsp;<TD>multitask<TD align=right><A href="#page18">18</A>, <A href="#page27">27</A>
+<TR align=left><TD>&nbsp;<TD>multitask program<TD align=right><A href="#page24">24</A>, <A href="#page26">26</A>
+<TR align=left><TD>&nbsp;<TD>&nbsp;&nbsp;&nbsp;&nbsp;definition<TD align=right><A href="#page7">7</A>
+<TR align=left><TD>&nbsp;<TD>&nbsp;&nbsp;&nbsp;&nbsp;transcript<TD align=right><A href="#page27">27</A>
+<TR align=left><TD>&nbsp;<TD>multiuser environments, characteristics of<TD align=right><A href="#page3">3</A>
+<TR align=left><TD>&nbsp;<TD>multiuser environments, types of<TD align=right><A href="#page3">3</A>
+<TR align=left><TD>&nbsp;<TD>multiuser.c<TD align=right><A href="#page24">24</A>
+<TR align=left><TD>&nbsp;<TD>Multiuser/Shared System mix<TD align=right><A href="#page5">5</A>, <A href="#page12">12</A>, <A href="#page47">47</A>
+<TR><TD>&nbsp;<TD>&nbsp;<TD>&nbsp;
+
+<TR align=left><TD><B>N</B>&nbsp;&nbsp;<TD><TD>
+<TR align=left><TD>&nbsp;<TD>-N<TD align=right><A href="#page30">30</A>
+<TR align=left><TD>&nbsp;<TD>-nl<TD align=right><A href="#page29">29</A>
+<TR><TD>&nbsp;<TD>&nbsp;<TD>&nbsp;
+<TR align=left><TD><B>O</B>&nbsp;&nbsp;<TD><TD>
+<TR align=left><TD>&nbsp;<TD>operation load<TD align=right><A href="#page27">27</A>
+<TR align=left><TD>&nbsp;<TD>operation load (multitask program)<TD align=right><A href="#page26">26</A>, <A href="#page27">27</A>
+<TR align=left><TD>&nbsp;<TD>operation load, definition<TD align=right><A href="#page7">7</A>
+<TR align=left><TD>&nbsp;<TD>operation, definition<TD align=right><A href="#page7">7</A>
+
+<A name="index4"></A>
+
+<TR align=left><TD>&nbsp;<TD>options<TD align=right><A href="#page29">29</A>
+<TR align=left><TD>&nbsp;<TD>output files<TD align=right><A href="#page35">35</A>
+<TR><TD>&nbsp;<TD>&nbsp;<TD>&nbsp;
+<TR align=left><TD><B>P</B>&nbsp;&nbsp;<TD><TD>
+<TR align=left><TD>&nbsp;<TD>POOLSIZE parameter<TD align=right><A href="#page21">21</A>
+<TR align=left><TD>&nbsp;<TD>postscript, definition<TD align=right><A href="#page7">7</A>
+<TR align=left><TD>&nbsp;<TD>premature termination of the benchmark<TD align=right><A href="#page32">32</A>
+<TR align=left><TD>&nbsp;<TD>&nbsp;&nbsp;&nbsp;&nbsp;ulimit()<TD align=right><A href="#page18">18</A>
+<TR align=left><TD>&nbsp;<TD>process slots<TD align=right><A href="#page32">32</A>
+<TR align=left><TD>&nbsp;<TD>process, definition<TD align=right><A href="#page7">7</A>
+<TR><TD>&nbsp;<TD>&nbsp;<TD>&nbsp;
+<TR align=left><TD><B>R</B>&nbsp;&nbsp;<TD><TD>
+<TR align=left><TD>&nbsp;<TD>Real Time (rpt)<TD align=right><A href="#page36">36</A>
+<TR align=left><TD>&nbsp;<TD>register_test()<TD align=right><A href="#page24">24</A>
+<TR align=left><TD>&nbsp;<TD>removing temporary files<TD align=right><A href="#page31">31</A>
+<TR align=left><TD>&nbsp;<TD>reports<TD align=right><A href="#page36">36</A>
+<TR align=left><TD>&nbsp;<TD>results<TD align=right><A href="#page39">39</A>
+<TR align=left><TD>&nbsp;<TD>rpt<TD align=right><A href="#page36">36</A>
+<TR align=left><TD>&nbsp;<TD>&nbsp;&nbsp;&nbsp;&nbsp;definition<TD align=right><A href="#page7">7</A>
+<TR><TD>&nbsp;<TD>&nbsp;<TD>&nbsp;
+<TR align=left><TD><B>R</B>&nbsp;&nbsp;<TD><TD>
+<TR align=left><TD>&nbsp;<TD>S7setup<TD align=right><A href="#page12">12</A>, <A href="#page19">19</A>
+<TR align=left><TD>&nbsp;<TD>&nbsp;&nbsp;&nbsp;&nbsp;definition<TD align=right><A href="#page7">7</A>
+<TR align=left><TD>&nbsp;<TD>&nbsp;&nbsp;&nbsp;&nbsp;running the script<TD align=right><A href="#page13">13</A>
+<TR align=left><TD>&nbsp;<TD>&nbsp;&nbsp;&nbsp;&nbsp;transcript of script<TD align=right><A href="#page14">14</A>
+<TR align=left><TD>&nbsp;<TD>shell script custom tests<TD align=right><A href="#page5">5</A>, <A href="#page24">24</A>
+<TR align=left><TD>&nbsp;<TD>shell script, definition<TD align=right><A href="#page7">7</A>
+<TR align=left><TD>&nbsp;<TD>shell_rtns_1, shell_rtns_2, and shell_rtns_3<TD align=right><A href="#page24">24</A>
+<TR align=left><TD>&nbsp;<TD>slay<TD align=right><A href="#page31">31</A>
+<TR align=left><TD>&nbsp;<TD>socketpair()<TD align=right><A href="#page18">18</A>
+<TR align=left><TD>&nbsp;<TD>source files<TD align=right><A href="#page45">45</A>
+<TR align=left><TD>&nbsp;<TD>spreadsheet output file, suite7.ss<TD align=right><A href="#page35">35</A>
+<TR align=left><TD>&nbsp;<TD>stopping the benchmark<TD align=right><A href="#page31">31</A>
+<TR align=left><TD>&nbsp;<TD>suite7.ss<TD align=right><A href="#page35">35</A>
+<TR align=left><TD>&nbsp;<TD>&nbsp;&nbsp;&nbsp;&nbsp;preserving multiple copies<TD align=right><A href="#page35">35</A>
+<TR align=left><TD>&nbsp;<TD>swap space<TD align=right><A href="#page34">34</A>
+<TR align=left><TD>&nbsp;<TD>system resources under test<TD align=right><A href="#page5">5</A>
+<TR align=left><TD>&nbsp;<TD>system resources, definition<TD align=right><A href="#page8">8</A>
+<TR><TD>&nbsp;<TD>&nbsp;<TD>&nbsp;
+
+<A name="index5"></A>
+
+<TR align=left><TD><B>T</B>&nbsp;&nbsp;<TD><TD>
+<TR align=left><TD>&nbsp;<TD>-t<TD align=right><A href="#page29">29</A>
+<TR align=left><TD>&nbsp;<TD>tar command<TD align=right><A href="#page11">11</A>
+<TR align=left><TD>&nbsp;<TD>task, definition<TD align=right><A href="#page8">8</A>
+<TR align=left><TD>&nbsp;<TD>temporary files<TD align=right><A href="#page31">31</A>
+<TR align=left><TD>&nbsp;<TD>test environment, definition<TD align=right><A href="#page8">8</A>
+<TR align=left><TD>&nbsp;<TD>test iterations (multitask program)<TD align=right><A href="#page26">26</A>
+<TR align=left><TD>&nbsp;<TD>test, definition<TD align=right><A href="#page8">8</A>
+<TR align=left><TD>&nbsp;<TD>tests<TD align=right><A href="#page4">4</A>
+<TR align=left><TD>&nbsp;<TD>tests, list of<TD align=right><A href="#page40">40</A>
+<TR><TD>&nbsp;<TD>&nbsp;<TD>&nbsp;
+<TR align=left><TD><B>U</B>&nbsp;&nbsp;<TD><TD>
+<TR align=left><TD>&nbsp;<TD>ulimit()<TD align=right><A href="#page18">18</A>, <A href="#page34">34</A>
+<TR><TD>&nbsp;<TD>&nbsp;<TD>&nbsp;
+<TR align=left><TD><B>W</B>&nbsp;&nbsp;<TD><TD>
+<TR align=left><TD>&nbsp;<TD>workfile<TD align=right><A href="#page25">25</A>, <A href="#page46">46</A>
+</TABLE>
+
+</BODY>
+
+</HTML>
+

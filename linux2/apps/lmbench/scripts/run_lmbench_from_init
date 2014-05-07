@@ -1,0 +1,29 @@
+#!/bin/sh
+
+export PATH=/bin:/sbin:/usr/sbin:/usr/bin:/lmbench/bin/wombat:
+
+mount -o remount,rw -t ext2 /dev/ram0 /
+echo "Mounted dev ram0"
+
+mount -t proc /proc
+echo "Mounted proc"
+
+echo 1 > /proc/sys/vm/overcommit_memory
+echo "Turn on overcommitting of memory"
+
+mount -t sysfs /sys
+echo "Mounted sysfs"
+
+#insmod /home/anyuser/qfs.ko
+mount -t qfs /home/flash
+echo "Mounted qfs"
+
+syslogd &
+echo "Started syslog"
+
+ifconfig lo 127.0.0.1 netmask 255.0.0.0
+echo "Configured net lo device"
+
+echo "running lmbench"
+
+/lmbench/scripts/run_all_lmbench

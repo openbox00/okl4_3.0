@@ -1,0 +1,228 @@
+Import("*")
+# extra_linux_apps from projects/iguana/SConstruct
+import os
+
+wombat_id = ""
+if "wombat_id" in args:
+    wombat_id = args["wombat_id"]
+
+kernel_version = ""
+if "kernel_version" in args:
+    kernel_version = "-" + args["kernel_version"]
+
+kernel_dir = os.path.join(env.oklinux_dir, 'kernel%s' % kernel_version)
+build_dir = Dir(env.builddir + "/wombat%s" % wombat_id).abspath
+mod_dir = Dir(env.builddir + "/../linux/install").abspath
+def make_absolute_path_builddir(file_name):
+    return os.path.join(build_dir, file_name)
+
+def copy_linux_config_file(target, source, env):
+    out_f = file(target[0].abspath, "w")
+    in_f = file(source[0].abspath)
+    for line in in_f.readlines():
+        out_f.write(line)
+
+# we will use gnu make. Let scons know this.
+env.scons_env["MAKE"] = "make"
+
+
+# Choose and then copy the relevant linux config file to the build directory where it will be used
+# to tell the linux make-based build system how to build linux
+wombat_cflags =""
+system=""
+if env.machine.arch == "ia32":
+    system="i386"
+elif env.machine.arch == "mips" or env.machine.arch == "mips64":
+    system="mips"
+elif env.machine.arch == "arm":
+    system="arm"
+
+if env.machine.arch == "ia32":
+    if env.machine.__name__ == "ia32_pc99_vga":
+        linux_conf_file = "l4linux_config_ia32_vga"
+    elif env.machine.__name__ == "ia32_pc99_fb":
+        linux_conf_file = "l4linux_config_ia32_fb"
+    else:
+        linux_conf_file = "l4linux_config_ia32"
+    wombat_cflags += "-I../../arch/ia32/libs/l4/include "
+elif env.machine.__name__  ==  "gumstix" or env.machine.__name__ == "gumstix_hw":
+    linux_conf_file = "l4linux_config_gumstix"
+    wombat_cflags = "-DENDIAN_%s " % env.machine.endian.upper()
+elif env.machine.__name__ == "kzm_arm11" or env.machine.__name__ == "kzm_arm11_hw":
+    wombat_cflags = "-DENDIAN_%s " % env.machine.endian.upper()
+    linux_conf_file = "l4linux_config_kzm"
+elif env.machine.__name__ == "mx21ads" or env.machine.__name__ == "mx21ads_hw":
+    wombat_cflags = "-DENDIAN_%s " % env.machine.endian.upper()
+    linux_conf_file = "l4linux_config_mx21"
+elif env.machine.__name__ == "gta01":
+    wombat_cflags = "-DENDIAN_%s " % env.machine.endian.upper()
+    linux_conf_file = "l4linux_config_gta01"
+elif env.machine.__name__ == "versatile" or env.machine.__name__ == "versatile_uboot":
+    wombat_cflags = "-DENDIAN_%s " % env.machine.endian.upper()
+    linux_conf_file = "l4linux_config_versatile"
+
+if not get_bool_arg(args, "ENABLE_DEBUG", True):
+    wombat_cflags += "-DNDEBUG "
+
+# XXX fixme
+if env.name == "oklinux":
+    linux_conf_file += "_cell"
+
+# Parse ENABLE_VDSO command line option
+# conditionally enables sysenter syscalls mechanism on ia32
+if get_bool_arg(args, "ENABLE_VDSO", False):
+    wombat_cflags += "-DCONFIG_IA32_VDSO_ENABLE=1"
+
+config = env.Command(make_absolute_path_builddir(".config"), linux_conf_file,
+                     Action(copy_linux_config_file, "[CFG ] $TARGET")); # second arg to Action - what gets printed out on stdout during execution of Action
+
+
+if getattr(env.machine, "pid_reloc", False):
+    wombat_cflags += "-DARM_PID_RELOC=1 "
+if getattr(env.machine, "shared_domains", False):
+    wombat_cflags += "-DARM_SHARED_DOMAINS=1 "
+
+wombat_cflags += "-DMAX_ELF_SEGMENTS=%d " % (env.max_elf_segments)
+
+max_thread_bits = [x[1] for x in env.scons_env['CPPDEFINES']
+                   if isinstance(x, tuple) and x[0] == 'CONFIG_MAX_THREAD_BITS'][0]
+wombat_cflags += "-DCONFIG_MAX_THREAD_BITS=%d " % (max_thread_bits)
+
+oklinux_config = args["oklinux_config"]
+
+# Parse list of libraries that OK Linux depends on
+wombat_ldflags = ""
+for lib in oklinux_config["libs"]:
+    wombat_ldflags += "-l" + lib + " "
+
+# Set OKL4FS configuration variable
+okl4fs = "n"
+if oklinux_config["okl4fs"] is True:
+    okl4fs = "y"
+
+# Configure mutex type
+mutex_type = args.get("MUTEX_TYPE", "user").lower()
+print "mutex type %s" % mutex_type
+if mutex_type == "hybrid":
+    wombat_cflags += "-DCONFIG_HYBRID_MUTEXES"
+elif mutex_type == "kernel":
+    wombat_cflags += "-DCONFIG_KERNEL_MUTEXES"
+elif mutex_type == "user":
+    wombat_cflags += "-DCONFIG_USER_MUTEXES"
+
+# The command which actually invokes the make-based build system
+# num_jobs is the -j flag argument which is also passed
+
+verbose = 0
+if get_bool_arg(args, "VERBOSE_STR", False):
+    verbose = 1
+vmlinux = env.Command(make_absolute_path_builddir("vmlinux"),
+                      config,
+                      "$MAKE -j %d -C %s ARCH=l4 O=%s CROSS_COMPILE=%s WOMBAT_CFLAGS=\'%s\'"
+                      " ${_linkaddress('LINK_ADDRESS=', TARGET.LINKFILE)} V=%d SYSTEM=%s WOMBAT_LDFLAGS=\'%s\' CONFIG_OKL4FS=\'%s\'" % \
+                      (GetOption('num_jobs'), kernel_dir, build_dir, env.scons_env["TOOLPREFIX"], wombat_cflags, verbose, system, wombat_ldflags, okl4fs))
+modules = Action(
+                      "$MAKE -j %d -C %s ARCH=l4 O=%s CROSS_COMPILE=%s INSTALL_MOD_PATH=%s WOMBAT_CFLAGS=\'%s\'"
+                      " ${_linkaddress('LINK_ADDRESS=', TARGET.LINKFILE)} V=%d SYSTEM=%s WOMBAT_LDFLAGS=\'%s\' CONFIG_OKL4FS=\'%s\' modules_install" % \
+                      (GetOption('num_jobs'), kernel_dir, build_dir, env.scons_env["TOOLPREFIX"], mod_dir, wombat_cflags, verbose, system, wombat_ldflags, okl4fs))
+
+# env.Command returns a list of a single element of scons nodes, hence vmlinux[0] below.
+# Each scons node has an object, attributes whose purpose is to enable the assignment of additional
+# information about that node that might be needed later.
+# Here we are assigning (storing) an object containing the elfweaver metadata. (eg physical address, virtual address, file name itself ... contents of the xml file).
+command_line = "vmlinux igms_name=ramdisk root=/dev/igms0"
+console = " console=ttyS0,115200"
+
+if env.name == "oklinux" and (env.machine.__name__ == "versatile" or env.machine.__name__ == "versatile_uboot") :
+    console = " console=ttyAMA0,115200"
+
+command_line += console
+
+if env.name == "oklinux":
+    cell.set_program(vmlinux, 
+                heap = cell.Heap(size = 20 * 1024 * 1024, attach="rwx"),
+                stack = 8 * 1024,
+                args = [command_line]
+                )
+else: # iguana
+    cell.add_server(vmlinux, name= 'vmlinux', server_name = "OKL4_VMLINUX",
+                heap = 20 * 1024 * 1024,
+                stack = 8 * 1024,
+                args = [command_line],
+                # ["vmlinux", "igms_name=ramdisk root=/dev/hda1"]
+                )
+
+
+# XXX for now - remove later
+if env.name == "oklinux":
+    pass
+else:
+    cell.require_devices(vmlinux, ["vtimer", "vserial"])
+
+# Set up vserial memsection
+# XXX for now - remove later
+if env.name == "oklinux":
+    pass
+else:
+    if args["vserial_obj"]:
+        cell.vdevs_setup(vmlinux, args["vserial_obj"],vserial_ms_size=0x2000)
+
+env.Depends(vmlinux, env.headers)
+env.Depends(vmlinux, env.libs)
+
+# invoke make everytime - let it decide what needs to be rebuilt in linux
+# We always build linux by invoking make
+env.scons_env.AlwaysBuild(vmlinux)
+
+# install the built and linked vmlinux object in $BUILDDIR/iguana/bin/
+installed = env.scons_env.InstallAs(os.path.join(env.builddir, "bin/vmlinux%s" % wombat_id), vmlinux)
+
+#FIXME why don't we do anything with 'installed' after assigning to it?
+
+env.expect_test_data = []
+
+env.expect_test_data.append( ("Linux user startup!", None) )
+
+if extra_linux_apps is not None:
+    if 'ltp' in extra_linux_apps:
+        env.expect_test_data.append( ("</ltp>", None) )
+    elif 'lmbench' in extra_linux_apps:
+        env.expect_test_data.append( ("</lmbench>", None) )
+    elif 'disktest' in extra_linux_apps:
+        env.expect_test_data.append( ("/ #", "sh /disktest/disktest.sh") )
+	env.expect_test_data.append( ("disktest completed... exiting", None) )
+else:
+    #if mod_test == True:
+        # Check module loading is ok
+    #    env.expect_test_data.append(("Modules loaded", None))
+    #    env.expect_test_data.append(("nls_iso8859_1", None))
+    #    env.expect_test_data.append(("nls_utf8", None))
+    #just check we got a prompt if not running ltp or lmbench
+    env.expect_test_data.append( ("Please press Enter to activate this console.", "\n") )
+    env.expect_test_data.append( ("/ #", "uname -a") )
+
+# Rootfs unit tests
+if extern_rootfs == "none":
+    env.expect_test_data = [("Assertion failed", None)]
+
+if run_gstreamertest == True:
+    env.expect_test_data = [("GStreamer test result: pass", None)]
+
+if rootfs_size is not None:
+    env.expect_test_data = [("Linux user startup!", None),
+                            ("Please press Enter to activate this console.", "\n"),
+                            ("/ #", "/usr/bin/check_rootfs_size.sh 8000"),
+                            ("True", None)]
+    # parse this number
+
+# if ext_devfs_file is not None:
+#     env.expect_test_data = [("Linux user startup!", None),
+#                             ("Please press Enter to activate this console.", "\n"),
+#                             ("/ #", "ls -1 /dev | grep findme"),
+#                             ("findme", None),
+#                             ("/ #", "ls /dev/findme"),
+#                             ("foobar", None)]
+
+# Return an object that represents the target about to be built.
+# That is a descriptor for the built vmlinux compiled and linked binary file.
+Return("vmlinux", "modules")

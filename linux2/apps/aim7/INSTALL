@@ -1,0 +1,30 @@
+FOR THE IMPATIENT
+- unpack s7110.tar.Z
+
+	zcat s7110.tar.Z | tar xf -
+
+- cd to the AIM VII directory
+
+	cd s7110
+
+- make sure that "." is in your PATH, then run S7setup and answer all the
+  questions.
+
+  NOTE: when using gcc on a i386 system, the following compiler options are
+  recommended: -O -m486 -ffloat-store
+
+- run make.
+
+- start a benchmark run:
+
+	multitask -nl
+
+  NOTE: Although the documentation states that the benchmark has to be run by
+  the super-user, experience has shown that a regular user can do that as well,
+  on condition that he/she owns the directories enumerated in the "config"
+  file.
+
+OTHER SOURCES OF INFORMATION
+Detailed installation instructions are provided in the file "doc/main.html."
+
+

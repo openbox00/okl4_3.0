@@ -1,0 +1,16 @@
+# This is run first except when booting in single-user mode.
+::sysinit:/etc/init.d/rcS
+
+tty1::askfirst:-/bin/sh
+tty2::askfirst:-/bin/sh
+tty3::askfirst:-/bin/sh
+ttyS0::askfirst:-/bin/sh
+#ttyS0::respawn:-/sbin/getty -L ttyS0 115200 vt100
+#T0:23:respawn:/sbin/getty -L ttyS0 9600 vt100
+
+::restart:/sbin/init
+
+# Stuff to do before rebooting
+::ctrlaltdel:/sbin/reboot
+::shutdown:/bin/umount -a -r
+::shutdown:/sbin/swapoff -a

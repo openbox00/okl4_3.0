@@ -1,0 +1,24 @@
+#!/bin/sh
+
+export OS=wombat
+hostname localhost
+
+PATH=$PATH:../bin/$OS
+
+mkdir /usr/include 
+mkdir /usr/include/sys
+touch /usr/include/sys/types.h
+
+echo -e '#!/bin/sh' "\n" > /tmp/hello
+
+chmod u+x /tmp/hello
+
+dd if=/dev/zero of=/tmp/mb count=2048
+
+export OUTPUT=$OS.output
+#./lmbench CONFIG.wombat > $OUTPUT 2>&1
+/lmbench/scripts/lmbench_part_1_latency
+/lmbench/scripts/lmbench_part_2_localnet
+/lmbench/scripts/lmbench_part_3_bwidth
+/lmbench/scripts/lmbench_part_4_ctx
+/lmbench/scripts/lmbench_part_5_tlb_memload

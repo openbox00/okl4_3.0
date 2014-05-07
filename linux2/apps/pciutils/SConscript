@@ -1,0 +1,22 @@
+Import("*")
+import os
+build_dir = Dir(env.builddir + "/pciutils").abspath
+inst_dir = Dir(env.builddir + "/install").abspath
+
+def b(file_name):
+    return os.path.join(build_dir, file_name)
+def i(file_name):
+    return os.path.join(inst_dir, file_name)
+
+env.scons_env["MAKE"] = "make"
+
+pciutils = env.Command(b("pciutils"),
+                     [] ,
+                      "CC=%s PREFIX=%s/usr ZLIB=no $MAKE -j %d -C %s/apps/pciutils" %
+                      (env.scons_env["CC"], inst_dir, GetOption('num_jobs'), env.oklinux_dir))
+
+pciutils_install = env.Command(i("bin/pciutils"),
+                              pciutils,
+                              "PREFIX=%s/usr $MAKE -C %s/apps/pciutils install" % (inst_dir, env.oklinux_dir))
+Return("pciutils_install")
+

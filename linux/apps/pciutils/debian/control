@@ -1,0 +1,39 @@
+Source: pciutils
+Section: admin
+Priority: optional
+Maintainer: Debian pciutils Maintainers <pkg-pciutils-discuss@lists.alioth.debian.org>
+Uploaders: Matt Taggart <taggart@debian.org>, Anibal Monsalve Salazar <anibal@debian.org>
+Build-Depends: debhelper (>> 4), zlib1g-dev
+Standards-Version: 3.7.2
+
+Package: pciutils
+Architecture: any
+Depends: libpci2, ${shlibs:Depends}
+Suggests: curl | wget | lynx
+Description: Linux PCI Utilities
+ This package contains various utilities for inspecting and setting of
+ devices connected to the PCI bus. 
+ .
+  Homepage: http://atrey.karlin.mff.cuni.cz/~mj/pciutils.shtml
+
+Package: pciutils-dev
+Section: devel
+Priority: optional
+Architecture: any
+Depends: pciutils (= ${Source-Version})
+Description: Linux PCI Utilities (development files)
+ This package contains the <pci/pci.h>, <pci/config.h> and <pci/header.h>
+ header files, as well as the /usr/lib/libpci.a library.
+ .
+  Homepage: http://atrey.karlin.mff.cuni.cz/~mj/pciutils.shtml
+
+Package: pciutils-udeb
+XC-Package-Type: udeb
+Section: debian-installer
+Architecture: any
+Depends: ${shlibs:Depends}
+Description: Linux PCI Utilities (udeb)
+ This package contains various utilities for inspecting and setting of
+ devices connected to the PCI bus. 
+ .
+ This is a minimal version for use in debian-installer.

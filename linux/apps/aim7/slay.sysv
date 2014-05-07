@@ -1,0 +1,61 @@
+#!/bin/sh
+#
+# In csh
+# 
+#	alias psg 'ps aux | sed -n -e "/sed -n -e /d\\
+#		/\!$/p\\
+#		/TIME COMMAND/p"'
+#
+#(change 'ps aux' to 'ps -ef' for sysV.)
+#
+# Converting to a ksh or sh function is left as an exercise for the
+# reader ...
+#
+# To kill I use this script which I picked this up from the net some
+# time back.
+#
+# slay :  kill processes by names 
+#
+# Do our best to locate the PIDs to kill from the give
+# process names.
+#
+# @(#) slay.sysv:1.1 1/22/96 00:00:00
+#
+
+MYNAME=`basename $0`
+Ask=yes
+case $1 in
+"")
+	echo "Usage: $MYNAME process_name ..."
+	exit 1 ;;
+-n)
+	Ask=no; shift ;;
+esac
+
+ # change 'ps aux' to 'ps -ef' for sysV.
+PSAUX=`ps -ef`
+for pname
+do
+	line= PID=
+	PID=`echo "$PSAUX" |
+		grep -i $pname |
+		awk '!/grep|'$MYNAME'/ {print $2}'`
+
+	for pid in $PID
+	do
+		if [ $Ask = yes ]
+		then
+			line=`echo "$PSAUX" | awk '$2 == '$pid' {print}'`
+			echo -n "Kill ($line)? "
+			read reply
+			case $reply in
+			[Yy]*)	kill -9 $pid
+				;;
+			esac
+		else
+			kill -9 $pid
+		fi
+	done
+done
+
+exit

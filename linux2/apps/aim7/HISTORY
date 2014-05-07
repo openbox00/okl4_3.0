@@ -1,0 +1,15 @@
+12/14/2001:
+Initial GPL release. This is "AIM Multiuser Benchmark - Suite VII Version 1.1"
+repackaged and modified as follows:
+
+- added an electronic version of the supporting documentation.
+- repackaged "fakeh.tar" under the "ustar" (POSIX-compliant) format with
+  GNU cpio.
+- replaced references to gets() by calls to fgets() to circumvent the
+  warning issued by GNU ld.
+- applied GNU indent to all source files.
+- removed un-necessary 'break' statements from 'case' constructs in some of the
+  shell scripts.
+- updated copyright notices so as to reflect the ownership by Caldera
+  International, Inc.
+

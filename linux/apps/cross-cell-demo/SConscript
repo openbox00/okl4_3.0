@@ -1,0 +1,30 @@
+Import("*")
+import os
+import glob
+
+build_dir = Dir(env.builddir + "/cross-cell-demo").abspath
+inst_dir = Dir(env.builddir + "/install").abspath
+root_dir = Dir("#").abspath
+
+def b(file_name):
+    return os.path.join(build_dir, file_name)
+def i(file_name):
+    return os.path.join(inst_dir, file_name)
+
+sources = src_glob("*.c")
+
+files = []
+bindir = "%s/cross-cell-demo" % inst_dir
+
+files += Install(bindir,
+                env.scons_env.Program("cross-cell-demo",
+                                      sources,
+                                      CPPDEFINES=[],
+                                      CCFLAGS=[],
+                                      CC_WARNINGS=[],
+                                      _LINKADDRESS="",
+                                      _LINK="gcc",
+                                      LINKFLAGS=[])
+                )
+
+Return("files")

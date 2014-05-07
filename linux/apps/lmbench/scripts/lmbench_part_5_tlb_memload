@@ -1,0 +1,49 @@
+#!/bin/sh
+. /lmbench/scripts/lmbench_part_init
+
+
+if [ X$BENCHMARK_HARDWARE = XYES -o X$BENCHMARK_MEM = XYES ]; then
+	if [ $SYNC_MAX = 1 ]; then
+	    date >> ${OUTPUT}
+	    echo Calculating effective TLB size >> ${OUTPUT}
+	    msleep 250
+	    tlb -L $LINE_SIZE -M ${MB}M
+	    echo "" 1>&2
+
+	    date >> ${OUTPUT}
+	    echo Calculating memory load parallelism >> ${OUTPUT}
+	    msleep 250
+	    echo "Memory load parallelism" 1>&2
+	    par_mem -L $LINE_SIZE -M ${MB}M
+	    echo "" 1>&2
+
+#	    date >> ${OUTPUT}
+#	    echo Calculating cache parameters >> ${OUTPUT}
+#	    msleep 250
+#	    cache -L $LINE_SIZE -M ${MB}M
+	fi
+
+	date >> ${OUTPUT}
+	echo McCalpin\'s STREAM benchmark >> ${OUTPUT}
+	msleep 250
+	stream -P $SYNC_MAX -M ${MB}M
+	stream -P $SYNC_MAX -v 2 -M ${MB}M
+
+	date >> ${OUTPUT}
+	echo Calculating memory load latency >> ${OUTPUT}
+	msleep 250
+	echo "" 1>&2
+	echo "Memory load latency" 1>&2
+	if [ X$FASTMEM = XYES ]
+	then    lat_mem_rd -P $SYNC_MAX $MB 128
+	else    lat_mem_rd -P $SYNC_MAX $MB 16 32 64 128 256 512 1024 
+	fi
+	echo "" 1>&2
+	echo "Random load latency" 1>&2
+	if [ X$FASTMEM = XYES ]
+	then    lat_mem_rd -t -P $SYNC_MAX $MB 128
+	else    lat_mem_rd -t -P $SYNC_MAX $MB 16 32 64 128 256 512 1024 
+	fi
+	echo "" 1>&2
+fi
+

@@ -67,8 +67,8 @@ class versatile(arm926ejs):
     virtual = False
     platform = "versatile"
     memory = arm926ejs.memory.copy()
-    memory['physical'] = [Region(0x04100000L, 0x07900000L)]
-    memory['rom'] = [Region(0x07900000L, 0x08000000L)]
+    memory['physical'] = [Region(0x04100000L, 0x08900000L)]
+    memory['rom'] = [Region(0x08900000L, 0x09000000L)]
     timer_driver_v2 = "sp804_timer"
     memory_timer = [Region(0x101e3000, 0x101e4000, "all", "uncached")]
     interrupt_timer = [5]

@@ -1,0 +1,108 @@
+#!/bin/sh
+. /lmbench/scripts/lmbench_part_init
+
+
+date >> ${OUTPUT}
+echo Local networking >> ${OUTPUT}
+if [ ! -d ../../src/webpage-lm ]
+then	(cd ../../src && tar xf webpage-lm.tar)
+	sync
+	sleep 1
+fi
+SERVERS="lat_udp lat_tcp lat_rpc lat_connect bw_tcp"
+for server in $SERVERS; do $server -s; done
+DOCROOT=../../src/webpage-lm lmhttp 8008 &
+sleep 2;
+
+if [ X$BENCHMARK_OS = XYES -o X$BENCHMARK_UDP = XYES ]; then
+	lat_udp -P $SYNC_MAX localhost
+fi
+lat_udp -S localhost
+
+if [ X$BENCHMARK_OS = XYES -o X$BENCHMARK_TCP = XYES ]; then
+	lat_tcp -P $SYNC_MAX localhost
+fi
+lat_tcp -S localhost
+
+if [ X$BENCHMARK_OS = XYES -o X$BENCHMARK_RPC = XYES ]; then
+	lat_rpc -P $SYNC_MAX -p udp localhost
+	lat_rpc -P $SYNC_MAX -p tcp localhost
+fi
+lat_rpc -S localhost
+
+if [ X$BENCHMARK_OS = XYES -o X$BENCHMARK_CONNECT = XYES ]; then
+	if [ $SYNC_MAX = 1 ]; then lat_connect localhost; fi
+fi
+lat_connect -S localhost
+
+if [ X$BENCHMARK_OS = XYES -o X$BENCHMARK_TCP = XYES ]; then
+	echo "" 1>&2
+	echo "Socket bandwidth using localhost" 1>&2
+	for m in 1 64 128 256 512 1024 1437 10M; do
+		bw_tcp -P $SYNC_MAX -m $m localhost; 
+	done
+	echo "" 1>&2
+fi
+bw_tcp -S localhost
+
+if [ X$BENCHMARK_OS = XYES -o X$BENCHMARK_HTTP = XYES ]; then
+	# I want a hot cache number
+	lat_http localhost 8008 < ../../src/webpage-lm/URLS > /dev/null 2>&1
+	lat_http localhost 8008 < ../../src/webpage-lm/URLS
+fi
+lat_http -S localhost 8008
+
+for remote in $REMOTE 
+do
+	echo Networking to $remote >> ${OUTPUT}
+	$RCP $SERVERS lmhttp ../../src/webpage-lm.tar ${remote}:/tmp
+	for server in $SERVERS
+	do	$RSH $remote -n /tmp/$server -s &
+	done
+	$RSH $remote -n 'cd /tmp; tar xf webpage-lm.tar; cd webpage-lm; ../lmhttp 8008' &
+	sleep 10
+	echo "[ Networking remote to $remote: `$RSH $remote uname -a` ]" 1>&2
+	if [ X$BENCHMARK_OS = XYES -o X$BENCHMARK_UDP = XYES ]; then
+		lat_udp -P $SYNC_MAX $remote;
+	fi
+	lat_udp -S $remote;
+
+	if [ X$BENCHMARK_OS = XYES -o X$BENCHMARK_TCP = XYES ]; then
+		lat_tcp -P $SYNC_MAX $remote;
+	fi
+	lat_tcp -S $remote;
+
+	if [ X$BENCHMARK_OS = XYES -o X$BENCHMARK_RPC = XYES ]; then
+		lat_rpc -P $SYNC_MAX -p udp $remote;
+		lat_rpc -P $SYNC_MAX -p tcp $remote;
+	fi 
+	lat_rpc -S $remote;
+
+	if [ X$BENCHMARK_OS = XYES -o X$BENCHMARK_CONNECT = XYES ]; then
+		if [ $SYNC_MAX = 1 ]; then lat_connect $remote; fi
+	fi
+	lat_connect -S $remote;
+
+	if [ X$BENCHMARK_OS = XYES -o X$BENCHMARK_TCP = XYES ]; then
+		echo "Socket bandwidth using $remote" 1>&2
+		for m in 1 64 128 256 512 1024 1437 10M; do
+			bw_tcp -P $SYNC_MAX -m $m $remote; 
+		done
+		echo "" 1>&2
+	fi
+	bw_tcp -S $remote 
+
+	if [ X$BENCHMARK_OS = XYES -o X$BENCHMARK_HTTP = XYES ]; then
+		# I want a hot cache number
+		lat_http $remote 8008 < ../../src/webpage-lm/URLS > /dev/null 2>&1
+		lat_http $remote 8008 < ../../src/webpage-lm/URLS
+	fi
+	lat_http -S $remote 8008
+
+	RM=
+	for server in $SERVERS
+	do	RM="/tmp/$server $RM"
+	done
+	$RSH $remote rm $RM
+done
+

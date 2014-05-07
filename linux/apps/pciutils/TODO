@@ -1,0 +1,9 @@
+- some extended capabilities are currently only partially decoded
+- finish PCI-X 2.0 capabilities
+- finish PCI Express support
+- reading of VPD
+- class 0805?
+
+PCIIDS:
+- another mirror at Atrey?
+- delete old DB at SF

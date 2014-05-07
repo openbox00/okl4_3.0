@@ -1,0 +1,153 @@
+#!/bin/sh
+
+# lmbench - run the lmbench benchmark suite.
+#
+# Hacked by Larry McVoy (lm@sun.com, lm@sgi.com, lm@bitmover.com).
+# Copyright (c) 1994 Larry McVoy.  GPLed software.
+# $Id$
+
+#ensure the files are there
+mkdir -p /usr/include/sys
+touch /usr/include/sys/types.h
+
+echo -e "#!/bin/sh\n echo \"hello world\"" > /tmp/hello
+chmod +x /tmp/hello
+
+# Make sure we can find: ./cmd, df, and netstat
+PATH=.:../bin/$OS:../../scripts:$PATH:/etc:/usr/etc:/sbin:/usr/sbin:/lmbench/bin/wombat
+export PATH
+
+CONFIG_FILE=CONFIG.wombat
+
+. /lmbench/scripts/$CONFIG_FILE
+
+echo -e "<release_version>"
+release_version
+echo -e "</release_version>"
+
+echo -e "<config_file>"
+echo Using config in $CONFIG_FILE >> ${OUTPUT}
+echo -e "</config_file>"
+
+export ENOUGH TIMING_O LOOP_O SYNC_MAX LINE_SIZE
+
+if [ X$FILE = X ]
+then	FILE=/tmp/XXX
+	touch $FILE || echo "<error>Can not create $FILE </error>">> ${OUTPUT}
+fi
+if [ X$MB = X ]
+then	MB=8
+fi
+
+# create the file of the correct size
+lmdd label="File $FILE write bandwidth: " \
+	of=$FILE move=${MB}m fsync=1 print=3 &
+
+AVAILKB=`expr $MB \* 1024`
+
+# Figure out how big we can go for stuff that wants to use
+# all and half of memory.
+HALF="512 1k 2k 4k 8k 16k 32k 64k 128k 256k 512k 1m"
+ALL="$HALF 2m"
+i=4
+while [ $i -le $MB ]
+do
+	ALL="$ALL ${i}m"
+	h=`expr $i / 2`
+	HALF="$HALF ${h}m"
+	i=`expr $i \* 2`
+done
+
+
+if [ X$FSDIR = X ]
+then	FSDIR=/usr/tmp/lat_fs
+fi
+MP=N
+if [ $SYNC_MAX -gt 1 ]
+then	if [ "X$DISKS" != X ]
+	then	echo "<error>MP and disks are mutually exclusive (sorry)</error>"
+		exit 1
+	fi
+	if [ "X$REMOTE" != X ]
+	then	echo "<error>MP and remote networking are mutually exclusive (sorry)</error>"
+		exit 1
+	fi
+	MP=Y
+fi
+
+# Figure out as much stuff as we can about this system.
+# Sure would be nice if everyone had SGI's "hinv".
+echo '<title>lmbench3.0 results for '`uname -a`'</title>' 1>&2
+echo '<LMBENCH_VER>' ${VERSION}'</LMBENCH_VER>' 1>&2
+echo '<BENCHMARK_HARDWARE>' ${BENCHMARK_HARDWARE}'</BENCHMARK_HARDWARE>' 1>&2
+echo '<BENCHMARK_OS>' ${BENCHMARK_OS}'</BENCHMARK_OS>' 1>&2
+echo '<ALL>' ${ALL}'</ALL>' 1>&2
+echo '<DISKS>' ${DISKS}'</DISKS>' 1>&2
+echo '<DISK_DESC>' ${DISK_DESC}'</DISK_DESC>' 1>&2
+echo '<ENOUGH>' ${ENOUGH}'</ENOUGH>' 1>&2
+echo '<FAST>' ${FAST}'</FAST>' 1>&2
+echo '<FASTMEM>' ${FASTMEM}'</FASTMEM>' 1>&2
+echo '<FILE>' ${FILE}'</FILE>' 1>&2
+echo '<FSDIR>' ${FSDIR}'</FSDIR>' 1>&2
+echo '<HALF>' ${HALF}'</HALF>' 1>&2
+echo '<INFO>' ${INFO}'</INFO>' 1>&2
+echo '<LINE_SIZE>' ${LINE_SIZE}'</LINE_SIZE>' 1>&2
+echo '<LOOP_O>' ${LOOP_O}'</LOOP_O>' 1>&2
+echo '<MB>' ${MB}'</MB>' 1>&2
+echo '<MHZ>' ${MHZ}'</MHZ>' 1>&2
+echo '<MOTHERBOARD>' ${MOTHERBOARD}'</MOTHERBOARD>' 1>&2
+echo '<NETWORKS>' ${NETWORKS}'</NETWORKS>' 1>&2
+echo '<PROCESSORS>' ${PROCESSORS}'</PROCESSORS>' 1>&2
+echo '<REMOTE>' ${REMOTE}'</REMOTE>' 1>&2
+echo '<SLOWFS>' ${SLOWFS}'</SLOWFS>' 1>&2
+echo '<OS>' ${OS}'</OS>' 1>&2
+echo '<SYNC_MAX>' ${SYNC_MAX}'</SYNC_MAX>' 1>&2
+echo '<TIMING_O>' ${TIMING_O}'</TIMING_O>' 1>&2
+echo '<LMBENCH_VERSION>' ${VERSION}'</LMBENCH_VERSION>' 1>&2
+echo '<USER>' $USER'</USER>' 1>&2
+echo '<HOSTNAME>' `hostname`'</HOSTNAME>' 1>&2
+echo '<NODENAME>' `uname -n`'</NODENAME>' 1>&2
+echo '<SYSNAME>' `uname -s`'</SYSNAME>' 1>&2
+echo '<PROCESSOR>' `uname -p`'</PROCESSOR>' 1>&2
+echo '<MACHINE>' `uname -m`'</MACHINE>' 1>&2
+echo '<RELEASE>' `uname -r`'</RELEASE>' 1>&2
+echo '<VERSION>' `uname -v`'</VERSION>' 1>&2
+
+echo '<date>'`date`'</date>' 1>&2
+echo '<uptime>'`uptime`'</uptime>' 1>&2
+
+echo '<netstat>'
+netstat -i | while read i
+do	echo '<net>' "$i" '</net>' 1>&2
+	set `echo $i`
+	case $1 in
+	    *ame)	;;
+	    *)		ifconfig $1 | while read i
+			do echo '<if>' "$i"'</if>' 1>&2
+			done
+			;;
+	esac
+done
+echo '</netstat>'
+
+mount | while read i
+do	echo '<mount>' "$i"'</mount>' 1>&2
+done
+
+STAT=$FSDIR/lmbench
+mkdir $FSDIR 2>/dev/null
+touch $STAT 2>/dev/null
+if [ ! -f $STAT ]
+then	echo "<error>Can't make a file - $STAT - in $FSDIR</error>" >> ${OUTPUT}
+	touch $STAT
+	exit 1
+fi
+if [ X$SYNC != X ]
+then	/bin/rm -rf $SYNC
+	mkdir -p $SYNC 2>/dev/null
+	if [ ! -d $SYNC ]
+	then	echo "<error>Can't make $SYNC</error>" >> ${OUTPUT}
+		exit 1
+	fi
+fi
+

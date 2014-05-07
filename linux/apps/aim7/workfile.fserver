@@ -1,0 +1,35 @@
+# @(#) workfile.fserver:1.3 1/22/96 00:00:00
+# Fileserver Mix
+FILESIZE: 10M
+POOLSIZE: 20M
+20  add_int
+20  add_long
+20  add_short
+20  creat-clo
+20  dir_rtns_1
+30  disk_cp
+30  disk_rd
+30  disk_rr
+30  disk_rw
+30  disk_src
+30  disk_wrt
+10  div_int
+10  div_long
+10  div_short
+10  jmp_test
+20  link_test
+40  mem_rtns_1
+10  mem_rtns_2
+20  misc_rtns_1
+10  mul_int
+10  mul_long
+10  mul_short
+20  ram_copy
+10  signal_test
+30  sort_rtns_1
+30  string_rtns
+5   sync_disk_cp
+5   sync_disk_rw
+5   sync_disk_wrt
+10  tcp_test
+40  udp_test

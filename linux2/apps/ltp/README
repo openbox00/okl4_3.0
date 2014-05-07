@@ -1,0 +1,97 @@
+
+Linux Test Project
+
+
+The latest image is always available at http://ltp.sf.net
+
+
+About the Linux Test Project
+
+The Linux Test Project is a joint project with SGI, IBM, OSDL, and Bull with a
+goal to deliver test suites to the open source community that validate the
+reliability, robustness, and stability of Linux. The Linux Test Project is a
+collection of tools for testing the Linux kernel and related features. Our goal
+is to improve the Linux kernel by bringing test automation to the kernel testing
+effort. Interested open source contributors are encouraged to join the project.
+
+
+In the Package
+--------------
+Here is a short description of what is included in this package
+
+INSTALL
+	Installation documentation and quick start guide
+
+README
+	This document
+
+CREDITS
+	Credits to those who have contributed to the project.
+
+COPYING
+		 GNU General Public License
+
+ChangeLog
+	An incomplete list of changes to the project.  We will try harder to
+	keep this up to date.
+
+Makefile
+		 Top level make file for LTP.
+
+runalltests.sh
+	A simple script to run all of the packaged tests in sequential order and
+		 report the overall result.
+
+diskio.sh
+	A simple script to run all the diskio tests that pertain to the CD-ROM
+	and floppy disk file systems.
+
+networktests.sh
+	A simple script to run all the network related tests that require
+	another remote machine.
+
+doc/*
+	Documentation for the project including man pages for some of the
+	tools & library functions, as well as descriptions of every test.
+
+
+include/*
+lib/*
+	The include and lib directories contain headers and codes for common
+	routines used by many of the tests.  We have tried to keep this to a
+		 minimum.
+
+testcases/*
+	Contains all tests that run under the LTP as well as the "bin"
+		 directory, which has hardlinks to all the test executables.
+
+runtest/*
+	It houses command lists that are used by pan for automated testing.
+
+pan/*
+	The pan directory contains a simple, lightweight test harness.  pan
+	has the ability to run tests randomly and in parallel.  See pan's man
+	page for more information.
+
+scratch/*
+	The scratch directory is a dumping ground for snippets and test cases
+	that we found but haven't integrated into LTP yet.  Feel free to suggest
+	new snippets to be added, or take one of these and finish it off.
+
+Warning!
+--------
+Be careful with these tests!
+
+Don't run them on production systems.  Growfiles, doio, and iogen in particular
+stress the I/O capabilities of systems and while they should not cause problems
+on properly functioning systems, they are intended to find (or cause) problems.
+
+
+Contact Information and Updates
+-------------------------------
+
+URL: http://ltp.sf.net
+
+Questions and comments should be sent to the LTP mailing list located on the
+project page.
+

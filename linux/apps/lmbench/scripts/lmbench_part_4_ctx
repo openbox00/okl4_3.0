@@ -1,0 +1,28 @@
+#!/bin/sh
+. /lmbench/scripts/lmbench_part_init
+
+
+if [ X$BENCHMARK_OS = XYES -o X$BENCHMARK_CTX = XYES ]; then
+	date >> ${OUTPUT}
+	echo Calculating context switch overhead >> ${OUTPUT}
+	msleep 250
+	if [ $MB -ge 8 ]
+
+	then	
+		#lat_ctx locks wombat at > 16 thread
+                #Fixed
+		CTX="0 4 8 16 32 64" # 128 256 512" 
+		N="2 4 8 16 24 32 64 96"
+	else
+		CTX="0 4 8 16" 
+		N="2 4 8 16 24 32 64 96"
+	fi
+	
+	echo "" 1>&2
+	for size in $CTX
+	do	
+		lat_ctx -P $SYNC_MAX -s $size $N
+	done
+	echo "" 1>&2
+fi
+

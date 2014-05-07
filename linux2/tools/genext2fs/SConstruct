@@ -1,0 +1,5 @@
+Import("*")
+obj = Program("genext2fs", "genext2fs.c")
+
+Return ("obj")
+#Program("#tools/build/genext2fs/genext2fs", "#tools/genext2fs/genext2fs.c")

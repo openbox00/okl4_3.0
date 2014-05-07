@@ -1,0 +1,4 @@
+proc		/proc		proc	defaults		0	0
+nodev		/sys		sysfs	defaults		0	0
+/dev/ram0	/		ramfs	defaults		0	0
+/dev/ram1   /okl4   okl4fs  defaults        0   0

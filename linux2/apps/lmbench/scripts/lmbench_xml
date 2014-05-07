@@ -1,0 +1,449 @@
+#!/bin/sh
+echo -e "<?xml version=\"1.0\"?>"
+echo -e "<lmbench>"
+echo -e "<config_info>"
+. /lmbench/scripts/lmbench_xml_init
+echo -e "</config_info>"
+
+
+
+echo -e "<date>"
+date >> ${OUTPUT}
+echo -e "</date>"
+
+# context switches
+
+echo "<lat_ctx>"
+echo '<title>'
+echo  Context Switch Latency >> ${OUTPUT}
+echo '</title>'
+msleep 250
+
+if [ $MB -ge 8 ]
+
+then	
+	#lat_ctx locks wombat at > 16 thread
+        #FIXED
+	SIZES="0 1 4 8 16 32 64"
+	PROCS="1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 32 64 96"
+else
+	#lat_ctx locks wombat at > 16 thread
+	SIZES="0 1 4 8 16 32 64"
+	PROCS="1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 32 64 96"
+fi
+
+for size in $SIZES
+do	
+        echo -e "<repitition>"
+        echo -e "<size>"
+        echo "$size"
+        echo -e "</size>"
+        echo -e "<args_proc>"
+        echo -e "$PROCS"
+        echo -e "</args_proc>"
+        echo -e "<output>"
+        lat_ctx -P $SYNC_MAX -s $size $PROCS
+        echo -e "</output>"
+        echo -e "</repitition>"
+done
+
+echo -e "</lat_ctx>"
+
+echo "<lat_fifo>"
+echo '<title>'
+echo  "FIFO (Named Pipe) Latency"
+echo '</title>'
+
+echo -e "<output>"
+lat_fifo
+echo -e "</output>"
+echo -e "</lat_fifo>"
+
+echo "<lat_pipe>"
+echo '<title>'
+echo Pipe Transaction Latency
+echo '</title>'
+
+
+echo -e "<output>"
+lat_pipe
+echo -e "</output>"
+echo -e "</lat_pipe>"
+
+echo "<lat_unix>"
+echo '<title>'
+echo UNIX Socket Transaction Latency
+echo '</title>'
+echo -e "<output>"
+lat_unix
+echo -e "</output>"
+echo -e "</lat_unix>"
+
+echo "<lat_sem>"
+echo '<title>'
+echo Semaphore Latency
+echo '</title>'
+echo -e "<output>"
+lat_sem
+echo -e "</output>"
+echo -e "</lat_sem>"
+
+
+echo "<lat_syscall>"
+echo '<title>'
+echo Syscall Latency
+echo '</title>'
+echo "<null>"
+echo -e "<output>"
+lat_syscall null
+echo -e "</output>"
+echo -e "</null>"
+
+echo "<read>"
+echo -e "<output>"
+lat_syscall read
+echo -e "</output>"
+echo -e "</read>"
+
+echo "<open>"
+echo -e "<output>"
+lat_syscall open
+echo -e "</output>"
+echo -e "</open>"
+
+echo "<stat>"
+echo -e "<output>"
+lat_syscall stat
+echo -e "</output>"
+echo -e "</stat>"
+
+echo "<fstat>"
+echo -e "<output>"
+lat_syscall fstat
+echo -e "</output>"
+echo -e "</fstat>"
+
+echo -e "</lat_syscall>"
+
+
+echo "<lat_proc>"
+echo '<title>'
+echo  Process Creation Latency >> ${OUTPUT}
+echo '</title>'
+echo "<procedure>"
+echo -e "<output>"
+lat_proc procedure
+echo -e "</output>"
+echo -e "</procedure>"
+
+echo "<fork>"
+echo -e "<output>"
+lat_proc fork
+echo -e "</output>"
+echo -e "</fork>"
+
+echo "<exec>"
+echo -e "<output>"
+lat_proc exec
+echo -e "</output>"
+echo -e "</exec>"
+
+echo "<shell>"
+echo -e "<output>"
+lat_proc shell
+echo -e "</output>"
+echo -e "</shell>"
+
+echo -e "</lat_proc>"
+
+echo "<lat_sig>"
+echo '<title>'
+echo "Signal Handler Latency"
+echo '</title>'
+echo "<install>"
+echo -e "<output>"
+lat_sig install
+echo -e "</output>"
+echo -e "</install>"
+
+echo "<catch>"
+echo -e "<output>"
+lat_sig catch
+echo -e "</output>"
+echo -e "</catch>"
+
+echo "<prot>"
+echo -e "<output>"
+lat_sig prot $FILE
+echo -e "</output>"
+echo -e "</prot>"
+
+echo -e "</lat_sig>"
+
+echo -e "<lat_pagefault>"
+echo -e "<output>"
+lat_pagefault $FILE
+echo -e "</output>"
+echo -e "</lat_pagefault>"
+
+echo "<lat_select>"
+echo '<title>'
+echo "Select Latency"
+echo '</title>'
+SELECT_ARGS="1 4 16 64 128 256"
+echo "<tcp>"
+for size in $SELECT_ARGS
+do	
+        echo -e "<repitition>"
+        echo -e "<W>"
+        echo -e 100
+        echo -e "</W>"
+        echo -e "<n>"
+        echo -e $size ""
+        echo -e "</n>"
+        echo -e "<output>"
+        lat_select -W 100 -n $size tcp
+        echo -e "</output>"
+        echo -e "</repitition>"
+done
+echo "</tcp>"
+
+echo "<file>"
+for size in $SELECT_ARGS
+do	
+        echo -e "<repitition>"
+        echo -e "<W>"
+        echo -e 100
+        echo -e "</W>"
+        echo -e "<n>"
+        echo -e $size ""
+        echo -e "</n>"
+        echo -e "<output>"
+        lat_select -W 100 -n $size file
+        echo -e "</output>"
+        echo -e "</repitition>"
+done
+echo "</file>"
+echo -e "</lat_select>"
+
+echo "<bw_file_rd>"
+echo '<title>'
+echo "Reading and Summing File"
+echo '</title>'
+echo -e "<output>"
+bw_file_rd 1024 io_only $FILE
+echo -e "</output>"
+echo -e "</bw_file_rd>"
+
+echo "<bw_mmap_rd>"
+echo '<title>'
+echo "Reading and Summing File Using Mmap"
+echo '</title>'
+MMAP_ARGS="1024 4096 16384 32768 65536"
+echo "<mmap_only>"
+for size in $MMAP_ARGS
+do	
+        echo -e "<repitition>"
+        echo -e "<W>"
+        echo -e 100
+        echo -e "</W>"
+        echo -e "<size>"
+        echo -e $size ""
+        echo -e "</size>"
+        echo -e "<output>"
+        bw_mmap_rd -W 100 $size mmap_only $FILE
+        echo -e "</output>"
+        echo -e "</repitition>"
+done
+echo "</mmap_only>"
+
+echo "<open2close>"
+for size in $MMAP_ARGS
+do	
+        echo -e "<repitition>"
+        echo -e "<W>"
+        echo -e 100
+        echo -e "</W>"
+        echo -e "<size>"
+        echo -e $size ""
+        echo -e "</size>"
+        echo -e "<output>"
+        bw_mmap_rd -W 100 $size open2close $FILE
+        echo -e "</output>"
+        echo -e "</repitition>"
+done
+echo -e "</open2close>"
+echo "</bw_mmap_rd>"
+
+echo "<bw_mem>"
+echo '<title>'
+echo "Memory Write Bandwidth"
+echo '</title>'
+echo "<rd>"
+echo "<description>"
+echo '4 byte read, 32 byte stride'
+echo "</description>"
+echo -e "<output>"
+bw_mem 1024 rd
+echo -e "</output>"
+echo -e "</rd>"
+
+echo "<wr>"
+echo "<description>"
+echo '4 byte write, 32 byte stride'
+echo "</description>"
+
+echo -e "<output>"
+bw_mem 1024 wr
+echo -e "</output>"
+echo -e "</wr>"
+
+echo "<rdwr>"
+echo "<description>"
+echo '4 byte read followed by 4 byte write to same place, 32 byte stride'
+echo "</description>"
+echo -e "<output>"
+bw_mem 1024 rdwr
+echo -e "</output>"
+echo -e "</rdwr>"
+echo -e "</bw_mem>"
+
+echo "<bw_pipe>"
+echo '<title>'
+echo "Pipe Bandwidth"
+echo '</title>'
+echo -e "<output>"
+bw_pipe
+echo -e "</output>"
+echo -e "</bw_pipe>"
+
+echo "<bw_unix>"
+echo '<title>'
+echo "Unix Stream Socket Bandwidth"
+echo '</title>'
+echo -e "<output>"
+bw_unix
+echo -e "</output>"
+echo -e "</bw_unix>"
+
+echo "<bw_pipe>"
+echo '<title>'
+echo "Pipe Bandwidth"
+echo '</title>'
+BW_ARGS="16 32 64 128 256 512 1024 2048 4096 8192 16384 32768 65536 131072"
+for size in $BW_ARGS
+do	
+        echo -e "<repitition>"
+        echo -e "<W>"
+        echo -e 100
+        echo -e "</W>"
+        echo -e "<M>"
+        echo -e 1048576 ""
+        echo -e "</M>"
+        echo -e "<m>"
+        echo -e $size ""
+        echo -e "</m>"
+        echo -e "<output>"
+	bw_pipe -W 100 -M 1048576 -m $size
+        echo -e "</output>"
+        echo -e "</repitition>"
+done
+echo -e "</bw_pipe>"
+
+
+echo "<bw_unix>"
+echo '<title>'
+echo "Unix Stream Socket Bandwidth"
+echo '</title>'
+for size in $BW_ARGS
+do	
+        echo -e "<repitition>"
+        echo -e "<W>"
+        echo -e 100
+        echo -e "</W>"
+        echo -e "<M>"
+        echo -e 1048576 ""
+        echo -e "</M>"
+        echo -e "<m>"
+        echo -e $size ""
+        echo -e "</m>"
+        echo -e "<output>"
+	bw_unix -W 100 -M 1048576 -m $size
+        echo -e "</output>"
+        echo -e "</repitition>"
+done
+echo -e "</bw_unix>"
+
+echo "<bw_mem>"
+echo '<title>'
+echo "Memory Write Bandwidth"
+echo '</title>'
+BW_rw_ARGS="512 1024 2048 4096 8192 16384 32768 65536 131072 262144 524288 1048576"
+for size in $BW_rw_ARGS
+do 
+        echo -e "<repitition>"
+        echo -e "<W>"
+        echo -e 100
+        echo -e "</W>"
+        echo -e "<size>"
+        echo -e $size ""
+        echo -e "</size>"
+        echo -e "<arg>"
+        echo -e "rd"
+        echo -e "</arg>"
+        echo -e "<output>"
+	bw_mem -W 100 $size rd
+        echo -e "</output>"
+        echo -e "</repitition>"
+done
+echo -e "</bw_mem>"
+
+echo "<bw_file_rd>"
+echo '<title>'
+echo "Reading and Summing File"
+echo '</title>'
+BW_rw_ARGS="512 1024 2048 4096 8192 16384 32768 65536 131072 262144 524288 1048576"
+
+for size in $BW_rw_ARGS
+do
+        echo -e "<repitition>"
+        echo -e "<W>"
+        echo -e 100
+        echo -e "</W>"
+        echo -e "<size>"
+        echo -e $size ""
+        echo -e "</size>"
+        echo -e "<arg>"
+        echo -e "open2close"
+        echo -e "</arg>"
+        echo -e "<file>"
+        echo -e "$FILE"
+        echo -e "</file>"
+        echo -e "<output>"
+	bw_file_rd -W 100 $size open2close $FILE
+        echo -e "</output>"
+        echo -e "</repitition>"
+done
+
+for size in $BW_rw_ARGS
+do
+        echo -e "<repitition>"
+        echo -e "<W>"
+        echo -e 100
+        echo -e "</W>"
+        echo -e "<size>"
+        echo -e $size ""
+        echo -e "</size>"
+        echo -e "<arg>"
+        echo -e "io_only"
+        echo -e "</arg>"
+        echo -e "<file>"
+        echo -e "$FILE"
+        echo -e "</file>"
+        echo -e "<output>"
+	bw_file_rd -W 100 $size io_only $FILE
+        echo -e "</output>"
+        echo -e "</repitition>"
+done
+echo -e "</bw_file_rd>"
+echo -e "</lmbench>"

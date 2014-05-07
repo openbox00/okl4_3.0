@@ -1,0 +1,32 @@
+System calls NOT implemented.
+
+sys_bdflush	    -	Old, should not use this
+sys_personality	    -	Not supported at present
+sys_old_getrlimit   -	Not implemented
+sys_ptrace	    -	Not supported at present
+
+... below is old ...
+
+IN IPC --> USER SYSCALL
+
+Check arch syscall types (syscall/exception etc)
+    arch_is_syscall(L4_Msg) ?? -- has to be like this - each arch syscall is different encoding
+
+ok, syscall...
+
+    arch_lookup_syscall(L4_Msg, fn()*, sys_num*, abi*, ret*, args*)
+
+    switch(args) {
+      0 = result = arch_syscall_0(abi, fn, L4_Msg); break;
+      ...
+    }
+    switch(ret) {
+      int = result = (int)result; break;
+      ...
+    }
+
+
+L4 generic syscall table
+
+0 - 299 - generic
+300+    - arch specific

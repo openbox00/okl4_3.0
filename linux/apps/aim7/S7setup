@@ -1,0 +1,1195 @@
+:
+#        Copyright (c) 1996 - 2001 Caldera International, Inc.
+#                        All Rights Reserved.
+#
+# @(#) S7setup:1.14 1/22/96 00:00:00
+#
+# S7setup
+#
+
+NNL=
+CCL=
+
+#
+# first, figure out how to make echo work without automatic newline
+#
+if echo "\c" | grep c >/dev/null 2>&1
+then
+	NNL='-n'
+else
+	CCL='\c'
+fi
+
+#
+# are we doing an APR ?
+#
+case "$1" in
+"")
+	DOAPR=NO
+	;;
+"doapr")
+	DOAPR=YES
+	;;
+*)
+	echo
+	echo "Usage: S7setup<CR> or S7setup doapr<CR>"
+	echo
+	exit 0
+	;;
+esac
+
+case $# in
+0)
+	echo
+	;;
+1)
+	echo
+	;;
+*)
+	echo
+	echo "Usage: S7setup<CR> or S7setup doapr<CR>"
+	echo
+	exit 0
+	;;
+esac
+
+#
+# display intro
+#
+cat << END
+
+
+
+             AIM Multiuser Benchmark - Suite VII S7setup
+        Copyright (c) 1996 - 2001 Caldera International, Inc.
+                       All Rights Reserved.
+
+
+------------
+INTRODUCTION
+------------
+
+END
+if test "$DOAPR" = "YES"
+then
+	echo "YOU HAVE INDICATED THAT THIS IS AN APR RUN."
+	echo
+fi
+cat << END
+This script guides you through the steps needed to tailor the AIM Multiuser
+Benchmark - Suite IV to your environment. It will ask you a series of questions
+to identify the components of the System Under Test (SUT). As each question is
+displayed on the screen, you can accept the default value that is enclosed
+in brackets (e.g. [default_value] ), or enter the correct value. At any
+point during the execution of this script, you may type Q to terminate it.
+
+CAUTION: This script will NOT automatically set up the correct environment
+to run the benchmark. It is important that you provide the correct
+information for the computer and operating system that are being benchmarked.
+Verify and edit the Makefile as required before running the benchmark.
+
+
+END
+
+while :
+do
+	echo $NNL "Press RETURN to continue, press Q to exit ...$CCL"
+	read ANS
+	case "$ANS" in
+	        "")     break;;
+	        Q)      exit 0;;
+	        *)      echo; echo "\"$ANS\" is not allowed ... ^G";;
+	esac
+done
+
+cat << END
+
+
+You will be asked to provide the following information about the system
+to be tested:
+
+	1) Benchmark mix
+
+	2) Your compiler name
+
+	3) The compiler options to be used
+
+	4) The linker options to be used
+
+	5) The location of the Bourne shell executable
+
+	6) The mount point for each configured disk drive, 
+	   if the SUT is configured with more than one drive
+
+If you do not know or are unsure about any of the items mentioned above,
+press Q to terminate this installation script.  Check with your System
+Administrator or consult the SUT manuals for the correct information.
+
+
+END
+
+while :
+do
+	echo $NNL "Press RETURN to continue, press Q to exit ...$CCL"
+	read ANS
+	case "$ANS" in
+	        "")     break;;
+	        Q)      exit 0;;
+	        *)      echo; echo "\"$ANS\" is not allowed ... ^G";;
+	esac
+done
+
+#
+# init default settings
+#
+CC=cc
+DCCOPT=-O
+BSH=/bin
+
+#---------------------
+# get the AIM id #
+#---------------------
+if test "$DOAPR" = "YES"
+then
+	AIMID=`ls ../#* 2> /dev/null | wc -l`
+	if [ $AIMID -eq 1 ]  # here is aimid#, is it correct?
+	then
+		echo $NNL "Enter the AIM id [`cd ..; ls \#*`] :$CCL"
+		read ANS
+		if [ "$ANS" != "" ]
+		then
+			ANS=`echo $ANS | sed "s/^#//"`
+			touch ../\#$ANS
+		fi
+	else
+		echo $NNL "Enter the AIM id :$CCL"
+		read ANS
+		ANS=`echo $ANS | sed "s/^#//"`
+		touch ../\#$ANS
+	fi
+fi
+
+cat << END
+
+
+-------------
+BENCHMARK MIX
+-------------
+
+Which mix do you wish to run?
+
+          1) Multiuser/Shared System
+          2) Compute Server
+          3) Large Database
+          4) File Server
+          5) Custom User Mix
+
+END
+
+while :
+do
+	echo "If you do not know, type Q to exit and find the correct answer."
+	echo
+	echo $NNL "Enter benchmark mix (1, 2, 3, 4, 5 or Q) [] :$CCL"
+	read ANS
+
+	case "$ANS" in
+	1)
+		SUT_MIX="Multiuser/Shared System"
+		rm -f workfile
+		cp workfile.shared workfile
+		break
+		;;
+	2)
+		SUT_MIX="Compute Server"
+		rm -f workfile
+		cp workfile.compute workfile
+		break
+		;;
+	3)
+		SUT_MIX="Large Database"
+		rm -f workfile
+		cp workfile.dbase workfile
+		break
+		;;
+	4)	SUT_MIX="File Server"
+		rm -f workfile
+		cp workfile.fserver workfile
+		break
+		;;
+	5)
+		echo $NNL "Enter mix filename: $CCL"
+		read ANS
+		case "$ANS" in
+		Q)
+			exit 0
+			;;
+		"")
+			break
+			;;
+		*)
+			SUT_MIX="Custom"
+			cp $ANS workfile
+			break
+			;;
+		esac
+		;;
+	Q)
+		exit 0
+		;;
+	*)
+		echo
+		echo "\"$ANS\" is not allowed ... ^G"
+		;;
+	esac
+done
+
+cat << END
+
+
+----------
+ COMPILER 
+----------
+
+Enter the name of the C compiler you wish to use for this run.
+
+   Please use BOTH upper and lower case, exactly as required by your
+   compiler.
+
+END
+echo $NNL "Enter compiler name [$CC] :$CCL"
+read ANS
+case "$ANS" in
+Q)
+	exit 0
+	;;
+"")
+	;;
+*)
+	CC=$ANS
+	;;
+esac
+
+cat << END
+
+
+----------------
+COMPILER OPTIONS
+----------------
+
+Enter any compiler options that you want to use for $CC.  Some examples
+of valid entries are listed below:
+
+       "-O" to optimize code produced by "pcc" based compilers
+       "-OP" to do peephole optimization with the Pyramid OSx compiler
+       "-O -f68881" for optimization and floating point for Sun-3's
+
+Please note that this benchmark is written in Ansi C and is POSIX
+compliant.  Some compilers have special flags for these options.
+
+   Please use BOTH upper and lower case, exactly as required by your 
+   compiler.
+
+   You may type Q to exit and look up the correct answer.
+
+END
+echo $NNL "Enter compiler options [$DCCOPT] :$CCL"
+read ANS
+case "$ANS" in
+	Q)
+		exit 0
+		;;
+	"")
+		CCOPT=$DCCOPT
+		;;
+	*)
+		CCOPT=$ANS
+		;;
+esac
+
+LDOPT=
+cat << END
+
+
+--------------
+LINKER OPTIONS
+--------------
+
+Are there any linker options that you should identify for the benchmark?
+For information on the linker, refer to the Programmer's Reference Manual
+for your system.  You might identify a non-standard location of a library
+or system specific libraries that are needed to build the benchmark.
+For example, enter "-Wl,L/usr/local/lib" to search for libraries in
+a "/usr/local/lib" directory.
+
+Note that the benchmark requires that networking routines such as 'socket()'
+be available.  On some machines, an additional library such as -lsocket
+will need to be specified.  Check with your System Administrator or
+consult your System manuals.
+
+   Again, use BOTH upper and lower case, exactly as required by your
+   compiler.
+
+   You may type Q to exit and look up the correct answer.
+
+END
+echo $NNL "Enter linker options [$LDOPT] :$CCL"
+read ANS
+case "$ANS" in
+Q)
+	exit 0
+	;;
+"")
+	;;
+*)
+	LDOPT=$ANS
+	;;
+esac
+
+cat << END
+
+
+------------
+BOURNE SHELL
+------------
+
+You must specify the location of the Bourne shell executable on your
+system. 'sh' is usually found in /bin.  However, this may vary from
+system to system.  Check with your System Administrator or consult
+your System manuals.
+END
+echo $NNL "Enter the path to 'sh' [$BSH] :$CCL"
+read ANS
+case "$ANS" in
+Q)
+	exit 0
+	;;
+"")
+	BSH=$BSH
+	;;
+*)
+	BSH=$ANS
+	;;
+esac
+
+cat << END
+
+
+----
+DISK
+----
+
+A multiuser system is greatly affected by the performance of its I/O
+subsystems. Your disk subsystem has a big impact on the benchmark results.
+
+Generally, the more drives and controllers you have, the better your I/O
+throughput will be. If you have configured your system with multiple disk
+drives and would like the benchmark to use them to exercise your system, you
+must list them in the "config" file.
+
+For each installed drive that you would like the benchmark to use, enter a line
+giving its mount point like the following example:
+
+	/disk1
+
+Currently the benchmark can directly exercise up to 256 drives. If you are
+ready, you may edit the "config" file now. The "config" file can be updated
+anytime prior to starting the benchmark.
+
+
+END
+if [ -f config ]; then
+        echo "Currently, the config file contains:"
+        echo "------------------------------------"
+        cat config
+        echo "------------------------------------"
+else
+        echo "The config file is currently empty, meaning the current"
+        echo "directory will be used for temporary file creation."
+fi
+echo
+echo $NNL "Do you want to edit the \"config\" file now (y/n) ? [y] $CCL: "
+read ANS
+case "$ANS" in
+n|N|no|NO)
+	;;
+Q)
+	exit 0
+	;;
+"")
+	vi config
+	;;
+y|Y|yes|YES)
+	vi config
+	;;
+esac
+
+#only ask if creating 'input' file for AIM staff
+#if test "$DOAPR" = "YES"
+#then
+#MAX_USERS=
+#echo
+#echo "---------------------"
+#echo "MAX USERS TO SIMULATE"
+#echo "---------------------"
+#echo
+#while :
+#  do
+#  echo
+#  echo $NNL "Enter the maximum number of tasks to be simulated [ex: 300]: $CCL"
+#  read MAX_USERS
+#  echo
+#  while :
+#    do
+#    echo "The maximum number of tasks to be simulated is $MAX_USERS."
+#    echo $NNL "Press Enter to accept press C to change: $CCL"
+#    read ANS
+#          case "$ANS" in
+#                  "Q")          exit 0;;
+#                  "C")	        break;;
+#                  "")	        break;;
+#                  *)	        echo; echo "\"$ANS\" is not allowed ...." ;;
+#          esac
+#  done
+#  if test "$ANS" = ""
+#    then break;
+#  fi
+#done
+#fi  # end of doapr loop
+#
+# create makefile
+#
+echo
+echo $NNL "Creating \"Makefile\" ... $CCL"
+
+rm -f Makefile
+
+echo "# Copyright (c) 1996 - 2001 Caldera International, Inc." > Makefile
+echo "#                  All Rights Reserved."                 >> Makefile
+echo "#"                                                       >> Makefile
+echo "CC=$CC"                                                  >> Makefile
+echo "CCOPT=$CCOPT"                                            >> Makefile
+echo "LDOPT=-lm $LDOPT"                                        >> Makefile
+echo                                                           >> Makefile
+echo "CFLAGS= \$(CCOPT)"                                       >> Makefile
+#
+cat >> Makefile <<END
+
+SRCS =  add.c disk1.c div.c funcal.c mul.c \\
+	ram.c creat-clo.c disk_src.c int_fcns.c num_fcns.c pipe_test.c \\
+	fillin.c rand.c rtmsec.c
+
+TASKS = add.o disk1.o div.o funcal.o mul.o \\
+	ram.o creat-clo.o disk_src.o int_fcns.o num_fcns.o pipe_test.o
+
+OBJS = fillin.o rand.o rtmsec.o \$(TASKS)
+
+# ugly but portable, even on (very) dumb makes..
+
+.c.o:	suite.h
+	\$(CC) \$(CFLAGS) -c \$*.c
+
+all:	multitask rpt
+	echo "#!$BSH/sh" > true
+	chmod +x true
+
+multitask: multitask.o suite.h files.h \$(OBJS)
+	\$(CC) \$(CFLAGS) -o multitask multitask.o \$(OBJS) \$(LDOPT)
+
+rpt: rpt.o
+	\$(CC) \$(CFLAGS) -o rpt rpt.o \$(LDOPT)
+
+add.o : add.c suite.h
+
+creat-clo.o : creat-clo.c suite.h
+
+disk1.o : disk1.c suite.h
+
+disk_src.o : disk_src.c suite.h
+
+div.o : div.c suite.h
+
+fillin.o : fillin.c suite.h
+
+funcal.o : funcal.c suite.h funcal.h
+
+mul.o : mul.c suite.h
+
+multitask.o : multitask.c suite.h files.h
+
+int_fcns.o : int_fcns.c suite.h
+
+num_fcns.o : num_fcns.c suite.h
+
+pipe_test.o : pipe_test.c suite.h
+
+ram.o : ram.c suite.h
+
+rand.o : rand.c suite.h
+
+rtmsec.o : rtmsec.c suite.h testerr.h
+
+clean newrun:
+	@echo "Resetting AIM Multiuser Benchmark - Suite VII for another run."
+	@rm -f tmp* core *.o
+
+reset:
+	@echo "Resetting AIM Multiuser Benchmark - Suite VII to new install condition."
+	@rm -f workfile suite.ss logfile results
+	@rm -f input multitask nohup.out
+	@rm -f tmp* core *.o
+	@rm -rf fakeh
+	@cp Makefile.setup Makefile
+
+END
+cp Makefile Makefile.orig	# for SAVE script
+#
+rm -f tmp* core *.o
+if test "$DOAPR" = "FORGET IT"
+then
+	USE_OLD_APRINFO=NO
+	if test -f ../save/APRINFO
+	then
+		NO_OLD_APRINFO=FALSE
+		echo "There is an APRINFO file in the ../save directory already."
+		while :
+		do
+			echo
+			echo "Use the information in that APRINFO file for this Suite 7 run (y/n)? [y]: $CCL"
+			read ANS
+        		case "$ANS" in
+                	Y|y)
+				USE_OLD_APRINFO=YES
+				break
+				;;
+                	N|n)
+				USE_OLD_APRINFO=NO
+				break
+				;;
+                	"")
+				USE_OLD_APRINFO=YES
+				break
+				;;
+                	*)
+				echo
+				echo "\"$ANS\" is not allowed ...^G"
+				;;
+        		esac
+		done
+	else
+		NO_OLD_APRINFO=TRUE
+	fi
+
+	if test "$USE_OLD_APRINFO" = "NO" -o "$NO_OLD_APRINFO" = "TRUE"
+	then
+		while :
+		do
+			echo
+			echo $NNL "Enter the name of the System Under Test [ex: MS8640]:$CCL"
+			read SUT_NAME
+			echo
+			while :
+			do
+				echo "The name of the System Under Test is $SUT_NAME."
+				echo $NNL "Press Enter to accept press C to change: $CCL"
+				read ANS
+				case "$ANS" in
+				"Q")
+					exit 0
+					;;
+				"C")
+					break
+					;;
+				"")
+					break
+					;;
+				*)
+					echo; echo "\"$ANS\" is not allowed ...."
+					;;
+				esac
+			done
+			if test "$ANS" = ""
+			then
+				break
+			fi
+		done
+
+		while :
+		do
+			echo
+			echo $NNL "Enter the price of the SUT as configured [ex: $77,568]:$CCL"
+			read SUT_PRICE
+			echo
+			while :
+			do
+				echo "The price of the SUT as configured is $SUT_PRICE."
+				echo $NNL "Press Enter to accept press C to change: $CCL"
+				read ANS
+				case "$ANS" in
+				"Q")
+					exit 0
+					;;
+				"C")
+					break
+					;;
+				"")
+					break
+					;;
+				*)
+					echo
+					echo "\"$ANS\" is not allowed ...."
+					;;
+				esac
+			done
+			if test "$ANS" = ""
+			then
+				break
+			fi
+		done
+
+		while :
+		do
+			echo
+			echo $NNL "Enter CPU type and number [ex: 88100(2)]:$CCL"
+			read SUT_CPU
+			echo
+			while :
+			do
+				echo "The CPU type and number is $SUT_CPU."
+				echo $NNL "Press Enter to accept press C to change: $CCL"
+				read ANS
+				case "$ANS" in
+                                "Q")    exit 0;;
+				"C")	break;;
+				"")	break;;
+				*)	echo; echo "\"$ANS\" is not allowed ...." ;;
+				esac
+			done
+			if test "$ANS" = ""
+			then
+				break
+			fi
+		done
+
+		while :
+		do
+			echo
+			echo $NNL "Enter CPU clock rate [ex: 25 MHz]:$CCL"
+			read SUT_CLOCKRATE
+			echo
+			while :
+			do
+				echo "The CPU clock rate is $SUT_CLOCKRATE."
+				echo $NNL "Press Enter to accept press C to change: $CCL"
+				read ANS
+				case "$ANS" in
+				"Q")
+					exit 0
+					;;
+				"C")
+					break
+					;;
+				"")
+					break
+					;;
+				*)
+					echo
+					echo "\"$ANS\" is not allowed ...."
+					;;
+				esac
+			done
+			if test "$ANS" = ""
+			then break;
+			fi
+		done
+
+		while :
+		do
+			echo
+			echo $NNL "Enter 1st level cache size [ex: 32 KB data, 32 KB inst.]:$CCL"
+			read SUT_CACHE
+			echo
+			while :
+			do
+				echo "The 1st level cache size is $SUT_CACHE."
+				echo $NNL "Press Enter to accept press C to change: $CCL"
+				read ANS
+				case "$ANS" in
+				"Q")
+					exit 0
+					;;
+				"C")
+					break
+					;;
+				"")
+					break
+					;;
+				*)
+					echo
+					echo "\"$ANS\" is not allowed ...."
+					;;
+				esac
+			done
+			if test "$ANS" = ""
+			then
+				break;
+			fi
+		done
+
+		while :
+		do
+			echo
+			echo $NNL "Enter 2nd level cache size [ex: 4 MB]:$CCL"
+			read SUT_CACHE2
+			echo
+			while :
+			do
+				echo "The 2nd level cache size is $SUT_CACHE2."
+				echo $NNL "Press Enter to accept press C to change: $CCL"
+				read ANS
+				case "$ANS" in
+                                "Q")
+					exit 0
+					;;
+				"C")
+					break
+					;;
+				"")
+					break
+					;;
+				*)
+					echo
+					echo "\"$ANS\" is not allowed ...."
+					;;
+				esac
+			done
+			if test "$ANS" = ""
+			then
+				break
+			fi
+		done
+
+		while :
+		do
+			echo
+			echo $NNL "Enter total amount of RAM installed [ex: 32 MB]:$CCL"
+			read SUT_RAM
+			echo
+			while :
+			do
+				echo "The size of the intalled RAM is $SUT_RAM."
+				echo $NNL "Press Enter to accept press C to change: $CCL"
+				read ANS
+				case "$ANS" in
+                                "Q")
+					exit 0
+					;;
+				"C")
+					break
+					;;
+				"")
+					break
+					;;
+				*)
+					echo
+					echo "\"$ANS\" is not allowed ...."
+					;;
+				esac
+			done
+			if test "$ANS" = ""
+			then
+				break
+			fi
+		done
+
+		while :
+		do
+			echo
+			echo $NNL "Enter line 1 of information on installed  disk drives [ex: 320MB, 11.2ms (2)]:$CCL"
+			read SUT_DLINE1
+			echo
+			while :
+			do
+				echo "Line 1 of the information on installed disks is:"
+				echo "$SUT_DLINE1"
+				echo $NNL "Press Enter to accept press C to change: $CCL"
+				read ANS
+				case "$ANS" in
+                                "Q")    exit 0;;
+				"C")	break;;
+				"")	break;;
+				*)	echo; echo "\"$ANS\" is not allowed ...." ;;
+				esac
+			done
+			if test "$ANS" = ""
+			then
+				break
+			fi
+		done
+
+		while :
+		do
+			echo
+			echo $NNL "Enter line 2 of information on installed  disk drives [ex: 320MB, 11.2ms (2)]:$CCL"
+			read SUT_DLINE2
+			echo
+			while :
+			do
+				echo "Line 2 of the information on installed disks is:"
+				echo "$SUT_DLINE2"
+				echo $NNL "Press Enter to accept press C to change: $CCL"
+				read ANS
+				case "$ANS" in
+                                "Q")
+					exit 0
+					;;
+				"C")
+					break
+					;;
+				"")
+					break
+					;;
+				*)
+					echo
+					echo "\"$ANS\" is not allowed ...."
+					;;
+				esac
+			done
+			if test "$ANS" = ""
+			then break;
+			fi
+		done
+
+		while :
+		do
+			echo
+			echo $NNL "Enter any additional disk drives information:$CCL"
+			read SUT_DLINE3
+			echo
+			while :
+			do
+				echo "Additional disk drives information is:"
+				echo "$SUT_DLINE3"
+				echo $NNL "Press Enter to accept press C to change: $CCL"
+				read ANS
+				case "$ANS" in
+                                "Q")   
+					exit 0
+					;;
+				"C")
+					break
+					;;
+				"")
+					break
+					;;
+				*)
+					echo
+					echo "\"$ANS\" is not allowed ...."
+					;;
+				esac
+			done
+			if test "$ANS" = ""
+			then
+				break
+			fi
+		done
+
+		while :
+		do
+			echo
+			echo $NNL "Enter type and number of disk controllers [ex: SCSI(2)]:$CCL"
+			read SUT_DCTYPE
+			echo
+			while :
+			do
+				echo "The type and number of installed disk controller(s) is $SUT_DCTYPE."
+				echo $NNL "Press Enter to accept press C to change: $CCL"
+				read ANS
+				case "$ANS" in
+                                "Q")    exit 0;;
+				"C")	break;;
+				"")	break;;
+				*)	echo; echo "\"$ANS\" is not allowed ...." ;;
+				esac
+			done
+			if test "$ANS" = ""
+			then
+				break
+			fi
+		done
+
+		while :
+		do
+			echo
+			echo $NNL "Enter amount of RAM reserved for I/O buffers [ex: 12MB or dynamic]:$CCL"
+			read SUT_IOBUFF
+			echo
+			while :
+			do
+				echo "The amount of RAM reserved for I/O buffering is $SUT_IOBUFF."
+				echo $NNL "Press Enter to accept press C to change: $CCL"
+				read ANS
+				case "$ANS" in
+                                "Q")
+					exit 0
+					;;
+				"C")
+					break
+					;;
+				"")
+					break
+					;;
+				*)
+					echo
+					echo "\"$ANS\" is not allowed ...."
+					;;
+				esac
+			done
+			if test "$ANS" = ""
+			then break;
+			fi
+		done
+
+		while :
+		do
+			echo
+			echo $NNL "Enter OS name and version [ex: SYSTEM V/88 r32v2]:$CCL"
+			read SUT_OSNAME
+			echo
+			while :
+			do
+				echo "The name and version number of the OS is $SUT_OSNAME."
+				echo $NNL "Press Enter to accept press C to change: $CCL"
+				read ANS
+				case "$ANS" in
+                                "Q")
+					exit 0
+					;;
+				"C")
+					break
+					;;
+				"")
+					break
+					;;
+				*)
+					echo
+					echo "\"$ANS\" is not allowed ...."
+					;;
+				esac
+			done
+			if test "$ANS" = ""
+			then
+				break
+			fi
+		done
+
+		while :
+		do
+			echo
+			echo $NNL "Enter File System type [ex: SYSTEM V enhanced]:$CCL"
+			read SUT_FS
+			echo
+			while :
+			do
+				echo "The type of the File System is $SUT_FS."
+				echo $NNL "Press Enter to accept press C to change: $CCL"
+				read ANS
+				case "$ANS" in
+                                "Q")
+					exit 0
+					;;
+				"C")
+					break
+					;;
+				"")
+					break
+					;;
+				*)
+					echo
+					echo "\"$ANS\" is not allowed ...."
+					;;
+				esac
+			done
+			if test "$ANS" = ""
+			then
+				break
+			fi
+		done
+
+		while :
+		do
+			echo
+			echo $NNL "Enter C compiler name and version [ex: SYSTEM V enhanced]:$CCL"
+			read SUT_CCNAME
+			echo
+			while :
+			do
+				echo "The name and version number of the C compiler is $SUT_CCNAME."
+				echo $NNL "Press Enter to accept press C to change: $CCL"
+				read ANS
+				case "$ANS" in
+                                "Q")
+					exit 0
+					;;
+				"C")
+					break
+					;;
+				"")
+					break
+					;;
+				*)
+					echo
+					echo "\"$ANS\" is not allowed ...."
+					;;
+				esac
+			done
+			if test "$ANS" = ""
+			then
+				break
+			fi
+		done
+
+		while :
+		do
+			echo
+			echo $NNL "Enter AIM serial number [ex: 0015]:$CCL"
+			read SUT_SN
+			echo
+			while :
+			do
+				echo "The AIM serial number is $SUT_SN."
+				echo $NNL "Press Enter to accept press C to change: $CCL"
+				read ANS
+				case "$ANS" in
+                                "Q")
+					exit 0
+					;;
+				"C")
+					break
+					;;
+				"")
+					break
+					;;
+				*)
+					echo
+					echo "\"$ANS\" is not allowed ...."
+					;;
+				esac
+			done
+			if test "$ANS" = ""
+			then
+				break
+			fi
+		done
+
+		#
+		# build APRINFO file
+		#
+		if test ! -f ../save
+		then
+			mkdir ../save
+		fi
+		if test -f ../save/APRINFO
+		then
+			rm ../save/APRINFO
+		fi
+		echo $NNL "NAME:	$CCL"		      > ../save/APRINFO
+		echo $SUT_NAME				      >> ../save/APRINFO
+		echo $NNL "PRICE:	$CCL"		      >> ../save/APRINFO
+		echo $SUT_PRICE				      >> ../save/APRINFO
+		echo $NNL "CPU:	$CCL"			      >> ../save/APRINFO
+		echo $SUT_CPU				      >> ../save/APRINFO
+		echo $NNL "CLOCK RATE:	$CCL"		      >> ../save/APRINFO
+		echo $SUT_CLOCKRATE			      >> ../save/APRINFO
+		echo $NNL "1st LEVEL CACHE SIZE:	$CCL" >> ../save/APRINFO
+		echo $SUT_CACHE				      >> ../save/APRINFO
+		echo $NNL "2nd LEVEL CACHE SIZE:	$CCL" >> ../save/APRINFO
+		echo $SUT_CACHE2			      >> ../save/APRINFO
+		echo $NNL "RAM SIZE:	$CCL"		      >> ../save/APRINFO
+		echo $SUT_RAM				      >> ../save/APRINFO
+		echo $NNL "DISK DRIVES LINE 1:	$CCL"	      >> ../save/APRINFO
+		echo $SUT_DLINE1			      >> ../save/APRINFO
+		echo $NNL "DISK DRIVES LINE 2:	$CCL"	      >> ../save/APRINFO
+		echo $SUT_DLINE2			      >> ../save/APRINFO
+		echo $NNL "ADDITIONAL DISK DRIVES:	$CCL" >> ../save/APRINFO
+		echo $SUT_DLINE3			      >> ../save/APRINFO
+		echo $NNL "DISK CONTROLLER:	$CCL"	      >> ../save/APRINFO
+		echo $SUT_DCTYPE			      >> ../save/APRINFO
+		echo $NNL "I/O BUFFERS SIZE:	$CCL"	      >> ../save/APRINFO
+		echo $SUT_IOBUFF			      >> ../save/APRINFO
+		echo $NNL "UNIX VERSION:	$CCL"	      >> ../save/APRINFO
+		echo $SUT_OSNAME			      >> ../save/APRINFO
+		echo $NNL "FILE SYSTEM TYPE:	$CCL"	      >> ../save/APRINFO
+		echo $SUT_FS				      >> ../save/APRINFO
+		echo $NNL "C COMPILER:	$CCL"		      >> ../save/APRINFO
+		echo $SUT_CCNAME			      >> ../save/APRINFO
+		echo $NNL "MIX:	$CCL"			      >> ../save/APRINFO
+		echo $SUT_MIX				      >> ../save/APRINFO
+		echo $NNL "S/N:	$CCL"			      >> ../save/APRINFO
+		echo $SUT_SN				      >> ../save/APRINFO
+		chmod 644 ../save/APRINFO
+	else
+		# there is an APRINFO file in the ../save directory already 
+		# and we are to use its content for this Suite 7 run
+		SUT_NAME=`grep "NAME:" ../save/APRINFO | sed 's/	//' | awk -F: '{print $2}'`
+		echo
+		echo "The name of the System is $SUT_NAME"
+	fi
+fi  # end of forget it loop
+
+if test "$DOAPR" = "YES"
+then
+	#
+	# Build Suite 7 input file
+	#
+	if test -f input
+	then
+		rm -f input
+	fi
+	echo $SUT_NAME > input
+	echo $SUT_NAME >> input
+	echo "1" >> input
+	echo "1" >> input
+	echo "1" >> input
+	echo "2" >> input
+	chmod 644 input
+fi  # end of doapr loop
+
+#
+# done
+#
+echo
+echo "completed."
+echo
+echo
+
+if test "$DOAPR" = "YES"
+then
+	cat << END
+Makefile and input have been created.
+
+Enter "make" to build AIM Suite 7.
+
+Type RUN to run the benchmark then SAVE to 'cat' the information to be
+saved for this run to the screen for downloading. Also download the suite7.ss
+file.
+
+If you are running this benchmark on a remote system and it is best to
+logoff while Suite 7 is running, use:
+        "nohup RUN &"
+to start Suite 7 then logoff. Log back in about 8 hours later to run the
+SAVE script to 'cat' the information to be saved for this run to the screen
+for downloading.  Also download the suite7.ss file.
+END
+else
+	echo "The file \"Makefile\" has been created."
+	echo
+	echo "Enter \"make\" to build AIM Multiuser Benchmark - Suite VII."
+	echo
+	echo "Type \"multitask\" to run AIM Multiuser Benchmark - Suite VII."
+fi
+
+echo
+echo "If there are any problems, you can either run this configuration script"
+echo "again or edit the \"Makefile\" directly."
+
