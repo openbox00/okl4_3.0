@@ -1,2 +1,0 @@
-#!/bin/sh
-distcc /scratch/philipo/result_top/gcc-4.2.4-glibc-2.7/arm-unknown-linux-gnueabi/bin/arm-unknown-linux-gnueabi-c++ "$@"
