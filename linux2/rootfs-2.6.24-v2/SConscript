@@ -1,6 +1,7 @@
 Import("*")
 import os
 
+print "*************linux2/rootfs-2.6.24-v2/SConscript", env.builddir
 inst_dir = Dir(env.builddir + "/install").abspath
 def i(file_name):
     return os.path.join(inst_dir, file_name)

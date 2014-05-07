@@ -11,8 +11,10 @@ if "kernel_version" in args:
     kernel_version = "-" + args["kernel_version"]
 
 kernel_dir = os.path.join(env.oklinux_dir, 'kernel%s' % kernel_version)
+
+print "*************linux2/kernel-2.6.24-v2/SConscript", env.builddir
 build_dir = Dir(env.builddir + "/wombat%s" % wombat_id).abspath
-mod_dir = Dir(env.builddir + "/../linux/install").abspath
+mod_dir = Dir(env.builddir + "/../linux2/install").abspath
 def make_absolute_path_builddir(file_name):
     return os.path.join(build_dir, file_name)
 
@@ -65,7 +67,7 @@ if not get_bool_arg(args, "ENABLE_DEBUG", True):
     wombat_cflags += "-DNDEBUG "
 
 # XXX fixme
-if env.name == "oklinux":
+if env.name == "oklinux2":
     linux_conf_file += "_cell"
 
 # Parse ENABLE_VDSO command line option
@@ -133,12 +135,12 @@ modules = Action(
 command_line = "vmlinux igms_name=ramdisk root=/dev/igms0"
 console = " console=ttyS0,115200"
 
-if env.name == "oklinux" and (env.machine.__name__ == "versatile" or env.machine.__name__ == "versatile_uboot") :
+if env.name == "oklinux2" and (env.machine.__name__ == "versatile" or env.machine.__name__ == "versatile_uboot") :
     console = " console=ttyAMA0,115200"
 
 command_line += console
 
-if env.name == "oklinux":
+if env.name == "oklinux2":
     cell.set_program(vmlinux, 
                 heap = cell.Heap(size = 20 * 1024 * 1024, attach="rwx"),
                 stack = 8 * 1024,
@@ -154,14 +156,14 @@ else: # iguana
 
 
 # XXX for now - remove later
-if env.name == "oklinux":
+if env.name == "oklinux2":
     pass
 else:
     cell.require_devices(vmlinux, ["vtimer", "vserial"])
 
 # Set up vserial memsection
 # XXX for now - remove later
-if env.name == "oklinux":
+if env.name == "oklinux2":
     pass
 else:
     if args["vserial_obj"]:

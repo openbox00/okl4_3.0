@@ -72,7 +72,7 @@ kcell = build.Kernel()
 
 # Create a cell for each example, ensure valid multi-cell setup
 
-valid_examples = ["hello", "args", "pds_zones", "pingpong", "echo", "chatterbox", "decrypt", "oklinux", "empty"]
+valid_examples = ["hello", "args", "pds_zones", "pingpong", "echo", "chatterbox", "decrypt", "oklinux", "oklinux2", "empty"]
 
 # Do not add reverse lookups! The names in the valid_multicell lookup
 # are the names of cells which have ownership of the serial driver.
@@ -80,7 +80,7 @@ valid_examples = ["hello", "args", "pds_zones", "pingpong", "echo", "chatterbox"
 # eg. echo has serial, chatterbox does not
 valid_multicell = { 
     "echo" : ["chatterbox", "decrypt"],
-    "oklinux" : ["decrypt"] }
+    "oklinux" : ["decrypt", "oklinux2"] }
 
 serial_lookup = {
     "hello" : True,
@@ -90,6 +90,7 @@ serial_lookup = {
     "echo" : True,
     "chatterbox" : False,
     "oklinux" : True,
+    "oklinux2" : True,
     "decrypt" : False,
     "empty" : False
     }
@@ -139,7 +140,9 @@ for example in example_list:
     if example == "oklinux":
         celldir = "linux"
     else:
-        celldir = "examples"
+        #celldir = "examples"
+        celldir = "linux2"
+
     cell = build.Cell("cells/%s" % celldir,
                               name="examples",
                               example_name=example,

@@ -82,6 +82,7 @@ rootserver_env.Append(CPPDEFINES=[('MAX_ELF_SEGMENTS', MAX_ELF_SEGMENTS)])
 
 rootserver_env.process_global_config()
 
+print "-----------------------------------------------------", rootserver_env
 if rootserver_env.toolchain.type in ["ads", "rvct"]:
     rootserver_env.Package("libs/rvct", buildname="c", filesystem="null")
 else:
@@ -167,9 +168,10 @@ rootserver_env.max_elf_segments = MAX_ELF_SEGMENTS
 
 ################## Linux ##############################################
 
+print "-------------------------------------------", oklinux_dir
 assert os.path.exists(oklinux_dir), "OKLINUX_DIR: %s: does not exist" % oklinux_dir
 # Build liboklinux
-[lib, libs, oklinux_config] = rootserver_env.Package("libs/oklinux")
+[lib, libs, oklinux_config] = rootserver_env.Package("libs/oklinux2")
 print "OK Linux library dependencies: %s" % oklinux_config["libs"]
 oklinux_config["okl4fs"] = False
 print "build okl4fs? %s" % oklinux_config["okl4fs"]
