@@ -79,18 +79,18 @@ valid_examples = ["hello", "args", "pds_zones", "pingpong", "echo", "chatterbox"
 # A root cell's partner cells will all get IPC caps to its main thread
 # eg. echo has serial, chatterbox does not
 valid_multicell = { 
-    "echo" : ["chatterbox", "decrypt"],
+    "echo" : ["chatterbox", "decrypt", "hello"],
     "oklinux" : ["decrypt", "oklinux2"] }
 
 serial_lookup = {
-    "hello" : True,
+    "hello" : False,
     "args" : True,
     "pds_zones" : True,
     "pingpong" : True,
     "echo" : True,
     "chatterbox" : False,
     "oklinux" : True,
-    "oklinux2" : True,
+    "oklinux2" : False,
     "decrypt" : False,
     "empty" : False
     }
@@ -140,8 +140,8 @@ for example in example_list:
     if example == "oklinux":
         celldir = "linux"
     else:
-        #celldir = "examples"
-        celldir = "linux2"
+        celldir = "examples"
+        #celldir = "linux2"
 
     cell = build.Cell("cells/%s" % celldir,
                               name="examples",

@@ -353,13 +353,13 @@ gnu_arm_eabi_toolchain = generic_gcc_3_4_libgcc("/home/asic/arm-unknown-linux-gn
 gnu_arm_toolchain = generic_gcc_3_4_libgcc("arm-linux-")
 
 #gnu_arm_nptl_toolchain = generic_gcc_3_4_libgcc("/opt/okl/Linux-i386/stow/arm-linux/bin/arm-linux-")
-gnu_arm_nptl_toolchain = generic_gcc_3_4_libgcc("/home/asic/opt/nicta/tools/gcc-3.4.4-glibc-2.3.5/arm-linux/bin/arm-linux-")
+gnu_arm_nptl_toolchain = generic_gcc_3_4_libgcc("home/asic/opt/nicta/tools/gcc-3.4.4-glibc-2.3.5/arm-linux/bin/arm-linux-")
 
 gnu_mips64_toolchain = generic_gcc_3_4("mips64-elf-")
 gnu_mips32_toolchain = generic_gcc_3_4("mips-linux-")
 
 #arm_linux_toolchain = generic_gcc_3_4("/opt/tools/3.4/arm-linux/bin/arm-linux-")
-arm_linux_toolchain = generic_gcc_3_4("/home/asic/opt/nicta/tools/gcc-3.4.4-glibc-2.3.5/arm-linux/bin/arm-linux-")
+arm_linux_toolchain = generic_gcc_3_4("home/asic/opt/nicta/tools/gcc-3.4.4-glibc-2.3.5/arm-linux/bin/arm-linux-")
 
 gnu_ia32_toolchain = generic_gcc("i686-unknown-linux-gnu-")
 gnu_ia32_nptl_toolchain = generic_gcc("/opt/okl/Linux-i386/stow/i686-unknown-linux-gnu/bin/i686-unknown-linux-gnu-")
