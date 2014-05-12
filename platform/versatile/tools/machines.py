@@ -97,6 +97,7 @@ class versatile(arm926ejs):
     cpp_defines = arm926ejs.cpp_defines + ["VERSATILE_BOARD"]
     zero_bss = True
     copy_elf = True
+	boot_binary = True
 
 
 class versatile_uboot(versatile):

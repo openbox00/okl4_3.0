@@ -1,7 +1,6 @@
 #include <compat/c.h>
 #include <stdint.h>
 #include <stdlib.h>
-#include <stdio.h>
 #include <threadstate.h>
 #include <okl4/env.h>
 #include <okl4/init.h>
@@ -29,8 +28,6 @@ __sys_entry(void *env)
     int argc = 0;
     char **argv = NULL;
     int result;
-	printf("-------------------------------------------------------\n");
-
 #if defined(OKL4_KERNEL_MICRO)
     /* Ensure forced symbols are linked into final binary.
      *

@@ -1,10 +1,14 @@
-#
-# @LICENCE("Public", "2008")@
-#
-
 Import("*")
 
 libs = ["atomic_ops", "c", "okl4"]
+
+try:
+    if args["serial_driver"]:
+        libs.append(args["serial_driver"])
+        libs.append("serial")
+        env.Append(CPPDEFINES=[("SERIAL_DRIVER", args["serial_driver"])])
+except:
+    pass
 
 # Add kernel-specific libraries
 if env.kernel == "micro":
@@ -14,7 +18,7 @@ elif env.kernel == "nano":
 else:
     raise UserError, "Unknown kernel"
 
-obj = env.KengeProgram("chatterbox", LIBS=libs)
+obj = env.KengeProgram("hello", LIBS=libs)
 
 env.set_program(obj, heap = 0x100000)
 
