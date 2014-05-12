@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <l4/schedule.h>
+#include <l4/arch/syscalls.h>
 #include <okl4/init.h>
 #include <okl4/env.h>
 #include <okl4/kernel.h>
@@ -15,6 +17,7 @@
 int
 main(int argc, char **argv)
 {
+	printf("*******************************************************\n");
     int error;
     okl4_word_t i, bytes, msglen;
     okl4_kcap_t *echo_server;
@@ -22,13 +25,17 @@ main(int argc, char **argv)
     /* The message to send to the echo server. */
     char *message = "deserunt mollit anim id est laborum.\0\n";
     msglen = strlen(message) + 1;
+	int r;
+
 
     /* Initialise the libokl4 API for this thread. */
     okl4_init_thread();
-
+    L4_Yield();
     /* Get the capability entry for the echo server. */
     echo_server = okl4_env_get("ROOT_CELL_CAP");
     assert(echo_server != NULL);
+	r = L4_ThreadControl(*echo_server, L4_nilspace, L4_nilthread, L4_nilthread, L4_nilthread, 0, (void *)0);
+
 
     /* Send the message. */
     for (i = 0; i < msglen; i += bytes) {
@@ -45,5 +52,6 @@ main(int argc, char **argv)
                 &bytes, sizeof(bytes), NULL);
         assert(!error);
     }
+	printf("*******************************************************\n");
 }
 

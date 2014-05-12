@@ -15,25 +15,22 @@
 int
 main(int argc, char **argv)
 {
+	printf("*****************************************************************************\n");
     int error;
-    okl4_word_t msglen;
-	okl4_word_t i, bytes;
+    okl4_word_t i, bytes, msglen;
     okl4_kcap_t *echo_server;
 
     /* The message to send to the echo server. */
-    char *message = "---------------------------------------------------------------------------------------\ndeserunt mollit anim id est laborum.\0\n";
-
+    char *message = "deserunt mollit anim id est laborum.\0\n";
     msglen = strlen(message) + 1;
 
     /* Initialise the libokl4 API for this thread. */
     okl4_init_thread();
 
+	printf("*****************************************************************************\n");
     /* Get the capability entry for the echo server. */
     echo_server = okl4_env_get("ROOT_CELL_CAP");
     assert(echo_server != NULL);
-    printf("Hello, world!\n");
-	//return 0;
-
 
     /* Send the message. */
     for (i = 0; i < msglen; i += bytes) {
@@ -50,5 +47,6 @@ main(int argc, char **argv)
                 &bytes, sizeof(bytes), NULL);
         assert(!error);
     }
+	printf("*****************************************************************************\n");
 }
 
