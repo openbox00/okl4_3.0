@@ -81,7 +81,7 @@ rootserver_env.Append(CPPDEFINES=[('MAX_ELF_SEGMENTS', MAX_ELF_SEGMENTS)])
 
 rootserver_env.process_global_config()
 
-print "-----------------------------------------------------", rootserver_env
+print "cell/oklinux-----------------", rootserver_env
 if rootserver_env.toolchain.type in ["ads", "rvct"]:
     rootserver_env.Package("libs/rvct", buildname="c", filesystem="null")
 else:

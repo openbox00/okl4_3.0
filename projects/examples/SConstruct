@@ -139,9 +139,10 @@ for example in example_list:
         has_serial = False
     if example == "oklinux":
         celldir = "linux"
+    elif example == "oklinux2":
+        celldir = "linux2"
     else:
         celldir = "examples"
-        #celldir = "linux2"
 
     cell = build.Cell("cells/%s" % celldir,
                               name="examples",
