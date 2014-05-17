@@ -59,6 +59,7 @@
 #ifndef __OKL4__INIT_H__
 #define __OKL4__INIT_H__
 
+
 #include <okl4/types.h>
 
 /**

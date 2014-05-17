@@ -1,6 +1,6 @@
 Import("*")
 
-libs = ["atomic_ops", "c", "okl4"]
+libs = ["atomic_ops", "c", "okl4",]
 
 try:
     if args["serial_driver"]:

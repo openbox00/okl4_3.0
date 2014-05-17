@@ -169,6 +169,10 @@ static const int TIMER_TICK_LENGTH = 5000;
 #define VERSATILE_TIMER_DIV256                  (2 << 2)        /* Divided by 256      */
 #define VERSATILE_TIMER_32BIT                   (1 << 1)        /* 32 bit counter      */
 
+
+#define VERSATILE_FPGA_PBASE                  	0x14000000
+
+
 #if 0
 #if TIMER_TICK_LENGTH >= 0x100000
 #   define VERSATILE_TIMER_RELOAD               (TIMER_TICK_LENGTH >> 8)        /* Divide by 256 */

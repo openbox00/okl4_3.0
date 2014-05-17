@@ -216,6 +216,10 @@ void _start(void);
  */
 void soc_init(void);
 
+word_t soc_readfpga(void);
+
+void soc_writefpga(word_t c);
+
 /***************************************************************************
  * Interrupt handling
  **************************************************************************/

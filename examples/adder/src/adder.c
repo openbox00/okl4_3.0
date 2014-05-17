@@ -1,8 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+//#include <soc/soc.h>
+
 #include <okl4/init.h>  //for okl4_init_thread
-#include <okl4/kernel.h>    //資料結構???
+#include <okl4/kernel.h>    
 #include <okl4/kthread.h>   //okl4_kthread_attr_init, okl4_kthread_attr_setspip
 #include <okl4/message.h>   //okl4_message_send, okl4_message_wait
 
@@ -62,6 +64,11 @@ void okl4_init_thread(void)
     L4_Accept(L4_NotifyMsgAcceptor);
 }
 #endif
+
+	/************************************************************************/
+//	okl4_word_t j;
+//	j =	soc_readfpga();
+	/************************************************************************/	
 	
     root_kspace = okl4_env_get("MAIN_KSPACE");
 #if 0

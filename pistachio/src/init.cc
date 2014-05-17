@@ -82,6 +82,7 @@
 #include <mutex.h>
 #include <clist.h>
 
+
 #include <mp.h>
 mp_t mp;
 
@@ -190,6 +191,12 @@ startup_scheduler()
 #if defined(CONFIG_MDOMAINS) || defined(CONFIG_MUNITS)
     init_xcpu_handling (get_current_context());
 #endif
+
+	word_t i;
+	i = soc_readfpga();
+
+	printf("i = %d\n",i);
+
 
     TRACE_INIT("Initialising scheduler...\n");
     get_current_scheduler()->init(false);

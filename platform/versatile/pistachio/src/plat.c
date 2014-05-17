@@ -71,6 +71,7 @@
 
 addr_t versatile_io_vbase;
 addr_t versatile_uart0_vbase;
+addr_t versatile_fpga_vbase;
 
 /* SDRAM region */
 #define SDRAM_START             0x04000000
@@ -122,6 +123,10 @@ soc_init(void)
                                                (addr_t)VERSATILE_UART0_PBASE,
                                                SOC_CACHE_DEVICE);
     SOC_ASSERT(ALWAYS, versatile_uart0_vbase);
+
+    versatile_fpga_vbase = kernel_add_mapping(SIZE_4K,
+                                               (addr_t)VERSATILE_FPGA_PBASE,
+                                               SOC_CACHE_DEVICE);
 
     SOC_TRACEF("SCTL_PBASE:0x%08x SCTL_VBASE:0x%08x\n",
                VERSATILE_SCTL_PBASE,
