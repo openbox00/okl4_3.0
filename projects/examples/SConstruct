@@ -72,7 +72,7 @@ kcell = build.Kernel()
 
 # Create a cell for each example, ensure valid multi-cell setup
 
-valid_examples = ["hello", "args", "pds_zones", "pingpong", "echo", "chatterbox", "decrypt", "oklinux", "oklinux2", "empty"]
+valid_examples = ["hello", "args", "pds_zones", "pingpong", "echo", "chatterbox", "decrypt", "oklinux", "oklinux2", "empty" , "adder"]
 
 # Do not add reverse lookups! The names in the valid_multicell lookup
 # are the names of cells which have ownership of the serial driver.
@@ -92,6 +92,7 @@ serial_lookup = {
     "oklinux" : True,
     "oklinux2" : False,
     "decrypt" : False,
+	"adder" : False,
     "empty" : False
     }
 

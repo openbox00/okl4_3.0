@@ -17,6 +17,18 @@ two_oklinux:
 hello:
 	${COMMAND} ${OPTIONS} PROJECT=examples EXAMPLE=hello
 
+adder:
+	${COMMAND} ${OPTIONS} PROJECT=examples EXAMPLE=adder
+
+ktest:
+	${COMMAND} ${OPTIONS} PROJECT=ktest 
+
+ctest:
+	${COMMAND} ${OPTIONS} PROJECT=ctest 
+
+soc-sdk:
+	${COMMAND} ${OPTIONS} PROJECT=soc-sdk
+
 clean:
 	rm -vfr build/
 	rm -vf *.pyc
