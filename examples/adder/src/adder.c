@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-//#include <soc/soc.h>
+#include <soc/soc.h>
 
 #include <okl4/init.h>  //for okl4_init_thread
 #include <okl4/kernel.h>    

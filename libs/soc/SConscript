@@ -18,7 +18,6 @@ if not os.path.exists(os.path.join(src_root, arch_path)):
 arch_path = "#" + arch_path
 
 # Setup library
-
 arch_headers =  arch_path + "/include/"
 public_headers = [("include/", "include/%(name)s/"),
                   (arch_headers, "include/%(name)s/arch/"),
