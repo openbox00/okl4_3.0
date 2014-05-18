@@ -407,7 +407,7 @@ void ipc(tcb_t *to_tcb, tcb_t *from_tcb, word_t wait_type)
 	test++;	
 	unsigned long  a;
 	a = soc_get_timer_tick_length();
-	printf("a = %u\n",a);
+//	printf("a = %u\n",a);
 
 
     tcb_t * current = get_current_tcb();
@@ -529,8 +529,8 @@ check_waiting:
 /*bb***********************************************************/
 			unsigned long  b;
 			b = soc_get_timer_tick_length();
-			printf("b = %u\n",b);
-			printf("---tatol = %u---\n",(a-b));
+//			printf("b = %u\n",b);
+//			printf("---total = %u---\n",(a-b));
 /***********************************************************/
             PROFILE_STOP(sys_ipc_e);
             scheduler->
@@ -576,8 +576,8 @@ check_waiting:
 /*ccc***********************************************************/
 			unsigned long  c;
 			c = soc_get_timer_tick_length();
-			printf("c = %u\n",c);
-			printf("---tatol = %u---\n",(a-c));
+//			printf("c = %u\n",c);
+//			printf("---total = %u---\n",(a-c));
 
 /*********************************************************/
             PROFILE_STOP(sys_ipc_e);
@@ -611,8 +611,8 @@ receive_phase:
 /*dd*****************************************************************/
 			unsigned long  d;
 			d = soc_get_timer_tick_length();
-			printf("d = %u\n",d);
-			printf("---tatol = %u---\n",(a-d));
+//			printf("d = %u\n",d);
+//			printf("---total = %u---\n",(a-d));
 /*********************************************************************/
 
             PROFILE_STOP(sys_ipc_e);
@@ -625,8 +625,8 @@ receive_phase:
 /*ee***********************************************************/
 			unsigned long  e;
 			e = soc_get_timer_tick_length();
-			printf("e = %u\n",e);
-			printf("---tatol = %u---\n",(a-e));
+//			printf("e = %u\n",e);
+//			printf("---total = %u---\n",(a-e));
 /**************************************************************/
 
         PROFILE_STOP(sys_ipc_e);
@@ -714,8 +714,8 @@ retry_get_head:
 
 			unsigned long  f;
 			f = soc_get_timer_tick_length();
-			printf("f = %u\n",f);
-			printf("---tatol = %u---\n",(a-f));
+//			printf("f = %u\n",f);
+//			printf("---total = %u---\n",(a-f));
 
 /**********************************************************************/
 
@@ -806,8 +806,8 @@ retry_get_head:
 /*gg**************************************************************/
 			unsigned long  g;
 			g = soc_get_timer_tick_length();
-			printf("b = %u\n",g);
-			printf("---tatol = %u---\n",(a-g));
+//			printf("b = %u\n",g);
+//			printf("---total = %u---\n",(a-g));
 
 /*******************************************************************/
 
@@ -857,8 +857,8 @@ retry_get_head:
 /*hh*******************************************/
 			unsigned long  h;
 			h = soc_get_timer_tick_length();
-			printf("h = %u\n",h);
-			printf("---tatol = %u---\n",(a-h));
+//			printf("h = %u\n",h);
+//			printf("---total = %u---\n",(a-h));
 
 /***********************************************/
 	
@@ -902,8 +902,8 @@ retry_get_head:
 /*ii********************************************/
 			unsigned long  i;
 			i = soc_get_timer_tick_length();
-			printf("i = %u\n",i);
-			printf("---tatol = %u---\n",(a-i));
+//			printf("i = %u\n",i);
+//			printf("---total = %u---\n",(a-i));
 
 /************************************************/
 

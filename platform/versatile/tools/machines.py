@@ -27,9 +27,6 @@ class versatile(arm926ejs):
     interrupt_kmi0 = [35]
     memory_kmi1 = [Region(0x10007000, 0x10008000, "all", "uncached")]
     interrupt_kmi1 = [36]
-    fpga = "fpga"
-    memory_fpga = [Region(0x14000000, 0x14001000, "all", "uncached")]
-    interrupt_serial = [30]
     v2_drivers = [
                   (timer_driver_v2, "vtimer", memory_timer, interrupt_timer),
                   (serial_driver_v2, "vserial", memory_serial, interrupt_serial),

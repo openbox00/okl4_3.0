@@ -17,6 +17,9 @@ two_oklinux:
 hello:
 	${COMMAND} ${OPTIONS} PROJECT=examples EXAMPLE=hello
 
+oklinux:
+	${COMMAND} ${OPTIONS} PROJECT=examples EXAMPLE=oklinux
+
 adder:
 	${COMMAND} ${OPTIONS} PROJECT=examples EXAMPLE=adder
 
