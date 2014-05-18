@@ -1,6 +1,6 @@
 Import("*")
 
-libs = ["atomic_ops", "c", "okl4", "l4", "l4e", "mutex", "soc"]
+libs = ["atomic_ops", "c", "okl4", "l4", "l4e", "mutex", "soc", "driver"]
 
 try:
     if args["serial_driver"]:
@@ -9,6 +9,14 @@ try:
         env.Append(CPPDEFINES=[("SERIAL_DRIVER", args["serial_driver"])])
 except:
     pass
+try:
+    if args["timer_driver"]:
+        libs.append(args["timer_driver"])
+        libs.append("timer")
+        env.Append(CPPDEFINES=[("SERIAL_DRIVER", args["timer_driver"])])
+except:
+    pass
+
 
 # Add kernel-specific libraries
 if env.kernel == "micro":

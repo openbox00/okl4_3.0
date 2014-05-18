@@ -97,6 +97,7 @@
 #include <config.h>
 #include <kernel/arch/special.h>
 #include <soc/arch/interface.h>
+#include <soc/soc.h>
 #if defined(CONFIG_MUNITS)
 #include <arch/smp.h>
 #endif
@@ -271,6 +272,10 @@ void
 scheduler_t::schedule(tcb_t * current, continuation_t continuation,
                       flags_t flags)
 {
+	word_t a;
+	a = soc_get_timer_tick_length();
+	printf("--------------------------------------------%d\n",a);
+
     ASSERT(DEBUG, current);
     ASSERT(ALWAYS, !current->ready_list.is_queued());
     ASSERT(ALWAYS, current->is_grabbed_by_me());
@@ -358,8 +363,15 @@ scheduler_t::schedule(tcb_t * current, continuation_t continuation,
     /* Activate the new thread. */
     set_active_thread(next, next);
     schedule_lock.unlock();
+
+	word_t b;
+	b = soc_get_timer_tick_length();
+	printf("--------------------------------------------%d\n",b);
+	printf("tatol--------------------------------------------%d\n",b-a);
+
     switch_to(next, next);
 #endif
+
 }
 #endif
 
@@ -1259,4 +1271,4 @@ scheduler_t::init(bool bootcpu)
     schedule_lock.unlock();
 #endif
 }
-
+ 

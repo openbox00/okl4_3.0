@@ -64,6 +64,8 @@
 clock_t
 clock(void)
 {
-    return 0;                   /* Don't currently do time -- will probably
+// 	return (clock_t) -1;
+    return 0;
+                   /* Don't currently do time -- will probably
                                  * need to be system dependant */
 }

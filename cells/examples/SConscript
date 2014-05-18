@@ -21,7 +21,7 @@ for (driver, server, _, _) in examples_env.machine.v2_drivers:
         break
 
 examples_env.Package("libs/compat")
-examples_env.Package("libs/soc")
+examples_env.Package("libs/soc", buildname="soc")
 if examples_env.toolchain.type == "gnu":
     examples_env.Package("libs/gcc")
 if examples_env.toolchain.type == "rvct":

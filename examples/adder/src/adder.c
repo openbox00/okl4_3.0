@@ -1,7 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 
-#include <soc/soc.h>
+//#include <soc/fpga.h>
 
 #include <okl4/init.h>  //for okl4_init_thread
 #include <okl4/kernel.h>    
@@ -11,6 +12,7 @@
 #include <okl4/env.h>   //for okl4_env_get
 #include <okl4/kclist.h>    //okl4_kclist_kcap_allocany
 #include <okl4/utcb.h>  //okl4_utcb_allocany
+
 
 #define THREADS     5
 #define STACK_SIZE  4096
@@ -30,7 +32,17 @@ main(int argc, char **argv)
 {
     int error;
     okl4_word_t i;
-	
+#if 0
+	uint64_t a;
+	struct timer_interface interface;
+	struct timer_interface * ptr;
+	ptr = &interface;
+	a =	timer_get_tick_frequency(ptr);
+
+	printf("------------------------------------------------------%lld\n",a);
+#endif
+
+
     void *stacks[THREADS];
 	
     okl4_kthread_t threads[THREADS];
@@ -51,6 +63,8 @@ main(int argc, char **argv)
     int ans = 0;
 
     okl4_init_thread();
+
+
 #if 0
 void okl4_init_thread(void)
 {
@@ -66,8 +80,21 @@ void okl4_init_thread(void)
 #endif
 
 	/************************************************************************/
-//	okl4_word_t j;
-//	j =	soc_readfpga();
+    clock_t start, finish; 
+    double Total_time;
+	start = clock(); 
+	finish = clock(); 
+	Total_time = (double)(finish-start) / CLOCKS_PER_SEC; 
+	printf( "start = %ld seconds\n", start); 
+	printf( "finish = %ld seconds\n", finish); 
+
+	printf( "%f seconds\n", Total_time); 
+
+#if 0	
+	unsigned long b;
+	b = soc_get_timer_tick_length();
+	printf("--------------------------------------------%ld\n",b);
+#endif
 	/************************************************************************/	
 	
     root_kspace = okl4_env_get("MAIN_KSPACE");

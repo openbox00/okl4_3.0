@@ -123,9 +123,7 @@
 #define DEFAULT_CONTEXT_BITMASK         ~(0UL)
 
 #if defined(CONFIG_DEBUG)
-#if defined(CONFIG_KDEBUG_TIMER) || defined(CONFIG_TRACEBUFFER)
 #define CONFIG_KEEP_CURRENT_TIME
-#endif
 #endif
 
 /*
