@@ -1,8 +1,5 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
-
-//#include <soc/fpga.h>
 
 #include <okl4/init.h>  //for okl4_init_thread
 #include <okl4/kernel.h>    
@@ -80,15 +77,6 @@ void okl4_init_thread(void)
 #endif
 
 	/************************************************************************/
-    clock_t start, finish; 
-    double Total_time;
-	start = clock(); 
-	finish = clock(); 
-	Total_time = (double)(finish-start) / CLOCKS_PER_SEC; 
-	printf( "start = %ld seconds\n", start); 
-	printf( "finish = %ld seconds\n", finish); 
-
-	printf( "%f seconds\n", Total_time); 
 
 #if 0	
 	unsigned long b;

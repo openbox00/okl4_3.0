@@ -132,7 +132,7 @@ startup_scheduler()
     init_xcpu_handling (get_current_context());
 #endif
 
-
+#if 0
 	word_t a;
 	a = soc_get_timer_tick_length();
 	printf("--------------------------------------------%d\n",a);
@@ -141,7 +141,7 @@ startup_scheduler()
 	word_t b;
 	b = soc_get_timer_tick_length();
 	printf("--------------------------------------------%d\n",b);
-
+#endif 
 
     TRACE_INIT("Initialising scheduler...\n");
     get_current_scheduler()->init(false);

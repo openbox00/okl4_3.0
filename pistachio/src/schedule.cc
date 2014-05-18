@@ -108,6 +108,8 @@
 
 #include <profile.h>
 
+//int test = 1;
+
 volatile u64_t scheduler_t::current_time = 0;
 
 DECLARE_TRACEPOINT(SYSCALL_THREAD_SWITCH);
@@ -220,6 +222,13 @@ scheduler_t::find_next_thread()
 prio_t
 scheduler_t::get_highest_priority(void)
 {
+#if 0
+	printf("---get_highest_priority---%d\n",test);
+	test++;	
+	unsigned long  a;
+	a = soc_get_timer_tick_length();
+	printf("a = %u\n",a);
+#endif
     SMT_ASSERT(ALWAYS, schedule_lock.is_locked(true));
 
     /* Determine the second-level bitmap to use. */
@@ -237,6 +246,12 @@ scheduler_t::get_highest_priority(void)
     /* Calculate the top priority. */
     prio_t top_prio = first_level_index * BITS_WORD + second_level_index;
 
+#if 0
+	unsigned long  b;
+	b = soc_get_timer_tick_length();
+	printf("b = %u\n",b);
+	printf("---tatol = %u---\n",(a-b));
+#endif
     return top_prio;
 }
 
@@ -271,45 +286,9 @@ scheduler_t::set_effective_priority(tcb_t *tcb, prio_t prio)
 void
 scheduler_t::schedule(tcb_t * current, continuation_t continuation,
                       flags_t flags)
-{
-	word_t a;
-	a = soc_get_timer_tick_length();
-	printf("--------------------------------------------%d\n",a);
-
-    ASSERT(DEBUG, current);
-    ASSERT(ALWAYS, !current->ready_list.is_queued());
-    ASSERT(ALWAYS, current->is_grabbed_by_me());
-
-#if defined(CONFIG_CONTEXT_BITMASKS)
-
-    /* Switch away from the current thread. */
-    switch_from(current, continuation);
-    schedule_lock.lock();
-    current->release();
+{	
 
 
-    /* Enqueue the thread if necessary. */
-    bool current_runnable = current->get_state().is_runnable()
-        && !current->is_reserved();
-    if (current_runnable && current != get_idle_tcb()) {
-        enqueue(current);
-    }
-
-    /* Find the next thread */
-    tcb_t *next = find_next_thread();
-    ASSERT(ALWAYS, next->is_grabbed_by_me());
-
-    /* Switch to the new thread. */
-    set_active_thread(next, next);
-    if (next != current && current_runnable && current != get_idle_tcb()) {
-        smt_reschedule(current);
-    }
-
-    schedule_lock.unlock();
-
-    switch_to(next, next);
-
-#else
     schedule_lock.lock();
 
     /* No longer violating the scheduler. */
@@ -350,6 +329,7 @@ scheduler_t::schedule(tcb_t * current, continuation_t continuation,
 
     /* Grab the thread. */
     (void)next->grab();
+//	printf(" no Grab the thread\n");
     ASSERT(ALWAYS, next->is_grabbed_by_me());
 
     /* Switch away from the current thread, enqueuing if necessary. */
@@ -364,13 +344,8 @@ scheduler_t::schedule(tcb_t * current, continuation_t continuation,
     set_active_thread(next, next);
     schedule_lock.unlock();
 
-	word_t b;
-	b = soc_get_timer_tick_length();
-	printf("--------------------------------------------%d\n",b);
-	printf("tatol--------------------------------------------%d\n",b-a);
 
     switch_to(next, next);
-#endif
 
 }
 #endif

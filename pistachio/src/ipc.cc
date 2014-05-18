@@ -111,6 +111,9 @@
 #include <arch/syscalls.h>
 #include <profile.h>
 
+#include <soc/soc.h>
+
+int test = 1;
 
 DECLARE_TRACEPOINT(SYSCALL_IPC);
 DECLARE_TRACEPOINT(IPC_TRANSFER);
@@ -399,6 +402,14 @@ void ipc(tcb_t *to_tcb, tcb_t *from_tcb, word_t wait_type)
 {
     PROFILE_START(sys_ipc_e);
 
+
+	printf("---IPC---%d\n",test);
+	test++;	
+	unsigned long  a;
+	a = soc_get_timer_tick_length();
+	printf("a = %u\n",a);
+
+
     tcb_t * current = get_current_tcb();
     TRACE_IPC("ipc current: %p, to: %p, from: %p\n", current, to_tcb, from_tcb);
     scheduler_t * scheduler = get_current_scheduler();
@@ -515,7 +526,12 @@ check_waiting:
              * ready. */
             to_tcb->unlock_read();
             if (from_tcb) { from_tcb->unlock_read(); }
-
+/*bb***********************************************************/
+			unsigned long  b;
+			b = soc_get_timer_tick_length();
+			printf("b = %u\n",b);
+			printf("---tatol = %u---\n",(a-b));
+/***********************************************************/
             PROFILE_STOP(sys_ipc_e);
             scheduler->
                 deactivate_sched(current, thread_state_t::polling, current,
@@ -557,6 +573,13 @@ check_waiting:
 
             if (from_tcb) { from_tcb->unlock_read(); }
 
+/*ccc***********************************************************/
+			unsigned long  c;
+			c = soc_get_timer_tick_length();
+			printf("c = %u\n",c);
+			printf("---tatol = %u---\n",(a-c));
+
+/*********************************************************/
             PROFILE_STOP(sys_ipc_e);
             scheduler->update_active_state(current, thread_state_t::running);
             scheduler->activate_sched(to_tcb, thread_state_t::running,
@@ -584,6 +607,14 @@ receive_phase:
             ASSERT(DEBUG, current->get_state() == thread_state_t::running);
             current->set_tag(msg_tag_t::nil_tag());
             current->sent_from = NILTHREAD;
+
+/*dd*****************************************************************/
+			unsigned long  d;
+			d = soc_get_timer_tick_length();
+			printf("d = %u\n",d);
+			printf("---tatol = %u---\n",(a-d));
+/*********************************************************************/
+
             PROFILE_STOP(sys_ipc_e);
             return_ipc();
         }
@@ -591,6 +622,12 @@ receive_phase:
         /* IPC send without receive. Set tags up and return. */
         current->set_tag(msg_tag_t::nil_tag());
         current->set_partner(NULL);
+/*ee***********************************************************/
+			unsigned long  e;
+			e = soc_get_timer_tick_length();
+			printf("e = %u\n",e);
+			printf("---tatol = %u---\n",(a-e));
+/**************************************************************/
 
         PROFILE_STOP(sys_ipc_e);
         scheduler->update_active_state(current, thread_state_t::running);
@@ -673,6 +710,15 @@ retry_get_head:
                 TRACE_NOTIFY("notify recieve (curr=%t)\n", current);
                 setup_notify_return(current);
                 current->sent_from = NILTHREAD;
+/*ff*******************************************************************/
+
+			unsigned long  f;
+			f = soc_get_timer_tick_length();
+			printf("f = %u\n",f);
+			printf("---tatol = %u---\n",(a-f));
+
+/**********************************************************************/
+
 
                 PROFILE_STOP(sys_ipc_e);
                 enqueue_tcb_and_return(current, to_tcb,
@@ -756,6 +802,15 @@ retry_get_head:
                 scheduler->update_active_state(current,
                                                thread_state_t::running);
                 if (from_tcb) { from_tcb->unlock_read(); }
+
+/*gg**************************************************************/
+			unsigned long  g;
+			g = soc_get_timer_tick_length();
+			printf("b = %u\n",g);
+			printf("---tatol = %u---\n",(a-g));
+
+/*******************************************************************/
+
                 PROFILE_STOP(sys_ipc_e);
                 enqueue_tcb_and_return(current, to_tcb,
                         TCB_SYSDATA_IPC(current)->ipc_return_continuation);
@@ -798,6 +853,15 @@ retry_get_head:
             }
             else
             {
+
+/*hh*******************************************/
+			unsigned long  h;
+			h = soc_get_timer_tick_length();
+			printf("h = %u\n",h);
+			printf("---tatol = %u---\n",(a-h));
+
+/***********************************************/
+	
                 PROFILE_STOP(sys_ipc_e);
                 scheduler->
                     deactivate_sched(current, thread_state_t::waiting_forever,
@@ -835,6 +899,15 @@ retry_get_head:
                  * scheduled until that is done. 'from_tcb' will perform a
                  * schedule when the copy is done, ensuring that the scheduler
                  * is still in control. */
+/*ii********************************************/
+			unsigned long  i;
+			i = soc_get_timer_tick_length();
+			printf("i = %u\n",i);
+			printf("---tatol = %u---\n",(a-i));
+
+/************************************************/
+
+
                 PROFILE_STOP(sys_ipc_e);
                 scheduler->context_switch(current, from_tcb, thread_state_t::waiting_forever,
                         thread_state_t::running,
