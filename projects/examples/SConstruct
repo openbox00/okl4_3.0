@@ -30,7 +30,7 @@ serial_lookup = {
     "pds_zones" : True,
     "pingpong" : True,
     "echo" : True,
-    "chatterbox" : False,
+    "chatterbox" : True,
     "oklinux" : True,
     "oklinux2" : False,
     "decrypt" : False,

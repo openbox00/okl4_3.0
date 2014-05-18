@@ -1,6 +1,6 @@
 Import("*")
 
-libs = ["l4", "l4e", "mutex", "atomic_ops", "c", "okl4"]
+libs = ["atomic_ops", "c", "okl4"]
 
 try:
     if args["serial_driver"]:
@@ -18,7 +18,7 @@ elif env.kernel == "nano":
 else:
     raise UserError, "Unknown kernel"
 
-obj = env.KengeProgram("hello", LIBS=libs)
+obj = env.KengeProgram("chatterbox", LIBS=libs)
 
 env.set_program(obj, heap = 0x100000)
 
