@@ -809,6 +809,7 @@ retry_get_head:
 			printf("b = %u\n",g);
 			printf("---total = %u---\n",(a-g));
 
+
 /*******************************************************************/
 
                 PROFILE_STOP(sys_ipc_e);
@@ -859,7 +860,6 @@ retry_get_head:
 			h = soc_get_timer_tick_length();
 			printf("h = %u\n",h);
 			printf("---total = %u---\n",(a-h));
-
 /***********************************************/
 	
                 PROFILE_STOP(sys_ipc_e);
@@ -904,7 +904,6 @@ retry_get_head:
 			i = soc_get_timer_tick_length();
 			printf("i = %u\n",i);
 			printf("---total = %u---\n",(a-i));
-
 /************************************************/
 
 
