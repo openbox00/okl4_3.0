@@ -3,12 +3,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include <l4/schedule.h>
-#include <l4/arch/syscalls.h>
 #include <okl4/init.h>
 #include <okl4/kernel.h>
 #include <okl4/message.h>
-
 
 /*
  * The maximum number of characters we are willing to receive each IPC.
@@ -19,25 +16,20 @@
 int
 main(int argc, char **argv)
 {
-	printf("enter echo main function!\n");
-    
-	int error;
+    int error;
     okl4_word_t bytes;
     char buffer[MAX_CHARS];
     okl4_kcap_t client;
-
 
     /* Initialise the libokl4 API for this thread. */
     okl4_init_thread();
     printf("ECHO SERVER INITIALISED\n\n");
 
     /* Wait for the first message to come in. */
-	L4_ThreadSwitch(client);
     error = okl4_message_wait(buffer, MAX_CHARS, &bytes, &client);
-//    assert(!error);
-
-#if 0
+    assert(!error);
     /* Main server loop. */
+#if 0
     while (1) {
         okl4_word_t i;
 
@@ -59,12 +51,9 @@ main(int argc, char **argv)
         error = okl4_message_replywait(client, &bytes, sizeof(okl4_word_t),
                 buffer, MAX_CHARS, &bytes, &client);
         assert(!error);
-		printf("*****************************************************************************\n");
-		return 0;
     }
-
+#endif
     /* Not reached. */
     while (1);
-#endif 
 }
 

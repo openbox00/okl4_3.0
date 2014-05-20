@@ -9,16 +9,22 @@ install:
 	export PATH
 	echo $(PATH)
 multicell:
-	${COMMAND} ${OPTIONS} PROJECT=examples EXAMPLE=echo,hello 
+	${COMMAND} ${OPTIONS} PROJECT=examples EXAMPLE=echo,chatterbox 
+
+chatterbox:
+	${COMMAND} ${OPTIONS} PROJECT=examples EXAMPLE=chatterbox
 
 two_oklinux:
 	${COMMAND} ${OPTIONS} PROJECT=examples EXAMPLE=oklinux,oklinux2
+
+echo:
+	${COMMAND} ${OPTIONS} PROJECT=examples EXAMPLE=echo,hello 
 
 hello:
 	${COMMAND} ${OPTIONS} PROJECT=examples EXAMPLE=hello
 
 oklinux:
-	${COMMAND} ${OPTIONS} PROJECT=examples EXAMPLE=oklinux
+	${COMMAND} ${OPTIONS} PROJECT=examples EXAMPLE=oklinux linux_apps=lmbench
 
 adder:
 	${COMMAND} ${OPTIONS} PROJECT=examples EXAMPLE=adder

@@ -1,3 +1,7 @@
+#
+# @LICENCE("Public", "2008")@
+#
+
 Import("*")
 
 libs = ["atomic_ops", "c", "okl4"]
