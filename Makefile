@@ -18,7 +18,7 @@ hello:
 	${COMMAND} ${OPTIONS} PROJECT=examples EXAMPLE=hello
 
 oklinux:
-	${COMMAND} ${OPTIONS} PROJECT=examples EXAMPLE=oklinux
+	${COMMAND} ${OPTIONS} PROJECT=examples EXAMPLE=oklinux linux_apps=lmbench
 
 adder:
 	${COMMAND} ${OPTIONS} PROJECT=examples EXAMPLE=adder
