@@ -352,16 +352,16 @@ if get_bool_arg(args, "ENABLE_DEBUG", True):
         cppdefines += [("CONFIG_THREAD_NAMES", 1)]
     if get_bool_arg(args, "ENABLE_MUTEX_NAMES", True):
         cppdefines += [("CONFIG_MUTEX_NAMES", 1)]
-    if get_bool_arg(args, "ENABLE_SPACE_NAMES", False):
+    if get_bool_arg(args, "ENABLE_SPACE_NAMES", True):
         cppdefines += [("CONFIG_SPACE_NAMES", 1)]
-    if get_bool_arg(args, "ENABLE_BOUNCE_INTERRUPT", False):
+    if get_bool_arg(args, "ENABLE_BOUNCE_INTERRUPT", True):
         cppdefines += [("CONFIG_BOUNCE_INTERRUPT", 1)]
     # Kernel Profiling
-    if get_bool_arg(args, "ENABLE_PROFILING", False):
+    if get_bool_arg(args, "ENABLE_PROFILING", True):
         cppdefines += [("CONFIG_L4_PROFILING", 1)]
-    if args.get("VERBOSE_INIT", False):
+    if args.get("VERBOSE_INIT", True):
         cppdefines += [("CONFIG_VERBOSE_INIT", 1)]
-    if args.get("ENTER_KDB", False):
+    if args.get("ENTER_KDB", True):
         cppdefines += [("CONFIG_KDB_ON_STARTUP", 1)]
 
 else:

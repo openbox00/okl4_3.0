@@ -29,7 +29,6 @@ main(int argc, char **argv)
     error = okl4_message_wait(buffer, MAX_CHARS, &bytes, &client);
     assert(!error);
     /* Main server loop. */
-#if 0
     while (1) {
         okl4_word_t i;
 
@@ -52,7 +51,6 @@ main(int argc, char **argv)
                 buffer, MAX_CHARS, &bytes, &client);
         assert(!error);
     }
-#endif
     /* Not reached. */
     while (1);
 }

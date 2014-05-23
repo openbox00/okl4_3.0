@@ -41,7 +41,7 @@ main(int argc, char **argv)
     assert(echo_server != NULL);
 	printf("3-------------------------------\n");
 
-#if 0
+
     /* Send the message. */
     for (i = 0; i < msglen; i += bytes) {
         /* Determine how many bytes to send. */
@@ -58,6 +58,5 @@ main(int argc, char **argv)
                 &bytes, sizeof(bytes), NULL);
         assert(!error);
     }
-#endif
 }
 
