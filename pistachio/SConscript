@@ -102,24 +102,24 @@ if making_sdk:
     elif kernel_type == "benchmark":
         args["ENABLE_DEBUG"] = False
         if env.toolchain.type == "gnu":
-            args["ENABLE_CONF_PERF"] = True
+            args["ENABLE_CONF_PERF"] = False
     elif kernel_type == "tracebuffers":
         args["ENABLE_DEBUG"] = False
-        args["ENABLE_TRACEBUFFER"] = True
+        args["ENABLE_TRACEBUFFER"] = False
         if env.toolchain.type == "gnu":
-            args["ENABLE_CONF_PERF"] = True
+            args["ENABLE_CONF_PERF"] = False
     elif kernel_type == "tracebuffers_debug" or kernel_type == "debug_no_console":
-        args["ENABLE_DEBUG"] = True
+        args["ENABLE_DEBUG"] = False
         args["ENABLE_KDB_CONS"] = False
         args["ENABLE_TRACEPOINTS"] = False # should we set this?
         if env.toolchain.type == "gnu":
-            args["ENABLE_CONF_PERF"] = True
+            args["ENABLE_CONF_PERF"] = False
     elif kernel_type == "full_kdb" or kernel_type == "debug":
-        args["ENABLE_DEBUG"] = True
-        args["ENABLE_PROFILING"] = True # Should we set this?
-        args["VERBOSE_INIT"] = True     # should we set this?
+        args["ENABLE_DEBUG"] = False
+        args["ENABLE_PROFILING"] = False # Should we set this?
+        args["VERBOSE_INIT"] = False     # should we set this?
         if env.toolchain.type == "gnu":
-            args["ENABLE_CONF_PERF"] = True
+            args["ENABLE_CONF_PERF"] = False
     else:
         print "Unknown kernel type %s" % kernel_type
 
@@ -359,9 +359,9 @@ if get_bool_arg(args, "ENABLE_DEBUG", True):
     # Kernel Profiling
     if get_bool_arg(args, "ENABLE_PROFILING", True):
         cppdefines += [("CONFIG_L4_PROFILING", 1)]
-    if args.get("VERBOSE_INIT", True):
+    if args.get("VERBOSE_INIT", False):
         cppdefines += [("CONFIG_VERBOSE_INIT", 1)]
-    if args.get("ENTER_KDB", True):
+    if args.get("ENTER_KDB", False):
         cppdefines += [("CONFIG_KDB_ON_STARTUP", 1)]
 
 else:

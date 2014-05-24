@@ -58,6 +58,7 @@ if serial_driver:
     #if example != 'decrypt':
     examples_env.add_use_device(None, ["serial_dev"])
 
+##################################
 example = args.get("example_name", "hello")
 del args["example_name"]
 examples_env.Package("examples/%s" % example, serial_driver=serial_driver)
