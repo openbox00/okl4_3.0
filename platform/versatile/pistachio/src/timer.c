@@ -12,8 +12,8 @@ addr_t versatile_timer0_vbase;
 addr_t versatile_timer1_vbase;
 addr_t versatile_sctl_vbase;
 
-//#define TRACE_TIMER SOC_TRACEF
-#define TRACE_TIMER(x...)
+#define TRACE_TIMER SOC_TRACEF
+//#define TRACE_TIMER(x...) 
 
 unsigned long soc_get_timer_tick_length(void)
 {
@@ -27,7 +27,7 @@ unsigned long soc_get_timer_tick_length(void)
 void handle_timer_interrupt(bool wakeup, continuation_t continuation)
 {
     volatile Timer_t    *timer0 = (Timer_t *)VERSATILE_TIMER0_VBASE;
-    TRACE_TIMER("irq:%d context:%t\n", irq, context);
+    //TRACE_TIMER("irq:%d context:%t\n", irq, context);
 
     /* clear interrupt by writing any value to clear register
      *
