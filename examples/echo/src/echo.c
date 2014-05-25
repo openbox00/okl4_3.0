@@ -3,6 +3,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include <l4/thread.h>
+#include <l4/schedule.h>
+
+
 #include <okl4/init.h>
 #include <okl4/kernel.h>
 #include <okl4/message.h>
@@ -16,18 +20,37 @@
 int
 main(int argc, char **argv)
 {
-    int error;
+    printf("----------------------------------------1\n\n");	
+/*  
+	int error;
     okl4_word_t bytes;
     char buffer[MAX_CHARS];
-    okl4_kcap_t client;
+*/
+//   okl4_kcap_t client;
 
     /* Initialise the libokl4 API for this thread. */
-    okl4_init_thread();
+	okl4_init_thread();
+//	L4_Yield ();
+
     printf("ECHO SERVER INITIALISED\n\n");
 
     /* Wait for the first message to come in. */
+/*
     error = okl4_message_wait(buffer, MAX_CHARS, &bytes, &client);
     assert(!error);
+*/
+/*
+    L4_Word_t dummy;
+    L4_Word_t result;
+
+    result = L4_ExchangeRegisters (client, L4_ExReg_Resume, 0, 0, 0, 0, L4_nilthread,&dummy, &dummy, &dummy, &dummy, &dummy);
+
+	printf("1.result = %lu\n",result);
+*/
+
+//	L4_ThreadSwitch(client);
+
+#if 0
     /* Main server loop. */
     while (1) {
         okl4_word_t i;
@@ -51,7 +74,8 @@ main(int argc, char **argv)
                 buffer, MAX_CHARS, &bytes, &client);
         assert(!error);
     }
+#endif
     /* Not reached. */
-    while (1);
+//	while (1);
 }
 

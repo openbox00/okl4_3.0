@@ -15,6 +15,9 @@ multicell:
 2multicell:
 	${COMMAND} ${OPTIONS} PROJECT=examples EXAMPLE=oklinux,decrypt  LINUX_APPS=cross-cell-demo
 
+decrypt:
+	${COMMAND} ${OPTIONS} PROJECT=examples EXAMPLE=decrypt
+
 chatterbox:
 	${COMMAND} ${OPTIONS} PROJECT=examples EXAMPLE=chatterbox
 

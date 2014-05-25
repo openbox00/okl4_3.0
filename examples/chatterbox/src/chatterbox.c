@@ -4,6 +4,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <l4/thread.h>
+#include <l4/schedule.h>
+
 #include <okl4/init.h>
 #include <okl4/env.h>
 #include <okl4/kernel.h>
@@ -15,32 +18,31 @@
 int
 main(int argc, char **argv)
 {
-	printf("1-------------------------------\n");
+    printf("----------------------------------------2\n\n");
+    /* Initialise the libokl4 API for this thread. */
+    okl4_init_thread();
+	//L4_Yield ();
+	while(1);
+
+#if 0
     int error;
-    okl4_word_t i, bytes, msglen;
+	okl4_word_t i;	
+    okl4_word_t bytes, msglen;
+
     okl4_kcap_t *echo_server;
 
     /* The message to send to the echo server. */
-    char *message =
-            "Lorem ipsum dolor sit amet, consectetur adipisicing elit, "
-            "sed do eiusmod tempor incididunt ut labore et dolore magna "
-            "aliqua. Ut enim ad minim veniam, quis nostrud exercitation "
-            "ullamco laboris nisi ut aliquip ex ea commodo consequat. "
-            "Duis aute irure dolor in reprehenderit in voluptate velit "
-            "esse cillum dolore eu fugiat nulla pariatur. Excepteur sint "
-            "occaecat cupidatat non proident, sunt in culpa qui officia "
-            "deserunt mollit anim id est laborum.\0";
+
+    char *message = "deserunt mollit anim id est laborum.\0";
+
     msglen = strlen(message) + 1;
 
     /* Initialise the libokl4 API for this thread. */
     okl4_init_thread();
 
     /* Get the capability entry for the echo server. */
-	printf("2-------------------------------\n");
     echo_server = okl4_env_get("ROOT_CELL_CAP");
     assert(echo_server != NULL);
-	printf("3-------------------------------\n");
-
 
     /* Send the message. */
     for (i = 0; i < msglen; i += bytes) {
@@ -53,10 +55,10 @@ main(int argc, char **argv)
 
         /* Send this chunk to the server. The server will reply the
          * number of bytes actually written. */
-		printf("4-------------------------------\n");
         error = okl4_message_call(*echo_server, &message[i], bytes,
                 &bytes, sizeof(bytes), NULL);
         assert(!error);
     }
+#endif 
 }
 
