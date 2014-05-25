@@ -8,20 +8,24 @@ Import("*")
 #############################################################################
 examples_env = build.KengeCell(OKL4Cell, args.get("example_name", "examples"))
 
-has_serial = args.get("has_serial", False)
+has_serial = args.get("has_serial", True)
 del args["has_serial"]
 
 examples_env.process_global_config()
 
 # Get serial device details
 serial_driver = None
-for (driver, server, _, _) in examples_env.machine.v2_drivers:
-    if server == "vserial" and has_serial:
-        serial_driver = driver
-        break
+timer_driver = None
+if examples_env.machine.device_core is not None:
+    for (driver, server, memory, interrupt) in examples_env.machine.v2_drivers:
+        if server == "vserial" and has_serial:
+            serial_driver = driver
+        if server == "vtimer" and has_serial:
+            timer_driver = driver
 
 examples_env.Package("libs/compat")
 examples_env.Package("libs/soc", buildname="soc")
+examples_env.Package("libs/c", serial_driver=serial_driver)
 if examples_env.toolchain.type == "gnu":
     examples_env.Package("libs/gcc")
 if examples_env.toolchain.type == "rvct":
@@ -29,39 +33,40 @@ if examples_env.toolchain.type == "rvct":
         examples_env.Package("libs/rvct", buildname="c", serial_driver=serial_driver)
     else:
         examples_env.Package("libs/rvct", buildname="c")
-else:
-    examples_env.Package("libs/c", serial_driver=serial_driver)
 
 # Include kernel-specific libraries.
-if examples_env.kernel == "micro":
-    examples_env.Package("libs/l4")
-    examples_env.Package("libs/l4e")
-elif examples_env.kernel == "nano":
-    examples_env.Package("libs/nano")
-else:
-    raise UserError, "Unknown kernel"
-
+examples_env.Package("libs/l4")
+examples_env.Package("libs/l4e")
+examples_env.Package("libs/check")
+examples_env.Package("libs/ktest")
+examples_env.Package("libs/mutex")
 examples_env.Package("libs/atomic_ops")
 examples_env.Package("libs/okl4")
+examples_env.Package("libs/queue")
+examples_env.Package("libs/util")
+examples_env.Package("libs/driverv2")
 
-if examples_env.kernel == "micro":
-    examples_env.Package("libs/mutex")
-    examples_env.Append(CPPDEFINES=["THREAD_SAFE"])
 
-# Add libraries for serial
 if serial_driver:
-    examples_env.Package("libs/queue")
-    examples_env.Package("libs/util")
-    examples_env.Package("libs/driverv2")
     examples_env.Package("drivers/%s" % serial_driver)
-    examples_env.Package("libs/serial", serial_driver=serial_driver)
-    #if example != 'decrypt':
+    examples_env.Package("libs/vserial", serial_driver=serial_driver)
     examples_env.add_use_device(None, ["serial_dev"])
 
+    # Test device depends on v2 drivers
+    examples_env.add_use_device(None, ["test_dev"])
+
+if timer_driver:
+    examples_env.Package("drivers/%s" % timer_driver)
+    examples_env.Package("libs/vtimer",  timer_driver= timer_driver)
+    examples_env.add_use_device(None, ["timer_dev"])
+
 ##################################
-example = args.get("example_name", "hello")
+example = args.get("example_name", "examples")
 del args["example_name"]
-examples_env.Package("examples/%s" % example, serial_driver=serial_driver)
+examples_env.Package("examples/%s" % example, serial_driver=serial_driver, timer_driver=timer_driver)
+
+examples_env.Append(CPPDEFINES=["THREAD_SAFE"])
+
 
 # Arguments to main function.
 if example == "hello":

@@ -41,6 +41,7 @@ class versatile(arm926ejs):
     boot_binary = True
     zero_bss = True
     copy_elf = True
+    uart = "serial"
 
 
 
@@ -77,3 +78,4 @@ class versatile_uboot(versatile):
         'qemu':qemu_versatile_sim }
     default_method = 'qemu'
     uart = "serial"
+    boot_binary = True

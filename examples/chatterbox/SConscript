@@ -1,6 +1,6 @@
 Import("*")
 
-libs = ["l4", "l4e", "mutex", "atomic_ops", "c", "okl4", "serial"]
+libs = ["l4", "l4e", "mutex", "atomic_ops", "c", "okl4", "driver"]
 
 try:
     if args["serial_driver"]:
@@ -19,6 +19,8 @@ else:
     raise UserError, "Unknown kernel"
 
 obj = env.KengeProgram("chatterbox", LIBS=libs)
+
+env.expect_test_data = [("Drivers works!", None)]
 
 env.set_program(obj, heap = 0x100000)
 
