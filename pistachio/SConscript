@@ -98,20 +98,20 @@ if making_sdk:
         args["XIP"] = True
 
     if kernel_type == "production":
-        args["ENABLE_DEBUG"] = False
+        args["ENABLE_DEBUG"] = True
     elif kernel_type == "benchmark":
-        args["ENABLE_DEBUG"] = False
+        args["ENABLE_DEBUG"] = True
         if env.toolchain.type == "gnu":
             args["ENABLE_CONF_PERF"] = False
     elif kernel_type == "tracebuffers":
-        args["ENABLE_DEBUG"] = False
-        args["ENABLE_TRACEBUFFER"] = False
+        args["ENABLE_DEBUG"] = True
+        args["ENABLE_TRACEBUFFER"] = True
         if env.toolchain.type == "gnu":
             args["ENABLE_CONF_PERF"] = False
     elif kernel_type == "tracebuffers_debug" or kernel_type == "debug_no_console":
-        args["ENABLE_DEBUG"] = False
-        args["ENABLE_KDB_CONS"] = False
-        args["ENABLE_TRACEPOINTS"] = False # should we set this?
+        args["ENABLE_DEBUG"] = True
+        args["ENABLE_KDB_CONS"] = True
+        args["ENABLE_TRACEPOINTS"] = True # should we set this?
         if env.toolchain.type == "gnu":
             args["ENABLE_CONF_PERF"] = False
     elif kernel_type == "full_kdb" or kernel_type == "debug":
