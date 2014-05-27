@@ -9,13 +9,6 @@ try:
         env.Append(CPPDEFINES=[("SERIAL_DRIVER", args["serial_driver"])])
 except:
     pass
-try:
-    if args["timer_driver"]:
-        libs.append(args["timer_driver"])
-        libs.append("timer")
-        env.Append(CPPDEFINES=[("SERIAL_DRIVER", args["timer_driver"])])
-except:
-    pass
 
 
 # Add kernel-specific libraries

@@ -318,13 +318,13 @@ void ipc(tcb_t *to_tcb, tcb_t *from_tcb, word_t wait_type)
 {
     PROFILE_START(sys_ipc_e);
 
-/*
+
 	printf("---IPC---%d\n",test);
 	test++;	
 	unsigned long  a;
 	a = soc_get_timer_tick_length();
 	printf("a = %u\n",a);
-*/
+
 
     tcb_t * current = get_current_tcb();
     TRACE_IPC("ipc current: %p, to: %p, from: %p\n", current, to_tcb, from_tcb);
@@ -384,6 +384,7 @@ async_wakeup_check:
             else
             {
                 /* destination thread not accepting notifications */
+				printf("return_ipc_error_send\n");
                 return_ipc_error_send(current, to_tcb, from_tcb, ERR_IPC_NOT_ACCEPTED);
                 NOTREACHED();
             }
@@ -443,12 +444,13 @@ check_waiting:
             to_tcb->unlock_read();
             if (from_tcb) { from_tcb->unlock_read(); }
 /*bb***********************************************************/
-/*
+
 			unsigned long  b;
 			b = soc_get_timer_tick_length();
 			printf("b = %u\n",b);
+			printf("scheduler->deactivate_sched(send_phase)\n");
 			printf("---total = %u---\n",(a-b));
-*/
+
 /***********************************************************/
             PROFILE_STOP(sys_ipc_e);
             scheduler->
@@ -492,12 +494,14 @@ check_waiting:
             if (from_tcb) { from_tcb->unlock_read(); }
 
 /*ccc***********************************************************/
-/*
+
 			unsigned long  c;
 			c = soc_get_timer_tick_length();
 			printf("c = %u\n",c);
+			printf("sheduler->update_active_state\n");
+			printf("scheduler->activate_sched(send_phase)\n");
 			printf("---total = %u---\n",(a-c));
-*/
+
 /*********************************************************/
             PROFILE_STOP(sys_ipc_e);
             scheduler->update_active_state(current, thread_state_t::running);
@@ -528,12 +532,13 @@ receive_phase:
             current->sent_from = NILTHREAD;
 
 /*dd*****************************************************************/
-/*
+
 			unsigned long  d;
 			d = soc_get_timer_tick_length();
 			printf("d = %u\n",d);
+			printf("return_ipc()(receive_phase)\n");
 			printf("---total = %u---\n",(a-d));
-*/
+
 /*********************************************************************/
 
             PROFILE_STOP(sys_ipc_e);
@@ -544,12 +549,14 @@ receive_phase:
         current->set_tag(msg_tag_t::nil_tag());
         current->set_partner(NULL);
 /*ee***********************************************************/
-/*
+
 			unsigned long  e;
 			e = soc_get_timer_tick_length();
 			printf("e = %u\n",e);
+			printf("sheduler->update_active_state(receive_phase)\n");
+			printf("scheduler->activate_sched\n");
 			printf("---total = %u---\n",(a-e));
-*/
+
 /**************************************************************/
 
         PROFILE_STOP(sys_ipc_e);
@@ -577,6 +584,15 @@ receive_phase:
 
             /* to_tcb already unlocked */
             from_tcb->unlock_read();
+/*kk***********************************************************/
+
+			unsigned long  k;
+			k = soc_get_timer_tick_length();
+			printf("k = %u\n",k);
+			printf("scheduler->deactivate_activate_sched(receive phase)\n");
+			printf("---total = %u---\n",(a-k));
+
+/**************************************************************/
 
             scheduler->deactivate_activate_sched(current, to_tcb,
                     thread_state_t::waiting_forever, thread_state_t::running,
@@ -634,12 +650,13 @@ retry_get_head:
                 setup_notify_return(current);
                 current->sent_from = NILTHREAD;
 /*ff*******************************************************************/
-/*
+
 			unsigned long  f;
 			f = soc_get_timer_tick_length();
 			printf("f = %u\n",f);
+			printf("enqueue_tcb_and_return(receive phase)\n");
 			printf("---total = %u---\n",(a-f));
-*/
+
 /**********************************************************************/
 
 
@@ -727,12 +744,13 @@ retry_get_head:
                 if (from_tcb) { from_tcb->unlock_read(); }
 
 /*gg**************************************************************/
-/*
+
 			unsigned long  g;
 			g = soc_get_timer_tick_length();
 			printf("b = %u\n",g);
+			printf("enqueue_tcb_and_return(receive phase)\n");
 			printf("---total = %u---\n",(a-g));
-*/
+
 /*******************************************************************/
 
                 PROFILE_STOP(sys_ipc_e);
@@ -779,12 +797,13 @@ retry_get_head:
             {
 
 /*hh*******************************************/
-/*
+
 			unsigned long  h;
 			h = soc_get_timer_tick_length();
 			printf("h = %u\n",h);
+			printf("scheduler->deactivate_sched(receive phase)\n");
 			printf("---total = %u---\n",(a-h));
-*/
+
 /***********************************************/
 	
                 PROFILE_STOP(sys_ipc_e);
@@ -825,12 +844,13 @@ retry_get_head:
                  * schedule when the copy is done, ensuring that the scheduler
                  * is still in control. */
 /*ii********************************************/
-/*
+
 			unsigned long  i;
 			i = soc_get_timer_tick_length();
 			printf("i = %u\n",i);
+			printf("scheduler->context_switch(receive phase)\n");
 			printf("---total = %u---\n",(a-i));
-*/
+
 /************************************************/
 
 
