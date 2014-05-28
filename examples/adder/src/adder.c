@@ -11,7 +11,7 @@
 #include <okl4/kclist.h>    //okl4_kclist_kcap_allocany
 #include <okl4/utcb.h>  //okl4_utcb_allocany
 
-#define THREADS     1
+#define THREADS     5
 #define STACK_SIZE  4096
 
 #define MAX_CHARS  20
@@ -140,15 +140,35 @@ main(int argc, char **argv)
 	args.parent = okl4_kthread_getkcap(root_thread);
 
     char buffer[MAX_CHARS];
-	printf("Wait for the first message to come in.\n");
-    error = okl4_message_wait(buffer, MAX_CHARS, &bytes, caps);
+//	printf("Wait for the first message to come in.\n");
+//    error = okl4_message_wait(buffer, MAX_CHARS, &bytes, caps);
+
+    for (i = 0; i < THREADS; i++)
+    {
+     	okl4_word_t j;
+		printf("\nWait for the child thread%d to finish\n",(int)i);
+        /* 用來等待其他thread傳送message過來 */        
+        error = okl4_message_wait(buffer, MAX_CHARS, &bytes, caps);
+	    assert(!error);
+        if (bytes > MAX_CHARS) {
+            bytes = MAX_CHARS;
+        }
+        /* Print out the message. */
+        printf("Total ans is : ");
+        for (j = 0; j < bytes; j++) {
+            putchar(buffer[j]);
+        }
+		printf("\n");
+		printf("Recevie child thread%d finish complete\n",(int)i);
+    }
 
 
-    assert(!error);
+ 	printf("adder complete. Exiting...\n");   
+	return 0;
 
-  
+#if 0  
       while (1) {
-        okl4_word_t i;
+//        okl4_word_t i;
         /* If the number of bytes sent by the client exceeds our buffer
          * size, we would have lost some of the message. */
         if (bytes > MAX_CHARS) {
@@ -168,6 +188,7 @@ main(int argc, char **argv)
        // assert(!error);
 		return 0;
     }
+#endif
 }
 
 void
