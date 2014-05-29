@@ -1,59 +1,67 @@
-/* @LICENCE("Public", "2008")@ */
-
 #include <stdio.h>
 #include <stdlib.h>
 
-#include <okl4/init.h>
-#include <okl4/kernel.h>
-#include <okl4/message.h>
+#include <okl4/init.h>  //for okl4_init_thread
+#include <okl4/kernel.h>    
+#include <okl4/kthread.h>   //okl4_kthread_attr_init, okl4_kthread_attr_setspip
+#include <okl4/message.h>   //okl4_message_send, okl4_message_wait
 
-/*
- * The maximum number of characters we are willing to receive each IPC.
- * Any characters sent by our clients in excess of this will be dropped.
- */
+#include <okl4/env.h>   //for okl4_env_get
+#include <okl4/kclist.h> //okl4_kclist_kcap_allocany
+#include <okl4/utcb.h>  //okl4_utcb_allocany
+
+
 #define MAX_CHARS  OKL4_MESSAGE_MAX_SIZE
+
+#define THREADS     3
+
+
+struct args
+{
+	okl4_word_t count;
+    okl4_word_t temp;
+};
 
 int
 main(int argc, char **argv)
 {
-    int error;
-    okl4_word_t bytes;
-    char buffer[MAX_CHARS];
+	int error;
+    okl4_word_t i;
     okl4_kcap_t client;
-
-    /* Initialise the libokl4 API for this thread. */
+	
+    printf("\n--- This function will do 1 to 25 adder(multicells) ---\n");
+	
+	/* Initialise the libokl4 API for this thread. */
     okl4_init_thread();
-    printf("ECHO SERVER INITIALISED\n\n");
 
     /* Wait for the first message to come in. */
-    error = okl4_message_wait(buffer, MAX_CHARS, &bytes, &client);
-    assert(!error);
 
-    /* Main server loop. */
-    while (1) {
-        okl4_word_t i;
+    okl4_word_t bytes;
+    char buffer[MAX_CHARS];
 
-        /* If the number of bytes sent by the client exceeds our buffer
-         * size, we would have lost some of the message. */
+    for (i = 0; i < THREADS; i++)
+    {
+     	okl4_word_t j;
+		printf("\nWait for the child thread%d to finish\n",(int)i);
+        /* 用來等待其他thread傳送message過來 */        
+        error = okl4_message_wait(buffer, MAX_CHARS, &bytes, &client);
+	    assert(!error);
+
         if (bytes > MAX_CHARS) {
             bytes = MAX_CHARS;
         }
-
         /* Print out the message. */
-        printf("ECHO: ");
-        for (i = 0; i < bytes; i++) {
-            putchar(buffer[i]);
+        printf("Total ans is : ");
+        for (j = 0; j < bytes; j++) {
+            putchar(buffer[j]);
         }
-        printf("\n");
-
-        /* Reply to the client, letting them know how many bytes
-         * we processed, and wait for the next message to arrive. */
-        error = okl4_message_replywait(client, &bytes, sizeof(okl4_word_t),
-                buffer, MAX_CHARS, &bytes, &client);
-        assert(!error);
+		printf("\n");
+		printf("Recevie child thread%d finish complete\n",(int)i);
+        //error = okl4_message_replywait(client, &bytes, sizeof(okl4_word_t),buffer, MAX_CHARS, &bytes, &client);
+        //assert(!error);
     }
 
-    /* Not reached. */
-    while (1);
+ 	printf("adder complete. Exiting...\n");   
+	return 0;
 }
 
