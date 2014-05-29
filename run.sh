@@ -3,7 +3,7 @@
 export PATH=$PATH:/home/asic/opt/nicta/tools/gcc-3.4.4-glibc-2.3.5/arm-linux/bin/
 
 #oklinux,oklinux2
-#./tools/build.py machine=versatile project=examples example=oklinux,oklinux2 wombat=true TOOLCHAIN=gnu_arm_eabi_toolchain pistachio.TOOLCHAIN=gnu_arm_toolchain PYFREEZE=False kdb_serial=True KDB_BREAKIN=False pistachio.enter_kdb=true KDB_BREAKIN=False profile=true
+./tools/build.py machine=versatile project=examples example=oklinux,oklinux2 wombat=true TOOLCHAIN=gnu_arm_eabi_toolchain pistachio.TOOLCHAIN=gnu_arm_toolchain PYFREEZE=False kdb_serial=True KDB_BREAKIN=False pistachio.enter_kdb=true KDB_BREAKIN=False 
 
 #echo,hello
 #./tools/build.py machine=versatile project=examples example=echo,hello wombat=true TOOLCHAIN=gnu_arm_eabi_toolchain pistachio.TOOLCHAIN=gnu_arm_toolchain PYFREEZE=False kdb_serial=True KDB_BREAKIN=False pistachio.enter_kdb=true KDB_BREAKIN=False profile=true
@@ -24,4 +24,4 @@ export PATH=$PATH:/home/asic/opt/nicta/tools/gcc-3.4.4-glibc-2.3.5/arm-linux/bin
 #./tools/build.py machine=versatile project=ktest wombat=true TOOLCHAIN=gnu_arm_eabi_toolchain pistachio.TOOLCHAIN=gnu_arm_toolchain PYFREEZE=False kdb_serial=True KDB_BREAKIN=False pistachio.enter_kdb=true KDB_BREAKIN=False profile=true
 
 #iguana /home/asic/okl4_3.0/linux/rootfs-2.6.24-v2/SConscript:32 Error: name 'oklinux_tests' is not defined
-./tools/build.py machine=versatile project=iguana wombat=true TOOLCHAIN=gnu_arm_eabi_toolchain pistachio.TOOLCHAIN=gnu_arm_toolchain PYFREEZE=False kdb_serial=True KDB_BREAKIN=False pistachio.enter_kdb=true KDB_BREAKIN=False profile=true
+#./tools/build.py machine=versatile project=iguana wombat=true TOOLCHAIN=gnu_arm_eabi_toolchain pistachio.TOOLCHAIN=gnu_arm_toolchain PYFREEZE=False kdb_serial=True KDB_BREAKIN=False pistachio.enter_kdb=true KDB_BREAKIN=False profile=true

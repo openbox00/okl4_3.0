@@ -29,6 +29,8 @@
 
 #include <soc/soc.h>
 
+#define testipc 0
+
 int test = 1;
 
 DECLARE_TRACEPOINT(SYSCALL_IPC);
@@ -318,13 +320,13 @@ void ipc(tcb_t *to_tcb, tcb_t *from_tcb, word_t wait_type)
 {
     PROFILE_START(sys_ipc_e);
 
-
+#if testipc
 	printf("---IPC---%d\n",test);
 	test++;	
 	unsigned long  a;
 	a = soc_get_timer_tick_length();
 	printf("a = %u\n",a);
-
+#endif
 
     tcb_t * current = get_current_tcb();
     TRACE_IPC("ipc current: %p, to: %p, from: %p\n", current, to_tcb, from_tcb);
@@ -443,6 +445,7 @@ check_waiting:
              * ready. */
             to_tcb->unlock_read();
             if (from_tcb) { from_tcb->unlock_read(); }
+#if testipc
 /*bb***********************************************************/
 
 			unsigned long  b;
@@ -452,6 +455,7 @@ check_waiting:
 			printf("---total = %u---\n",(a-b));
 
 /***********************************************************/
+#endif
             PROFILE_STOP(sys_ipc_e);
             scheduler->
                 deactivate_sched(current, thread_state_t::polling, current,
@@ -492,7 +496,7 @@ check_waiting:
             current->set_partner(to_tcb);
 
             if (from_tcb) { from_tcb->unlock_read(); }
-
+#if testipc
 /*ccc***********************************************************/
 
 			unsigned long  c;
@@ -503,6 +507,7 @@ check_waiting:
 			printf("---total = %u---\n",(a-c));
 
 /*********************************************************/
+#endif
             PROFILE_STOP(sys_ipc_e);
             scheduler->update_active_state(current, thread_state_t::running);
             scheduler->activate_sched(to_tcb, thread_state_t::running,
@@ -530,7 +535,7 @@ receive_phase:
             ASSERT(DEBUG, current->get_state() == thread_state_t::running);
             current->set_tag(msg_tag_t::nil_tag());
             current->sent_from = NILTHREAD;
-
+#if testipc
 /*dd*****************************************************************/
 
 			unsigned long  d;
@@ -540,7 +545,7 @@ receive_phase:
 			printf("---total = %u---\n",(a-d));
 
 /*********************************************************************/
-
+#endif
             PROFILE_STOP(sys_ipc_e);
             return_ipc();
         }
@@ -548,6 +553,7 @@ receive_phase:
         /* IPC send without receive. Set tags up and return. */
         current->set_tag(msg_tag_t::nil_tag());
         current->set_partner(NULL);
+#if testipc
 /*ee***********************************************************/
 
 			unsigned long  e;
@@ -558,6 +564,7 @@ receive_phase:
 			printf("---total = %u---\n",(a-e));
 
 /**************************************************************/
+#endif
 
         PROFILE_STOP(sys_ipc_e);
         scheduler->update_active_state(current, thread_state_t::running);
@@ -584,6 +591,7 @@ receive_phase:
 
             /* to_tcb already unlocked */
             from_tcb->unlock_read();
+#if testipc
 /*kk***********************************************************/
 
 			unsigned long  k;
@@ -593,6 +601,7 @@ receive_phase:
 			printf("---total = %u---\n",(a-k));
 
 /**************************************************************/
+#endif
 
             scheduler->deactivate_activate_sched(current, to_tcb,
                     thread_state_t::waiting_forever, thread_state_t::running,
@@ -649,6 +658,8 @@ retry_get_head:
                 TRACE_NOTIFY("notify recieve (curr=%t)\n", current);
                 setup_notify_return(current);
                 current->sent_from = NILTHREAD;
+
+#if testipc
 /*ff*******************************************************************/
 
 			unsigned long  f;
@@ -658,7 +669,7 @@ retry_get_head:
 			printf("---total = %u---\n",(a-f));
 
 /**********************************************************************/
-
+#endif
 
                 PROFILE_STOP(sys_ipc_e);
                 enqueue_tcb_and_return(current, to_tcb,
@@ -742,7 +753,7 @@ retry_get_head:
                 scheduler->update_active_state(current,
                                                thread_state_t::running);
                 if (from_tcb) { from_tcb->unlock_read(); }
-
+#if testipc
 /*gg**************************************************************/
 
 			unsigned long  g;
@@ -752,7 +763,7 @@ retry_get_head:
 			printf("---total = %u---\n",(a-g));
 
 /*******************************************************************/
-
+#endif
                 PROFILE_STOP(sys_ipc_e);
                 enqueue_tcb_and_return(current, to_tcb,
                         TCB_SYSDATA_IPC(current)->ipc_return_continuation);
@@ -795,7 +806,7 @@ retry_get_head:
             }
             else
             {
-
+#if testipc
 /*hh*******************************************/
 
 			unsigned long  h;
@@ -805,7 +816,7 @@ retry_get_head:
 			printf("---total = %u---\n",(a-h));
 
 /***********************************************/
-	
+#endif	
                 PROFILE_STOP(sys_ipc_e);
                 scheduler->
                     deactivate_sched(current, thread_state_t::waiting_forever,
@@ -843,6 +854,7 @@ retry_get_head:
                  * scheduled until that is done. 'from_tcb' will perform a
                  * schedule when the copy is done, ensuring that the scheduler
                  * is still in control. */
+#if testipc
 /*ii********************************************/
 
 			unsigned long  i;
@@ -852,7 +864,7 @@ retry_get_head:
 			printf("---total = %u---\n",(a-i));
 
 /************************************************/
-
+#endif
 
                 PROFILE_STOP(sys_ipc_e);
                 scheduler->context_switch(current, from_tcb, thread_state_t::waiting_forever,
