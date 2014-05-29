@@ -1,14 +1,10 @@
+#
+# @LICENCE("Public", "2008")@
+#
+
 Import("*")
 
-libs = ["l4", "l4e", "mutex", "atomic_ops", "c", "okl4", "driver"]
-
-try:
-    if args["serial_driver"]:
-        libs.append(args["serial_driver"])
-        libs.append("serial")
-        env.Append(CPPDEFINES=[("SERIAL_DRIVER", args["serial_driver"])])
-except:
-    pass
+libs = ["atomic_ops", "c", "okl4"]
 
 # Add kernel-specific libraries
 if env.kernel == "micro":
@@ -19,8 +15,6 @@ else:
     raise UserError, "Unknown kernel"
 
 obj = env.KengeProgram("chatterbox", LIBS=libs)
-
-env.expect_test_data = [("Drivers works!", None)]
 
 env.set_program(obj, heap = 0x100000)
 
