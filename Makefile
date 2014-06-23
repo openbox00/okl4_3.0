@@ -11,32 +11,32 @@ install:
 	export PATH
 	echo $(PATH)
 multicell:
-	${COMMAND} ${OPTIONS} PROJECT=examples example=echo,chatterbox 
+	${COMMAND} ${OPTIONS} PROJECT=examples EXAMPLE=echo,chatterbox 
 
 2multicell:
-	${COMMAND} ${OPTIONS} PROJECT=examples example=oklinux,decrypt  LINUX_APPS=cross-cell-demo
+	${COMMAND} ${OPTIONS} PROJECT=examples EXAMPLE=oklinux,decrypt  LINUX_APPS=cross-cell-demo
 
 decrypt:
-	${COMMAND} ${OPTIONS} PROJECT=examples example=decrypt
+	${COMMAND} ${OPTIONS} PROJECT=examples EXAMPLE=decrypt
 
 chatterbox:
-	${COMMAND} ${OPTIONS} PROJECT=examples example=chatterbox
+	${COMMAND} ${OPTIONS} PROJECT=examples EXAMPLE=chatterbox
 
 two_oklinux:
-	${COMMAND} ${OPTIONS} PROJECT=examples example=oklinux,oklinux2
+	${COMMAND} ${OPTIONS} PROJECT=examples EXAMPLE=oklinux,oklinux2
 
 echo:
-	${COMMAND} ${OPTIONS} PROJECT=examples example=echo,hello 
+	${COMMAND} ${OPTIONS} PROJECT=examples EXAMPLE=echo,hello 
 
 hello:
-	${COMMAND} ${OPTIONS} PROJECT=examples example=hello
+	${COMMAND} ${OPTIONS} PROJECT=examples EXAMPLE=hello
 
 #linux_apps=lmbench
 oklinux:
-	${COMMAND} ${OPTIONS} PROJECT=examples example=oklinux LINUX_APPS=cross-cell-demo 
+	${COMMAND} ${OPTIONS} PROJECT=examples EXAMPLE=oklinux LINUX_APPS=cross-cell-demo 
 
 adder:
-	${COMMAND} ${OPTIONS} PROJECT=examples example=adder
+	${COMMAND} ${OPTIONS} PROJECT=examples EXAMPLE=adder
 
 ktest:
 	${COMMAND} ${OPTIONS} PROJECT=ktest 

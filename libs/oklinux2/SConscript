@@ -63,14 +63,14 @@ import os
 # Build liboklinux
 public_headers = [("include/", "include/%(name)s/")]
 source = ["src/*.c"]
-lib = env.KengeLibrary("oklinux", public_headers=public_headers, source=source)
+lib = env.KengeLibrary("oklinux2", public_headers=public_headers, source=source)
 
 oklinux_config = {}
 
 # List of libraries that OK Linux depends on
 if env.name == "oklinux2":
     oklinux_config["libs"] = ["mutex", "l4e",
-                          "l4", "gcc", "circular_buffer", "oklinux",
+                          "l4", "gcc", "circular_buffer", "oklinux2", 
                           "atomic_ops", "okl4"]
 else:
     oklinux_config["libs"] = ["mutex", "fs", "vtimer", "vserial", "l4e", "ll",

@@ -110,12 +110,13 @@ rootserver_env.Package("libs/okl4")
 
 #rootserver_env.add_use_device(None, ["serial_dev"])
 #rootserver_env.add_use_device(None, ["timer_dev"])
-##if rootserver_env.machine.__name__ in ["versatile", "versatile_uboot"]:
+#if rootserver_env.machine.__name__ in ["versatile", "versatile_uboot"]:
 #    rootserver_env.add_use_device(None, ["eth_dev"])
 #    rootserver_env.add_use_device(None, ["versatilesys_dev"])
 #    rootserver_env.add_use_device(None, ["clcd_dev"])
 #    rootserver_env.add_use_device(None, ["kmi0_dev"])
 #    rootserver_env.add_use_device(None, ["kmi1_dev"])
+
 if rootserver_env.machine.__name__ == "kzm_arm11":
     rootserver_env.add_use_device(None, ["dma_dev"])
 
