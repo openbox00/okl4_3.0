@@ -29,7 +29,8 @@
 
 #include <soc/soc.h>
 
-#define testipc 0
+#define testipc 1
+#define testaaa 0
 
 int test = 1;
 
@@ -39,8 +40,6 @@ DECLARE_TRACEPOINT(IPC_TRANSFER);
 
 INLINE bool transfer_message(tcb_t * src, tcb_t * dst)
 {
-    TRACEPOINT (IPC_TRANSFER,
-                printf("IPC transfer message: src=%t, dst=%t\n", src, dst));
 
     msg_tag_t tag = src->get_tag();
 
@@ -49,37 +48,25 @@ INLINE bool transfer_message(tcb_t * src, tcb_t * dst)
 
     // we set the sender space id here
     dst->set_sender_space(src->get_space_id());
-
-    /*
-     * Any errors here will be reported as a message overflow error.
-     * For the "exception" IPCs this is misleading as more than just overflow
-     * is checked.  A new error type should be defined sometime.
-     */
-    if (EXPECT_FALSE(src->in_exception_ipc())) {
-        if (! src->copy_exception_mrs_from_frame(dst)) {
-            goto error;
-        }
-    } else if (EXPECT_FALSE(dst->in_exception_ipc())) {
-        if (! src->copy_exception_mrs_to_frame(dst)) {
-            goto error;
-        }
-    } else if (EXPECT_TRUE(tag.get_untyped())){
+#if testaaa
+	unsigned long  g;
+	g = soc_get_timer_tick_length();
+#endif
         if (EXPECT_FALSE(!src->copy_mrs(dst, 1, tag.get_untyped()))) {
-            goto error;
         }
-    }
+
+#if testaaa
+	unsigned long  z;
+	z = soc_get_timer_tick_length();
+	printf("------------------------------------------------copy_mrs = %u---\n",(g-z));
+#endif
+
 
     dst->set_tag(tag);
+
+
+
     return true;
-
-error:
-    // Report message overflow error
-    dst->set_error_code (IPC_RCV_ERROR (ERR_IPC_MSG_OVERFLOW));
-    src->set_error_code (IPC_SND_ERROR (ERR_IPC_MSG_OVERFLOW));
-
-    tag.set_error();
-    dst->set_tag(tag);
-    return false;
 }
 
 INLINE void setup_notify_return(tcb_t *tcb)
@@ -98,12 +85,6 @@ NORETURN static void
 enqueue_tcb_and_return(tcb_t *current, tcb_t *to_tcb,
         continuation_t continuation)
 {
-#if defined(CONFIG_MUNITS)
-    /* FIXME : Mothra Issue #2123 : Only the scheduler should be using
-     * set_state(). */
-    current->set_state(thread_state_t::running);
-#endif
-
     scheduler_t * scheduler = get_current_scheduler();
     if (to_tcb) {
         scheduler->activate_sched(to_tcb, thread_state_t::running,
@@ -202,23 +183,6 @@ SYS_IPC(capid_t to_tid, capid_t from_tid)
 {
     tcb_t * current = get_current_tcb();
     continuation_t continuation = ASM_CONTINUATION;
-
-    TRACEPOINT_TB (SYSCALL_IPC,
-                   msg_tag_t tag = current->get_tag ();
-                   printf ("SYS_IPC: current: %t, to_tid: %t, "
-                           "from_tid: %t, "
-                           "tag: 0x%x (label=0x%x, %c%c%c, u=%d)\n",
-                           current, TID(to_tid), TID(from_tid),
-                           tag.raw, tag.get_label (),
-                           tag.send_blocks() ? 'S' : 's',
-                           tag.recv_blocks() ? 'R' : 'r',
-                           tag.is_notify() ? 'N' : '~',
-                           tag.get_untyped ()
-                           ),
-                   "sys_ipc %t => %t (recvfrom=%t)",
-                   (word_t)current,
-                   TID(to_tid), TID(from_tid));
-
     tcb_t * to_tcb = NULL;
     tcb_t * from_tcb = NULL;
 
@@ -329,7 +293,6 @@ void ipc(tcb_t *to_tcb, tcb_t *from_tcb, word_t wait_type)
 #endif
 
     tcb_t * current = get_current_tcb();
-    TRACE_IPC("ipc current: %p, to: %p, from: %p\n", current, to_tcb, from_tcb);
     scheduler_t * scheduler = get_current_scheduler();
     bool recv_blocks;
 
@@ -338,122 +301,38 @@ void ipc(tcb_t *to_tcb, tcb_t *from_tcb, word_t wait_type)
     /* FIXME: Async IPC assumes to_tcb is in same domain */
     if (EXPECT_TRUE(to_tcb != NULL))
     {
-        msg_tag_t tag = current->get_tag ();
+#if testaaa
+		printf("1. --------\n");
+#endif
+	    msg_tag_t tag = current->get_tag ();
 
         recv_blocks = tag.recv_blocks();
-
-        /* --- check for asynchronous notification -------------------------- */
-        if (EXPECT_FALSE( tag.is_notify() ))
-        {
-            TRACE_NOTIFY("notify send phase curr=%t, to=%t\n", current, to_tcb);
-
-            acceptor_t acceptor = to_tcb->get_acceptor();
-
-            if ( EXPECT_TRUE(acceptor.accept_notify()) )
-            {
-                word_t bits = to_tcb->add_notify_bits(current->get_mr(1));
-                /* I am fairly sure we don't need a barrier here as the one after set_notify_wait
-                 * already eliminates the conditions leading to a race */
-                /* okl4_atomic_barrier_smp(); */
-
-                /* check if we need to wakeup the destination */
-
-async_wakeup_check:
-                okl4_atomic_barrier_smp();
-                if (EXPECT_TRUE( (bits & to_tcb->get_notify_mask()) &&
-                            ( to_tcb->get_state().is_waiting_notify() ||
-                              ( to_tcb->get_state().is_waiting() &&
-                                ((word_t)to_tcb->get_partner() == ANYTHREAD_RAW)
-                                 ) ) ))
-                {
-                    if (!to_tcb->grab()) {
-                        goto async_wakeup_check;
-                    }
-                    to_tcb->unlock_read();
-
-                    TRACE_NOTIFY("notify wakeup (to=%t)\n", to_tcb);
-
-                    to_tcb->sent_from = NILTHREAD;
-                    to_tcb->set_tag(msg_tag_t::nil_tag()); /* clear tag of tcb */
-                }
-                else
-                {
-                    /* Do no wakeup destination */
-                    to_tcb->unlock_read();
-                    to_tcb = NULL;
-                }
-            }
-            else
-            {
-                /* destination thread not accepting notifications */
-				printf("return_ipc_error_send\n");
-                return_ipc_error_send(current, to_tcb, from_tcb, ERR_IPC_NOT_ACCEPTED);
-                NOTREACHED();
-            }
-            goto receive_phase;
-        }
-
-        TRACE_IPC("send phase curr=%t, to=%t\n", current, to_tcb);
-
         capid_t sender_handle = threadhandle(current->tcb_idx);
 
-check_waiting:
-        okl4_atomic_barrier_smp();
-        // not waiting || (not waiting for me && not waiting for any)
-        // optimized for receive and wait any
+
+
+//check_waiting:
         if (EXPECT_FALSE(
                     !to_tcb->get_state().is_waiting()
                     || (to_tcb->get_partner() != current &&
                       ((word_t)to_tcb->get_partner() != ANYTHREAD_RAW)) ))
         {
-            TRACE_IPC ("dest not ready (%t, is_wt=%d, state=%d, partner=%p)\n",
-                    to_tcb, to_tcb->get_state().is_waiting(), (word_t) to_tcb->get_state(),
-                    to_tcb->is_partner_valid() ? to_tcb->get_partner() : NULL);
-            //enter_kdebug("blocking send");
-
-            /* thread is not receiving */
-            if (EXPECT_FALSE( !tag.send_blocks() ))
-            {
-                TRACE_IPC ("non-blocking send returns\n");
-                return_ipc_error_send(current, to_tcb, from_tcb, ERR_IPC_NOPARTNER);
-                NOTREACHED();
-            }
-            // eagerly set these to allow atomic locking
+#if testaaa
+		printf("2. --------\n");
+#endif
             current->set_partner(to_tcb);
             to_tcb->get_endpoint()->enqueue_send(current);
-#if defined (CONFIG_MUNITS)
-            /**
-             *  @todo FIXME: Mothra Issue #2123 - davidg.
-             *  Only the scheduler should be using set_state().
-             */
-            current->set_state(thread_state_t::polling);
-            // recheck state in case receiver has changed state 
-            // whilst we were (avoid races)
-            okl4_atomic_barrier_smp();
-            if (EXPECT_FALSE(!(!to_tcb->get_state().is_waiting()
-                               || (to_tcb->get_partner() != current
-                                   && ((word_t)to_tcb->get_partner() != ANYTHREAD_RAW)))
-                            ))
-            {
-                to_tcb->get_endpoint()->dequeue_send(current);
-                current->set_state(thread_state_t::running);
-                goto check_waiting;
-            }
-#endif
-
             /* Schedule somebody else while we wait for the receiver to become
              * ready. */
             to_tcb->unlock_read();
             if (from_tcb) { from_tcb->unlock_read(); }
 #if testipc
 /*bb***********************************************************/
-
 			unsigned long  b;
 			b = soc_get_timer_tick_length();
 			printf("b = %u\n",b);
-			printf("scheduler->deactivate_sched(send_phase)\n");
+			//printf("scheduler->deactivate_sched(send_phase)\n");
 			printf("---total = %u---\n",(a-b));
-
 /***********************************************************/
 #endif
             PROFILE_STOP(sys_ipc_e);
@@ -465,10 +344,11 @@ check_waiting:
         }
         else
         {
-            /* The partner must be told who the IPC originated from. */
-            if (!to_tcb->grab()) {
-                goto check_waiting;
-            }
+#if testaaa
+		printf("3. --------\n");
+#endif
+
+
             to_tcb->unlock_read();
             to_tcb->remove_dependency();
 
@@ -477,105 +357,32 @@ check_waiting:
             to_tcb->set_partner((tcb_t*)INVALID_RAW);
 
             /* set sent_from to be thread handle of the sender. */
-            TRACE_IPC("set sent_from of tcb 0x%lx to handle of tcb %lx which is 0x%lx\n",
-                to_tcb, current, sender_handle.get_raw());
             to_tcb->sent_from = sender_handle;
+
         }
+
 
         if (EXPECT_FALSE(!transfer_message(current, to_tcb)))
-        {
-            /*
-             * Error transferring messages across. Reactivate our partner
-             * and return with an error. */
-            if (EXPECT_FALSE(!to_tcb->is_local_domain())) {
-                /* Unimplemented for SMP */
-                UNIMPLEMENTED();
-            }
-
-            current->set_tag(to_tcb->get_tag());
-            current->set_partner(to_tcb);
-
-            if (from_tcb) { from_tcb->unlock_read(); }
-#if testipc
-/*ccc***********************************************************/
-
-			unsigned long  c;
-			c = soc_get_timer_tick_length();
-			printf("c = %u\n",c);
-			printf("sheduler->update_active_state\n");
-			printf("scheduler->activate_sched(send_phase)\n");
-			printf("---total = %u---\n",(a-c));
-
-/*********************************************************/
-#endif
-            PROFILE_STOP(sys_ipc_e);
-            scheduler->update_active_state(current, thread_state_t::running);
-            scheduler->activate_sched(to_tcb, thread_state_t::running,
-                                      current, TCB_SYSDATA_IPC(current)->ipc_return_continuation,
-                                      scheduler_t::sched_default);
+        {	
         }
+
+
     }
     else        /* to_tcb == NULL */
     {
+#if testaaa
+		printf("4. --------\n");
+#endif
         recv_blocks = current->get_tag().recv_blocks();
         current->set_tag(msgtag(0));
     }
 
     /* --- send finished ------------------------------------------------ */
-receive_phase:
-    okl4_atomic_barrier_smp();
-    if (EXPECT_FALSE((from_tcb == NULL) && (wait_type == 0))) {
-        /* this case is entered on:
-         *   - send-only case
-         *   - both descriptors set to nil id
-         * in the SMP case to_tcb is always NULL! */
-
-        if (EXPECT_FALSE(to_tcb == NULL)) {
-            /* Both from_tcb and to_tcb are NULL. No work to perform. */
-            ASSERT(DEBUG, current->get_state() == thread_state_t::running);
-            current->set_tag(msg_tag_t::nil_tag());
-            current->sent_from = NILTHREAD;
-#if testipc
-/*dd*****************************************************************/
-
-			unsigned long  d;
-			d = soc_get_timer_tick_length();
-			printf("d = %u\n",d);
-			printf("return_ipc()(receive_phase)\n");
-			printf("---total = %u---\n",(a-d));
-
-/*********************************************************************/
-#endif
-            PROFILE_STOP(sys_ipc_e);
-            return_ipc();
-        }
-
-        /* IPC send without receive. Set tags up and return. */
-        current->set_tag(msg_tag_t::nil_tag());
-        current->set_partner(NULL);
-#if testipc
-/*ee***********************************************************/
-
-			unsigned long  e;
-			e = soc_get_timer_tick_length();
-			printf("e = %u\n",e);
-			printf("sheduler->update_active_state(receive_phase)\n");
-			printf("scheduler->activate_sched\n");
-			printf("---total = %u---\n",(a-e));
-
-/**************************************************************/
-#endif
-
-        PROFILE_STOP(sys_ipc_e);
-        scheduler->update_active_state(current, thread_state_t::running);
-        scheduler->activate_sched(to_tcb, thread_state_t::running,
-                                  current, TCB_SYSDATA_IPC(current)->ipc_return_continuation,
-                                  scheduler_t::sched_default);
-        NOTREACHED();
-    }
-    /* --- receive phase ------------------------------------------------ */
-    else /* from_tcb != NULL */
+//receive_phase:
     {
+#if testaaa
+		printf("5. --------\n");
+#endif
         /*
          * Optimisation for Call(), i.e., when to == from.
          *
@@ -585,24 +392,28 @@ receive_phase:
          * for the Call() case.
          */
         if (to_tcb && (to_tcb == from_tcb) && recv_blocks) {
+#if testaaa
+		printf("6. --------\n");
+#endif
+
+/*******************************************************/
             current->set_partner(from_tcb);
 
+/********************************************************/
             to_tcb->get_endpoint()->enqueue_recv(current);
+
 
             /* to_tcb already unlocked */
             from_tcb->unlock_read();
 #if testipc
 /*kk***********************************************************/
-
 			unsigned long  k;
 			k = soc_get_timer_tick_length();
 			printf("k = %u\n",k);
-			printf("scheduler->deactivate_activate_sched(receive phase)\n");
+			//printf("scheduler->deactivate_activate_sched(receive phase)\n");
 			printf("---total = %u---\n",(a-k));
-
 /**************************************************************/
 #endif
-
             scheduler->deactivate_activate_sched(current, to_tcb,
                     thread_state_t::waiting_forever, thread_state_t::running,
                     current, check_async_ipc,
@@ -610,130 +421,27 @@ receive_phase:
             NOTREACHED();
         }
 
-#ifdef CONFIG_MUNITS
-        /* Eager state setting to ensure that sending thread and
-         * receiving thread do not miss each other
-         */
-        if (recv_blocks) {
-            current->set_partner(wait_type == 1 ? (tcb_t*)ANYTHREAD_RAW : from_tcb);
-            /* FIXME : Mothra Issue #2123 : Only the scheduler should be using
-             * set_state(). */
-            current->set_state(wait_type == 2 ?
-                    thread_state_t::waiting_notify : 
-                    thread_state_t::waiting_forever);
-            /* ensure memory ordering */
-            okl4_atomic_barrier_smp();
-        }
-#endif
-
         acceptor_t acceptor;
         acceptor.clear();
 
         /* VU: optimize for common case -- any, closed */
         if (wait_type == 1)
         {
+#if testaaa
+		printf("7. --------\n");
+#endif
 retry_get_head:
-            okl4_atomic_barrier_smp();
             from_tcb = current->get_endpoint()->get_send_head();
 
             if (EXPECT_TRUE(from_tcb)) {
                 if (EXPECT_FALSE(!from_tcb->try_lock_read())) {
-                    okl4_atomic_barrier_smp();
                     goto retry_get_head;
                 }
-                /* Don't pick a different thread if we loop back through this code */
-                wait_type = 3;
             }
 
             /* only accept notify bits if waiting from anythread */
             acceptor = current->get_acceptor();
         }
-        else if (EXPECT_FALSE(wait_type == 2))
-        {
-            /* Wait on asynch notify only, from_tcb == NULL */
-
-            /* check if we have any pending notify bits */
-            if (EXPECT_TRUE( current->get_notify_bits() & current->get_notify_mask() ))
-            {
-                TRACE_NOTIFY("notify recieve (curr=%t)\n", current);
-                setup_notify_return(current);
-                current->sent_from = NILTHREAD;
-
-#if testipc
-/*ff*******************************************************************/
-
-			unsigned long  f;
-			f = soc_get_timer_tick_length();
-			printf("f = %u\n",f);
-			printf("enqueue_tcb_and_return(receive phase)\n");
-			printf("---total = %u---\n",(a-f));
-
-/**********************************************************************/
-#endif
-
-                PROFILE_STOP(sys_ipc_e);
-                enqueue_tcb_and_return(current, to_tcb,
-                        TCB_SYSDATA_IPC(current)->ipc_return_continuation);
-                NOTREACHED();
-            }
-
-            TRACE_NOTIFY("notify blocking receive (curr=%t)\n", current);
-
-            acceptor = current->get_acceptor();
-
-            /* current thread not accepting notifications? */
-            /*
-             * Should this check be before checking the bits? should 
-             * wait_notify ever work if there is no acceptor?
-             * Leaving for the moment as acceptors are soon to be deprecated 
-             */
-            if ( !acceptor.accept_notify() )
-            {
-                return_ipc_error_recv(current, to_tcb, NULL, ERR_IPC_NOT_ACCEPTED);
-                NOTREACHED();
-            }
-
-            /* no pending bits and non-blocking */
-            if (EXPECT_FALSE( !recv_blocks ))
-            {
-                /* prepare the IPC error */
-                return_ipc_error_recv(current, to_tcb, NULL, ERR_IPC_NOPARTNER);
-                NOTREACHED();
-            }
-
-            current->set_tag(msg_tag_t::notify_tag());
-
-            /* FIXME: is it ok to use check_async_ipc here? Matthew Warton */
-            /* Nothing more we can do except wait. Perform a schedule. */
-            if (EXPECT_TRUE(to_tcb != NULL)) {
-                scheduler->
-                    deactivate_activate_sched(current, to_tcb,
-                            thread_state_t::waiting_notify,
-                            thread_state_t::running,
-                            current, check_async_ipc,
-                            scheduler_t::sched_default);
-            } else {
-                scheduler->
-                    deactivate_sched(current, thread_state_t::waiting_notify,
-                            current, check_async_ipc,
-                            scheduler_t::sched_default);
-            }
-        }
-        else {
-            /* closed wait */
-            TRACE_IPC("closed wait from %t, current=%t, current_space=%p\n",
-                      from_tcb, current, current->get_space());
-
-            if (EXPECT_FALSE( from_tcb == NULL ))
-            {
-                /* wrong receiver id */
-                TRACE_IPC("invalid from cap\n");
-                return_ipc_error_recv(current, to_tcb, NULL, ERR_IPC_NON_EXISTING);
-                NOTREACHED();
-            }
-        }
-
-        TRACE_IPC("receive phase curr=%t, from=%p\n", current, from_tcb);
 
         /*
          * no partner || partner is not polling ||
@@ -743,76 +451,28 @@ retry_get_head:
                           (!from_tcb->get_state().is_polling()) ||
                           (from_tcb->get_partner() != current)))
         {
-            /* If no partner is ready to send, check if we have any pending notify bits */
-            if ( acceptor.accept_notify() && (current->get_notify_bits() & current->get_notify_mask()) )
-            {
-                TRACE_NOTIFY("notify recieve (curr=%t)\n", current);
-                setup_notify_return(current);
-                current->sent_from = NILTHREAD;
-                ASSERT(DEBUG, current->get_state().is_runnable());
-                scheduler->update_active_state(current,
-                                               thread_state_t::running);
-                if (from_tcb) { from_tcb->unlock_read(); }
-#if testipc
-/*gg**************************************************************/
-
-			unsigned long  g;
-			g = soc_get_timer_tick_length();
-			printf("b = %u\n",g);
-			printf("enqueue_tcb_and_return(receive phase)\n");
-			printf("---total = %u---\n",(a-g));
-
-/*******************************************************************/
+#if testaaa
+		printf("8. --------\n");
 #endif
-                PROFILE_STOP(sys_ipc_e);
-                enqueue_tcb_and_return(current, to_tcb,
-                        TCB_SYSDATA_IPC(current)->ipc_return_continuation);
-                NOTREACHED();
-            }
-
-            TRACE_IPC("blocking receive (curr=%t, from=%t)\n", current, from_tcb);
-
-            /* Should we block waiting for the thread to be ready? */
-            if (EXPECT_FALSE(!recv_blocks))
-            {
-                /* Don't block waiting. Instead, just return an error. */
-                return_ipc_error_recv(current, to_tcb, from_tcb, ERR_IPC_NOPARTNER);
-                NOTREACHED();
-            }
-
             /* Update schedule inheritance dependancy on closed waits. */
             if (from_tcb != NULL) {
-                from_tcb->get_endpoint()->enqueue_recv(current);
-#ifndef CONFIG_MUNITS
-                current->set_partner(from_tcb);
-#endif
-                from_tcb->unlock_read();
             } else {
-#ifndef CONFIG_MUNITS
+#if testaaa
+		printf("9. --------\n");
+#endif 
+				//printf("wait_type = %d--------\n",wait_type );
                 current->set_partner(wait_type == 1 ? (tcb_t*)ANYTHREAD_RAW : NULL);
+            }
+#if testaaa
+		printf("10. --------\n");
 #endif
-            }
-
-            /* Find somebody else to schedule. */
-            if (EXPECT_TRUE(to_tcb != NULL))
-            {
-                scheduler->
-                    deactivate_activate_sched(current, to_tcb,
-                                              thread_state_t::waiting_forever,
-                                              thread_state_t::running,
-                                              current, check_async_ipc,
-                                              scheduler_t::sched_default);
-                NOTREACHED();
-            }
-            else
-            {
 #if testipc
 /*hh*******************************************/
 
 			unsigned long  h;
 			h = soc_get_timer_tick_length();
 			printf("h = %u\n",h);
-			printf("scheduler->deactivate_sched(receive phase)\n");
+			//printf("scheduler->deactivate_sched(receive phase)\n");
 			printf("---total = %u---\n",(a-h));
 
 /***********************************************/
@@ -823,44 +483,26 @@ retry_get_head:
                                      current, check_async_ipc,
                                      scheduler_t::sched_default);
                 NOTREACHED();
-            }
         }
         else
         {
-            if (EXPECT_FALSE(!from_tcb->grab())) {
-                /* retry lock */
-                from_tcb->unlock_read();
-                from_tcb = acquire_read_lock_tcb(from_tcb);
-                goto receive_phase;
-            }
+#if testaaa
+		printf("11. --------\n");
+#endif
             from_tcb->unlock_read();
-
-            TRACE_IPC("perform receive from %t\n", from_tcb);
-            //enter_kdebug("do receive");
-
-            // both threads on the same CPU?
             {
+#if testaaa
+		printf("12. --------\n");
+#endif	
                 current->set_partner(from_tcb);
                 current->get_endpoint()->dequeue_send(from_tcb);
 
-                /* If we just sent an IPC, enqueue the receiver. */
-                if (to_tcb != NULL) {
-                    scheduler->activate(to_tcb, thread_state_t::running);
-                }
-
-                /* We need to perform a conext switch here, and not a schedule.
-                 * This is because 'from_tcb' is responsible for finishing the
-                 * copy, and we (a potentially high priority thread) can not be
-                 * scheduled until that is done. 'from_tcb' will perform a
-                 * schedule when the copy is done, ensuring that the scheduler
-                 * is still in control. */
 #if testipc
 /*ii********************************************/
-
 			unsigned long  i;
 			i = soc_get_timer_tick_length();
 			printf("i = %u\n",i);
-			printf("scheduler->context_switch(receive phase)\n");
+			//printf("scheduler->context_switch(receive phase)\n");
 			printf("---total = %u---\n",(a-i));
 
 /************************************************/

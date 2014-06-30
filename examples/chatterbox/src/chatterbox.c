@@ -3,7 +3,7 @@
 #include <string.h>
 
 #include <okl4/init.h>  //for okl4_init_thread
-#include <okl4/kernel.h>    //資料結構???
+#include <okl4/kernel.h>    
 #include <okl4/kthread.h>   //okl4_kthread_attr_init, okl4_kthread_attr_setspip
 #include <okl4/message.h>   //okl4_message_send, okl4_message_wait
 
