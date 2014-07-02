@@ -257,7 +257,7 @@ if get_bool_arg(args, "ENABLE_FASTPATHS", True):
     if get_bool_arg(args, "IPC_FASTPATH", True) and asm_fastpath_supported:
         cppdefines += [("CONFIG_IPC_FASTPATH", 1)]
 
-if get_bool_arg(args, "KDB_SERIAL", False):
+if get_bool_arg(args, "KDB_SERIAL", True):
     cppdefines += [("CONSOLE_PORT_SERIAL", 1)]
 if get_bool_arg(args, "USE_UNTANGLED_FASTPATH", False):
     cppdefines +=[("CONFIG_USE_UNTANGLED_FASTPATH", 1)]
