@@ -13,7 +13,7 @@
 
 #define MAX_CHARS  OKL4_MESSAGE_MAX_SIZE
 
-#define THREADS     3
+#define THREADS     6
 
 
 struct args
@@ -41,22 +41,24 @@ main(int argc, char **argv)
 
     for (i = 0; i < THREADS; i++)
     {
-     	okl4_word_t j;
-		printf("\nWait for the child thread%d to finish\n",(int)i);
+     	//okl4_word_t j;
+
+  		printf("\nWait for the child thread %d to finish\n",(int)i);
         /* 用來等待其他thread傳送message過來 */        
         error = okl4_message_wait(buffer, MAX_CHARS, &bytes, &client);
-	    assert(!error);
-
+		printf("Recevie child thread %d finish complete\n",(int)i);
+/*
         if (bytes > MAX_CHARS) {
             bytes = MAX_CHARS;
         }
-        /* Print out the message. */
-        printf("Total ans is : ");
+
+		printf("Total ans is : ");
         for (j = 0; j < bytes; j++) {
             putchar(buffer[j]);
         }
-		printf("\n");
-		printf("Recevie child thread%d finish complete\n",(int)i);
+		printf("\n");     
+*/
+
         //error = okl4_message_replywait(client, &bytes, sizeof(okl4_word_t),buffer, MAX_CHARS, &bytes, &client);
         //assert(!error);
     }

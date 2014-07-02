@@ -106,9 +106,9 @@ syncpoint_t::block(tcb_t * tcb)
 void
 syncpoint_t::unblock(tcb_t * tcb)
 {
-    SMT_ASSERT(ALWAYS, get_current_scheduler()->schedule_lock.is_locked(true));
-    ASSERT(ALWAYS, tcb->is_local_unit());
-    ASSERT(ALWAYS, tcb->blocked_list.is_queued());
+
+			unsigned long  a;
+			a = soc_get_timer_tick_length();
 
     this->dequeue_blocked(tcb);
 
@@ -119,6 +119,8 @@ syncpoint_t::unblock(tcb_t * tcb)
         this->propagate_priority_change();
     }
 #endif
+
+
 }
 
 void
@@ -264,12 +266,15 @@ syncpoint_t::enqueue_blocked(tcb_t * tcb)
 void
 syncpoint_t::dequeue_blocked(tcb_t * tcb)
 {
-    SMT_ASSERT(ALWAYS, get_current_scheduler()->schedule_lock.is_locked(true));
-    ASSERT(ALWAYS, tcb);
-    ASSERT(ALWAYS, tcb->get_waiting_for() == this);
-    ASSERT(ALWAYS, tcb->blocked_list.next != NULL);
+	unsigned long  a;
+	a = soc_get_timer_tick_length();
 
     DEQUEUE_LIST(tcb_t, this->blocked_head, tcb, blocked_list);
+
+	unsigned long  f;
+	f = soc_get_timer_tick_length();
+	printf("---(a-f) total = %u---\n",(a-f));
+
     tcb->set_waiting_for(NULL);
 }
 #endif

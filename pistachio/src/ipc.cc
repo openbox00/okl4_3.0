@@ -30,7 +30,8 @@
 #include <soc/soc.h>
 
 #define testipc 1
-#define testaaa 0
+#define node	1
+#define lab		1
 
 int test = 1;
 
@@ -40,6 +41,8 @@ DECLARE_TRACEPOINT(IPC_TRANSFER);
 
 INLINE bool transfer_message(tcb_t * src, tcb_t * dst)
 {
+    TRACEPOINT (IPC_TRANSFER,
+                printf("IPC transfer message: src=%t, dst=%t\n", src, dst));
 
     msg_tag_t tag = src->get_tag();
 
@@ -48,25 +51,37 @@ INLINE bool transfer_message(tcb_t * src, tcb_t * dst)
 
     // we set the sender space id here
     dst->set_sender_space(src->get_space_id());
-#if testaaa
-	unsigned long  g;
-	g = soc_get_timer_tick_length();
-#endif
-        if (EXPECT_FALSE(!src->copy_mrs(dst, 1, tag.get_untyped()))) {
+
+    /*
+     * Any errors here will be reported as a message overflow error.
+     * For the "exception" IPCs this is misleading as more than just overflow
+     * is checked.  A new error type should be defined sometime.
+     */
+    if (EXPECT_FALSE(src->in_exception_ipc())) {
+        if (! src->copy_exception_mrs_from_frame(dst)) {
+            goto error;
         }
-
-#if testaaa
-	unsigned long  z;
-	z = soc_get_timer_tick_length();
-	printf("------------------------------------------------copy_mrs = %u---\n",(g-z));
-#endif
-
+    } else if (EXPECT_FALSE(dst->in_exception_ipc())) {
+        if (! src->copy_exception_mrs_to_frame(dst)) {
+            goto error;
+        }
+    } else if (EXPECT_TRUE(tag.get_untyped())){
+        if (EXPECT_FALSE(!src->copy_mrs(dst, 1, tag.get_untyped()))) {
+            goto error;
+        }
+    }
 
     dst->set_tag(tag);
-
-
-
     return true;
+
+error:
+    // Report message overflow error
+    dst->set_error_code (IPC_RCV_ERROR (ERR_IPC_MSG_OVERFLOW));
+    src->set_error_code (IPC_SND_ERROR (ERR_IPC_MSG_OVERFLOW));
+
+    tag.set_error();
+    dst->set_tag(tag);
+    return false;
 }
 
 INLINE void setup_notify_return(tcb_t *tcb)
@@ -129,15 +144,11 @@ extern "C" CONTINUATION_FUNCTION(check_async_ipc)
     {
         TRACE_IPC("Asynch notify wakeup\n");
         setup_notify_return(current);
-        PROFILE_STOP(sys_ipc_e);
         ACTIVATE_CONTINUATION(TCB_SYSDATA_IPC(current)->ipc_return_continuation);
     }
 
-    TRACE_IPC("%t received msg\n", current);
-
     /* XXX VU: restructure switching code so that dequeueing
      * from wakeup is removed from critical path */
-    PROFILE_STOP(sys_ipc_e);
     ACTIVATE_CONTINUATION(TCB_SYSDATA_IPC(current)->ipc_return_continuation);
 }
 
@@ -153,7 +164,6 @@ return_ipc_error_send(tcb_t *current, tcb_t *to_tcb, tcb_t* from_tcb, word_t err
 
     if (to_tcb) { to_tcb->unlock_read(); }
     if (from_tcb) { from_tcb->unlock_read(); }
-    PROFILE_STOP(sys_ipc_e);
     return_ipc();
 }
 
@@ -168,10 +178,8 @@ return_ipc_error_recv(tcb_t *current, tcb_t *to_tcb, tcb_t* from_tcb, word_t err
     current->sent_from = NILTHREAD;
 
     if (from_tcb) { from_tcb->unlock_read(); }
-    PROFILE_STOP(sys_ipc_e);
     enqueue_tcb_and_return(current, to_tcb,
             TCB_SYSDATA_IPC(current)->ipc_return_continuation);
-    NOTREACHED();
 }
 
  /**********************************************************************
@@ -183,6 +191,7 @@ SYS_IPC(capid_t to_tid, capid_t from_tid)
 {
     tcb_t * current = get_current_tcb();
     continuation_t continuation = ASM_CONTINUATION;
+
     tcb_t * to_tcb = NULL;
     tcb_t * from_tcb = NULL;
 
@@ -200,14 +209,13 @@ SYS_IPC(capid_t to_tid, capid_t from_tid)
          * sending phase of ipc that uses thread handle,
          * to-thread MUST be waiting for me.
          */
-        TRACE_IPC("IPC get thread handle 0x%lx\n", to_tid.get_raw());
+		printf("IPC get thread handle 0x%u\n", to_tid.get_raw());	
         to_tcb = lookup_tcb_by_handle_locked(to_tid.get_raw());
 
         if (EXPECT_FALSE(to_tcb == NULL))
         {
             /* specified thread id invalid */
-            TRACE_NOTIFY("invalid send thread handle, %lx\n",
-                         to_tid.get_raw() );
+			printf("invalid send thread handle\n");			 
             return_ipc_error_send(current, NULL, NULL, ERR_IPC_NON_EXISTING);
             NOTREACHED();
         }
@@ -217,11 +225,8 @@ SYS_IPC(capid_t to_tid, capid_t from_tid)
                          || !to_tcb->is_partner_valid()
                          || to_tcb->get_partner() != current))
         {
-            TRACE_IPC ("dest not ready or it's partner isn't me (%t, is_wt=%d, state=%d, to_tcb->partner=0x%lx)\n",
-                    to_tcb, to_tcb->get_state().is_waiting(), (word_t) to_tcb->get_state(),
-                    to_tcb->is_partner_valid() ? to_tcb->get_partner() : NULL);
+			printf("dest not ready or it's partner isn't me\n");
             return_ipc_error_send(current, to_tcb, NULL, ERR_IPC_NOPARTNER);
-            NOTREACHED();
         }
     }
     else if (to_tid.is_myself()) {
@@ -230,9 +235,8 @@ SYS_IPC(capid_t to_tid, capid_t from_tid)
         if (EXPECT_FALSE(to_tcb == NULL))
         {
             /* someone else is likely trying to delete us */
-            TRACE_IPC("pending delete, TCB %p\n", current);
+            printf("someone else is likely trying to delete us\n");
             return_ipc_error_send(current, NULL, NULL, ERR_IPC_NON_EXISTING);
-            NOTREACHED();
         }
     }
     else if (EXPECT_TRUE(!to_tid.is_nilthread()))
@@ -242,9 +246,8 @@ SYS_IPC(capid_t to_tid, capid_t from_tid)
         if (EXPECT_FALSE(to_tcb == NULL))
         {
             /* specified thread id invalid */
-            TRACE_IPC("invalid send tid, %t\n", to_tid.get_raw() );
+            printf("specified thread id invalid\n");
             return_ipc_error_send(current, NULL, NULL, ERR_IPC_NON_EXISTING);
-            NOTREACHED();
         }
     }
 
@@ -282,14 +285,12 @@ SYS_IPC(capid_t to_tid, capid_t from_tid)
  */
 void ipc(tcb_t *to_tcb, tcb_t *from_tcb, word_t wait_type)
 {
-    PROFILE_START(sys_ipc_e);
-
 #if testipc
-	printf("---IPC---%d\n",test);
+	printf("\n---IPC---%d\n",test);
 	test++;	
 	unsigned long  a;
 	a = soc_get_timer_tick_length();
-	printf("a = %u\n",a);
+	//printf("a = %u\n",a);
 #endif
 
     tcb_t * current = get_current_tcb();
@@ -297,31 +298,33 @@ void ipc(tcb_t *to_tcb, tcb_t *from_tcb, word_t wait_type)
     bool recv_blocks;
 
     /* --- send phase --------------------------------------------------- */
-
+#if lab
+	printf("-----send phase start-----\n");
+#endif
     /* FIXME: Async IPC assumes to_tcb is in same domain */
     if (EXPECT_TRUE(to_tcb != NULL))
     {
-#if testaaa
-		printf("1. --------\n");
-#endif
-	    msg_tag_t tag = current->get_tag ();
-
+#if node	
+		printf("1.(to_tcb != NULL)\n");
+#endif		
+        msg_tag_t tag = current->get_tag ();
         recv_blocks = tag.recv_blocks();
         capid_t sender_handle = threadhandle(current->tcb_idx);
 
-
-
-//check_waiting:
+        // not waiting || (not waiting for me && not waiting for any)
+        // optimized for receive and wait any
         if (EXPECT_FALSE(
                     !to_tcb->get_state().is_waiting()
                     || (to_tcb->get_partner() != current &&
                       ((word_t)to_tcb->get_partner() != ANYTHREAD_RAW)) ))
         {
-#if testaaa
-		printf("2. --------\n");
-#endif
+#if node		
+			printf("2.not waiting || (not waiting for me && not waiting for any)\n");
+#endif			
+            // eagerly set these to allow atomic locking
             current->set_partner(to_tcb);
             to_tcb->get_endpoint()->enqueue_send(current);
+
             /* Schedule somebody else while we wait for the receiver to become
              * ready. */
             to_tcb->unlock_read();
@@ -330,25 +333,23 @@ void ipc(tcb_t *to_tcb, tcb_t *from_tcb, word_t wait_type)
 /*bb***********************************************************/
 			unsigned long  b;
 			b = soc_get_timer_tick_length();
-			printf("b = %u\n",b);
+			//printf("b exit\n");
 			//printf("scheduler->deactivate_sched(send_phase)\n");
-			printf("---total = %u---\n",(a-b));
+			printf("---(a-b) total = %u---\n",(a-b));
+#if lab
+			printf("-----set thread_state polling and exit-----\n");
+#endif
 /***********************************************************/
 #endif
-            PROFILE_STOP(sys_ipc_e);
-            scheduler->
-                deactivate_sched(current, thread_state_t::polling, current,
+            scheduler->deactivate_sched(current, thread_state_t::polling, current,
                                  TCB_SYSDATA_IPC(current)->ipc_restart_continuation,
                                  scheduler_t::sched_default);
-            NOTREACHED();
         }
         else
         {
-#if testaaa
-		printf("3. --------\n");
-#endif
-
-
+#if node		
+			printf("3.(waiting && waiting for me) || waiting for any\n");
+#endif			
             to_tcb->unlock_read();
             to_tcb->remove_dependency();
 
@@ -358,30 +359,31 @@ void ipc(tcb_t *to_tcb, tcb_t *from_tcb, word_t wait_type)
 
             /* set sent_from to be thread handle of the sender. */
             to_tcb->sent_from = sender_handle;
-
         }
-
-
+	
         if (EXPECT_FALSE(!transfer_message(current, to_tcb)))
         {	
-        }
-
-
+        }		
+#if node		
+		printf("transfer_message\n");
+#endif	
     }
     else        /* to_tcb == NULL */
     {
-#if testaaa
-		printf("4. --------\n");
-#endif
+#if node	
+		printf("4.(to_tcb == NULL)\n");
+#endif		
         recv_blocks = current->get_tag().recv_blocks();
         current->set_tag(msgtag(0));
     }
-
-    /* --- send finished ------------------------------------------------ */
-//receive_phase:
-    {
-#if testaaa
-		printf("5. --------\n");
+#if lab
+	printf("-----send phase finished-----\n");
+#endif	
+receive_phase:
+    /* --- receive phase ------------------------------------------------ */
+    /* from_tcb != NULL */
+#if lab
+	printf("-----receive phase start-----\n");
 #endif
         /*
          * Optimisation for Call(), i.e., when to == from.
@@ -392,33 +394,29 @@ void ipc(tcb_t *to_tcb, tcb_t *from_tcb, word_t wait_type)
          * for the Call() case.
          */
         if (to_tcb && (to_tcb == from_tcb) && recv_blocks) {
-#if testaaa
-		printf("6. --------\n");
-#endif
-
-/*******************************************************/
+#if node		
+	     printf("5.(to_tcb && (to_tcb == from_tcb) && recv_blocks)\n");
+#endif		 
             current->set_partner(from_tcb);
-
-/********************************************************/
             to_tcb->get_endpoint()->enqueue_recv(current);
-
-
             /* to_tcb already unlocked */
             from_tcb->unlock_read();
 #if testipc
-/*kk***********************************************************/
-			unsigned long  k;
-			k = soc_get_timer_tick_length();
-			printf("k = %u\n",k);
+/*cc***********************************************************/
+			unsigned long  c;
+			c = soc_get_timer_tick_length();
+			//printf("c exit\n");
 			//printf("scheduler->deactivate_activate_sched(receive phase)\n");
-			printf("---total = %u---\n",(a-k));
+			printf("---(a-c) total = %u---\n",(a-c));
+#if lab
+			printf("-----receive phase finished-----\n");
+#endif
 /**************************************************************/
 #endif
             scheduler->deactivate_activate_sched(current, to_tcb,
                     thread_state_t::waiting_forever, thread_state_t::running,
                     current, check_async_ipc,
                     scheduler_t::sched_default);
-            NOTREACHED();
         }
 
         acceptor_t acceptor;
@@ -427,18 +425,26 @@ void ipc(tcb_t *to_tcb, tcb_t *from_tcb, word_t wait_type)
         /* VU: optimize for common case -- any, closed */
         if (wait_type == 1)
         {
-#if testaaa
-		printf("7. --------\n");
-#endif
 retry_get_head:
+#if node
+			printf("6.retry_get_head:\n");
+#endif			
             from_tcb = current->get_endpoint()->get_send_head();
 
             if (EXPECT_TRUE(from_tcb)) {
+#if node			
+				printf("(EXPECT_TRUE(from_tcb))\n");
+#endif				
                 if (EXPECT_FALSE(!from_tcb->try_lock_read())) {
+					printf("go to  retry_get_head\n");
                     goto retry_get_head;
                 }
+                /* Don't pick a different thread if we loop back through this code */
+                wait_type = 3;
+#if node
+				printf("wait_type = %d,  Don't pick a different thread if we loop back through this code\n",wait_type);
+#endif	
             }
-
             /* only accept notify bits if waiting from anythread */
             acceptor = current->get_acceptor();
         }
@@ -451,71 +457,77 @@ retry_get_head:
                           (!from_tcb->get_state().is_polling()) ||
                           (from_tcb->get_partner() != current)))
         {
-#if testaaa
-		printf("8. --------\n");
-#endif
+#if node		
+			printf("7.no partner || partner is not polling || partner doesn't poll on me\n");
+#endif			
             /* Update schedule inheritance dependancy on closed waits. */
             if (from_tcb != NULL) {
+#if node			
+				printf("8.(from_tcb != NULL) doesn't enter\n");
+#endif				
             } else {
-#if testaaa
-		printf("9. --------\n");
-#endif 
-				//printf("wait_type = %d--------\n",wait_type );
+			//	printf("9.(from_tcb == NULL)\n");
+			//	printf("wait_type = %d\n",wait_type);
                 current->set_partner(wait_type == 1 ? (tcb_t*)ANYTHREAD_RAW : NULL);
             }
-#if testaaa
-		printf("10. --------\n");
-#endif
+
+            /* Find somebody else to schedule. */
+#if node			
+			printf("11.to_tcb == NULL\n");
+#endif			
 #if testipc
-/*hh*******************************************/
-
-			unsigned long  h;
-			h = soc_get_timer_tick_length();
-			printf("h = %u\n",h);
+/*dd*******************************************/
+			unsigned long  d;
+			d = soc_get_timer_tick_length();
+			//printf("d exit\n");
 			//printf("scheduler->deactivate_sched(receive phase)\n");
-			printf("---total = %u---\n",(a-h));
-
+			printf("---(a-d) total = %u---\n",(a-d));
+#if lab
+			printf("-----receive phase finished-----\n");
+#endif
 /***********************************************/
 #endif	
-                PROFILE_STOP(sys_ipc_e);
-                scheduler->
-                    deactivate_sched(current, thread_state_t::waiting_forever,
+                scheduler->deactivate_sched(current, thread_state_t::waiting_forever,
                                      current, check_async_ipc,
                                      scheduler_t::sched_default);
-                NOTREACHED();
         }
         else
         {
-#if testaaa
-		printf("11. --------\n");
-#endif
+#if node		
+			printf("12.have partner && partner is polling && partner poll on me\n");
+#endif			
+            if (EXPECT_FALSE(!from_tcb->grab())) {
+                goto receive_phase;
+            }
             from_tcb->unlock_read();
-            {
-#if testaaa
-		printf("12. --------\n");
-#endif	
-                current->set_partner(from_tcb);
-                current->get_endpoint()->dequeue_send(from_tcb);
+            // both threads on the same CPU?
+/*test********************************************/
+            current->set_partner(from_tcb);
 
+            current->get_endpoint()->dequeue_send(from_tcb);
+
+
+/*******************************************/
+			/* We need to perform a context switch here, and not a schedule.
+			 * This is because 'from_tcb' is responsible for finishing the
+			 * copy, and we (a potentially high priority thread) can not be
+			 * scheduled until that is done. 'from_tcb' will perform a
+			 * schedule when the copy is done, ensuring that the scheduler
+			 * is still in control. */
 #if testipc
-/*ii********************************************/
-			unsigned long  i;
-			i = soc_get_timer_tick_length();
-			printf("i = %u\n",i);
+/*ee********************************************/
+			unsigned long  e;
+			e = soc_get_timer_tick_length();
+			//printf("e exit\n");
 			//printf("scheduler->context_switch(receive phase)\n");
-			printf("---total = %u---\n",(a-i));
-
+			printf("---(a-e) total = %u---\n",(a-e));
+#if lab
+			printf("-----receive phase finished-----\n");
+#endif
 /************************************************/
 #endif
-
-                PROFILE_STOP(sys_ipc_e);
-                scheduler->context_switch(current, from_tcb, thread_state_t::waiting_forever,
+			scheduler->context_switch(current, from_tcb, thread_state_t::waiting_forever,
                         thread_state_t::running,
                         TCB_SYSDATA_IPC(current)->ipc_return_continuation);
-                NOTREACHED();
-            }
         }
-        NOTREACHED();
-    }
-    NOTREACHED();
 }

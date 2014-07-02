@@ -97,6 +97,8 @@ INLINE void tcb_t::set_acceptor(const acceptor_t value)
     get_utcb()->acceptor = value;
 }
 
+#define testcopy	1
+
 /**
  * copies a set of message registers from one UTCB to another
  * @param dest destination TCB
@@ -116,11 +118,11 @@ INLINE bool tcb_t::copy_mrs(tcb_t * dest, word_t start, word_t count)
      * assuming IPCs with 0 MRs are rare.
      */
     word_t temp1, temp2;
-
+#if testcopy
 	printf("------------------------------------------------count = %u---\n",count);
 	unsigned long  g;
 	g = soc_get_timer_tick_length();
-
+#endif
 
     __asm__ __volatile__ (
         "1:                             \n"
@@ -136,10 +138,11 @@ INLINE bool tcb_t::copy_mrs(tcb_t * dest, word_t start, word_t count)
           [dst] "+r" (dest_mr),
           [num] "+r" (count)
     );
-
+#if testcopy
 	unsigned long  z;
 	z = soc_get_timer_tick_length();
 	printf("------------------------------------------------copy_mrs = %u---\n",(g-z));
+#endif
     return true;
 }
 

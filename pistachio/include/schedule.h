@@ -563,10 +563,12 @@ scheduler_t::fast_schedule(tcb_t * current, fast_schedule_type_e type,
 
     /* 'current' is the highest priority thread in the system. */
     if (EXPECT_TRUE(can_schedule_current && !scheduling_invariants_violated)) {
+		//printf("'current' is the highest priority thread in the system. \n");
         ACTIVATE_CONTINUATION(continuation);
     }
 
     /* Otherwise, do a full lookup */
+	//printf("do a full lookup\n");
     schedule(current, continuation, flags);
 }
 
@@ -578,24 +580,6 @@ scheduler_t::should_schedule_thread(tcb_t * current, tcb_t * tcb,
     if (EXPECT_FALSE(scheduling_invariants_violated)) {
         return full_schedule;
     }
-
-#if defined(CONFIG_MUNITS)
-    /* Don't allow reserved threads to be scheduled. */
-    if (EXPECT_FALSE(tcb->is_reserved() || current->is_reserved())) {
-        return full_schedule;
-    }
-#endif
-
-#if defined(CONFIG_MUNITS) && defined(CONFIG_CONTEXT_BITMASKS)
-    /* Ensure that the thread is able to run on this hardware unit. */
-    if (EXPECT_FALSE((tcb->context_bitmask
-                    & (1UL << get_current_context().unit)) == 0)) {
-        if (EXPECT_TRUE(can_schedule_current)) {
-            return run_current;
-        }
-        return full_schedule;
-    }
-#endif
 
     /* If the current thread has a higher priority and can be run,
      * schedule it. */
@@ -627,12 +611,7 @@ scheduler_t::should_schedule_thread(tcb_t * current, tcb_t * tcb,
 INLINE word_t
 scheduler_t::get_context_bitmask(tcb_t * tcb)
 {
-#if defined(CONFIG_MUNITS) && defined(CONFIG_CONTEXT_BITMASKS)
-    ASSERT(DEBUG, tcb);
-    return tcb->context_bitmask;
-#else
     return (word_t)-1;
-#endif
 }
 
 INLINE void
@@ -723,32 +702,13 @@ scheduler_t::deactivate_sched(tcb_t * tcb, thread_state_t new_state,
                               tcb_t * current, continuation_t continuation,
                               flags_t flags)
 {
-    ASSERT(DEBUG, !new_state.is_runnable());
-    ASSERT(DEBUG, tcb->get_state().is_runnable());
-    ASSERT(ALWAYS, tcb != get_idle_tcb());
-
     /* Update the deactivated thread's state. */
     tcb->set_state(new_state);
 
-    if (tcb != current) {
-        /* Dequeue the thread if it is not already dequeued.
-         * Paused threads, for instance, will already be off
-         * the queue. */
-        if (tcb->ready_list.next != NULL) {
-            schedule_lock.lock();
-            dequeue(tcb);
-            schedule_lock.unlock();
-        }
-
-        /* Release the lock on the thread. */
-        tcb->release();
-    }
     /* No need to perform a dequeue of the thread if it is the
      * currently running thread
      */
-    fast_schedule(current, current != tcb ?
-                  current_tcb_schedulable : current_tcb_unschedulable,
-                  continuation, flags);
+    fast_schedule(current, current != tcb ? current_tcb_schedulable : current_tcb_unschedulable, continuation, flags);
 }
 
 INLINE void
@@ -760,14 +720,6 @@ scheduler_t::deactivate_activate_sched(tcb_t * deactivated_tcb,
                                        continuation_t continuation,
                                        flags_t flags)
 {
-    ASSERT(DEBUG, deactivated_tcb->get_state().is_runnable());
-    ASSERT(DEBUG, !activated_tcb->get_state().is_runnable());
-    ASSERT(DEBUG, !new_inactive_state.is_runnable());
-    ASSERT(DEBUG, new_active_state.is_runnable());
-    ASSERT(ALWAYS, activated_tcb != get_idle_tcb());
-    ASSERT(ALWAYS, deactivated_tcb != get_idle_tcb());
-    ASSERT(DEBUG, activated_tcb != current);
-
     if (deactivated_tcb != current) {
         schedule_lock.lock();
         dequeue(deactivated_tcb);

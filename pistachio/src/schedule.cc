@@ -1,88 +1,4 @@
 /*
- * Copyright (c) 2002-2004, Karlsruhe University
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- *
- * THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
- * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
- * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
- * SUCH DAMAGE.
- */
-/*
- * Copyright (c) 2005-2006, National ICT Australia (NICTA)
- */
-/*
- * Copyright (c) 2007 Open Kernel Labs, Inc. (Copyright Holder).
- * All rights reserved.
- *
- * 1. Redistribution and use of OKL4 (Software) in source and binary
- * forms, with or without modification, are permitted provided that the
- * following conditions are met:
- *
- *     (a) Redistributions of source code must retain this clause 1
- *         (including paragraphs (a), (b) and (c)), clause 2 and clause 3
- *         (Licence Terms) and the above copyright notice.
- *
- *     (b) Redistributions in binary form must reproduce the above
- *         copyright notice and the Licence Terms in the documentation and/or
- *         other materials provided with the distribution.
- *
- *     (c) Redistributions in any form must be accompanied by information on
- *         how to obtain complete source code for:
- *        (i) the Software; and
- *        (ii) all accompanying software that uses (or is intended to
- *        use) the Software whether directly or indirectly.  Such source
- *        code must:
- *        (iii) either be included in the distribution or be available
- *        for no more than the cost of distribution plus a nominal fee;
- *        and
- *        (iv) be licensed by each relevant holder of copyright under
- *        either the Licence Terms (with an appropriate copyright notice)
- *        or the terms of a licence which is approved by the Open Source
- *        Initative.  For an executable file, "complete source code"
- *        means the source code for all modules it contains and includes
- *        associated build and other files reasonably required to produce
- *        the executable.
- *
- * 2. THIS SOFTWARE IS PROVIDED ``AS IS'' AND, TO THE EXTENT PERMITTED BY
- * LAW, ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
- * THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE, OR NON-INFRINGEMENT, ARE DISCLAIMED.  WHERE ANY WARRANTY IS
- * IMPLIED AND IS PREVENTED BY LAW FROM BEING DISCLAIMED THEN TO THE
- * EXTENT PERMISSIBLE BY LAW: (A) THE WARRANTY IS READ DOWN IN FAVOUR OF
- * THE COPYRIGHT HOLDER (AND, IN THE CASE OF A PARTICIPANT, THAT
- * PARTICIPANT) AND (B) ANY LIMITATIONS PERMITTED BY LAW (INCLUDING AS TO
- * THE EXTENT OF THE WARRANTY AND THE REMEDIES AVAILABLE IN THE EVENT OF
- * BREACH) ARE DEEMED PART OF THIS LICENCE IN A FORM MOST FAVOURABLE TO
- * THE COPYRIGHT HOLDER (AND, IN THE CASE OF A PARTICIPANT, THAT
- * PARTICIPANT). IN THE LICENCE TERMS, "PARTICIPANT" INCLUDES EVERY
- * PERSON WHO HAS CONTRIBUTED TO THE SOFTWARE OR WHO HAS BEEN INVOLVED IN
- * THE DISTRIBUTION OR DISSEMINATION OF THE SOFTWARE.
- *
- * 3. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR ANY OTHER PARTICIPANT BE
- * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
- * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
- * BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
- * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
- * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
- * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
-/*
  * Description:   Scheduling functions
  */
 #include <l4.h>
@@ -108,7 +24,6 @@
 
 #include <profile.h>
 
-//int test = 1;
 
 volatile u64_t scheduler_t::current_time = 0;
 
@@ -120,44 +35,10 @@ DECLARE_TRACEPOINT(PREEMPTION_SIGNALED);
 
 CONTINUATION_FUNCTION(idle_thread);
 
-#if defined (CONFIG_MUNITS)
-void
-scheduler_t::update_lowest_unit()
-{
-    /* Update the global variable 'lowest_unit'. We assume that the ipc_lock is
-     * already held by us. */
-    prio_t lowest = MAX_PRIO + 1;
-    for (word_t unit = 0; unit < CONFIG_MAX_UNITS_PER_DOMAIN; unit++) {
-        if (priorities[unit].prio < lowest) {
-            lowest = priorities[unit].prio;
-            lowest_unit = unit | (lowest<<16);
-        }
-    }
-}
-#endif /* CONFIG_MUNITS */
-
 void
 scheduler_t::set_active_thread(tcb_t * tcb, tcb_t * schedule)
 {
     set_active_schedule(schedule);
-
-#if defined(CONFIG_MUNITS)
-    ASSERT(ALWAYS, tcb);
-    ASSERT(ALWAYS, schedule);
-    word_t unit = get_current_context().unit;
-
-    /* Update the data structures. */
-    smt_threads[unit].tcb = tcb;
-    smt_threads[unit].schedule = schedule;
-    priorities[unit].prio = schedule->effective_prio;
-
-    /* Update data structure's lowest unit. */
-    update_lowest_unit();
-#if defined(CONFIG_CONTEXT_BITMASKS)
-    /* This could be a wakeup from sleep, reenable timer interrupt */
-    arch_enable_timer();
-#endif
-#endif /* CONFIG_MUNITS */
 }
 
 /**
@@ -264,9 +145,6 @@ scheduler_t::set_effective_priority(tcb_t *tcb, prio_t prio)
     ASSERT(DEBUG, prio >= 0 && prio <= MAX_PRIO);
 
     prio_queue.set_effective_priority(tcb, prio);
-#ifdef CONFIG_MUNITS
-    change_active_thread_priority(tcb);
-#endif
 }
 
 /**
@@ -282,13 +160,11 @@ scheduler_t::set_effective_priority(tcb_t *tcb, prio_t prio)
  *
  * @return true if a runnable thread was found, false otherwise
  */
-#if defined(CONFIG_CONTEXT_BITMASKS) || (!defined(CONFIG_ENABLE_FASTPATHS) || !defined(HAVE_SCHEDULE_FASTPATH))
 void
 scheduler_t::schedule(tcb_t * current, continuation_t continuation,
                       flags_t flags)
 {	
-
-
+	//printf("******start schedule******\n");
     schedule_lock.lock();
 
     /* No longer violating the scheduler. */
@@ -301,22 +177,6 @@ scheduler_t::schedule(tcb_t * current, continuation_t continuation,
      * it. */
     bool current_runnable = current->get_state().is_runnable()
         && !current->is_reserved();
-    if (current_runnable) {
-        /* If we are the highest priority, or we are not doing a round
-         * robin and we are equal highest, just keep running current. */
-        if (current->effective_prio > max_prio ||
-                (!(flags & sched_round_robin)
-                        && current->effective_prio == max_prio)) {
-            schedule_lock.unlock();
-            ACTIVATE_CONTINUATION(continuation);
-        }
-        /* If we are pre-empting the thread and the thread has asked for
-         * pre-emption notification, inform the thread of this schedule. */
-        if (flags & preempting_thread) {
-            mark_thread_as_preempted(current);
-        }
-
-    }
 
     /* Otherwise, we are switching to another thread. */
     tcb_t *next;
@@ -329,13 +189,14 @@ scheduler_t::schedule(tcb_t * current, continuation_t continuation,
 
     /* Grab the thread. */
     (void)next->grab();
-//	printf(" no Grab the thread\n");
-    ASSERT(ALWAYS, next->is_grabbed_by_me());
+	//printf("----------------------Grab the thread\n");
 
     /* Switch away from the current thread, enqueuing if necessary. */
     switch_from(current, continuation);
     current->release();
+	//printf("current_runnable = %d\n",current_runnable);
     if (current_runnable && current != get_idle_tcb()) {
+		//printf("******current != get_idle_tcb() enqueue(current);\n");
         enqueue(current);
         smt_reschedule(current);
     }
@@ -343,12 +204,9 @@ scheduler_t::schedule(tcb_t * current, continuation_t continuation,
     /* Activate the new thread. */
     set_active_thread(next, next);
     schedule_lock.unlock();
-
-
+	//printf("---------------------- switch_to(next, next);\n");
     switch_to(next, next);
-
 }
-#endif
 
 extern "C" void SECTION(".init")
 c_schedule(scheduler_t * scheduler, tcb_t * current,
@@ -712,7 +570,7 @@ CONTINUATION_FUNCTION(init_all_threads)
     pre_tcb_init = 0;
     run_init_script(INIT_PHASE_OTHERS);
 
-#if defined(CONFIG_KDB_ON_STARTUP)
+#if 0
     enter_kdebug ("System started (press 'g' to continue)");
 #endif
 

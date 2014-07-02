@@ -11,7 +11,7 @@
 #include <okl4/kclist.h>    //okl4_kclist_kcap_allocany
 #include <okl4/utcb.h>  //okl4_utcb_allocany
 
-#define THREADS     3
+#define THREADS     6
 #define STACK_SIZE  4096
 
 #define MAX_CHARS  20
